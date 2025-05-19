@@ -23,7 +23,11 @@ class ADMM(Optimizer):
         print("ADMM optimizer initialized with rho: {}, max_iter: {}, lr: {}".format(rho, max_iter, lr))
         
         if rho <= 0.0:
-            raise ValueError("rho must be positive.")
+            raise ValueError("rho must be positive and greater than 0.0")
+        if max_iter <= 0:
+            raise ValueError("max_iter must be positive and greater than 0")
+        if lr <= 0.0:
+            raise ValueError("lr must be positive and greater than 0.0")
         
         defaults = dict(rho=rho, 
                         max_iter=max_iter,
@@ -76,7 +80,7 @@ class ADMM(Optimizer):
                 # Step 1: update x i.e. the primal variable or model param
                 # min f(x) + lambda^T (Ax - b) + rho/2 ||Ax - b||^2 (non scaled)
                 param_old = param.clone().detach()
-                optimizer = torch.optim.SGD([param], lr=lr)
+                optimizer = torch.optim.SGD([param], lr=0.01)
 
                 for _ in range(max_iter):
                     optimizer.zero_grad()
