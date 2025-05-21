@@ -6,6 +6,9 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
 
+import warnings
+warnings.filterwarnings("ignore", message="Unable to import Axes3D")
+
 
 # GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -28,7 +31,7 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     dist.init_process_group(backend=backend, init_method='tcp://{}:{}'.format(master_addr, master_port), 
                             world_size=world_size, rank=rank)
 
-    print(f"Initialized distributed mode with world size {world_size} and rank {dist.get_rank()}")
+    # print(f"Initialized distributed mode with world size {world_size} and rank {dist.get_rank()}")
     return world_size, rank
 
 
@@ -44,10 +47,10 @@ def train_model(model, likelihood, train_x, train_y, num_epochs=10, backend='ncc
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
-    # split dataset 
-    dataset = TensorDataset(train_x, train_y)
-    sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank)
-    train_loader = DataLoader(dataset, batch_size=10, sampler=sampler)
+    # # split dataset 
+    # dataset = TensorDataset(train_x, train_y)
+    # sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank)
+    # train_loader = DataLoader(dataset, batch_size=1, sampler=sampler)
 
     # optimizer
     optimizer = cadmm(model.parameters(), lr=0.005, max_iter=10, rho=0.85, rank=rank, world_size=world_size)
@@ -56,22 +59,13 @@ def train_model(model, likelihood, train_x, train_y, num_epochs=10, backend='ncc
         optimizer.zero_grad()
         output = model(train_x)
         loss = -model.likelihood(output).log_prob(train_y)
-        # loss.backward()
         return loss, output
-
+    
     model.train()
     likelihood.train()
 
     for epoch in range(num_epochs):
-        # print(f"Epoch {epoch+1}/{num_epochs}")
-        sampler.set_epoch(epoch)
-        for batch in train_loader:
-            x_batch, y_batch = batch
-            x_batch = x_batch.to(device)
-            y_batch = y_batch.to(device)
-            optimizer.step(closure)
-
-        # Print loss
+        optimizer.step(closure)
         print(f"Epoch {epoch+1}/{num_epochs} Loss: {closure()[0].item()}")  
 
 
@@ -103,32 +97,45 @@ def plot_results(train_x, train_y, test_x, mean, lower, upper):
 
 
 if __name__ == "__main__":
-    print("Starting training...")
-    
-    world_size = 1
+      
+    world_size = int(os.environ['WORLD_SIZE'])
+    rank = int(os.environ['RANK'])
 
     # 1D Data
     train_x = torch.linspace(0, 1, 100)
     train_y = torch.sin(train_x * (2 * torch.pi)) + torch.randn(train_x.size()) * 0.2
 
-    print("train_x shape:", train_x.shape)
-    print("train_y shape:", train_y.shape)
+    if rank == 0:
+        print("Starting training...")
+        print("global train_x shape:", train_x.shape)
+        print("global train_y shape:", train_y.shape)
 
+    # divide dataset into m parts based on world size and rank
+    torch.manual_seed(42) 
+    local_indices = torch.randperm(train_x.size(0))
+    split_indices = torch.chunk(local_indices, world_size)
+    local_indices = split_indices[rank]
+    local_x = train_x[local_indices]
+    local_y = train_y[local_indices]
+
+    if rank == 0:
+        print("local_x shape:", local_x.shape)
+        print("local_y shape:", local_y.shape)
+
+    # Create the local model and likelihood    
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = ExactGPModel(train_x, train_y, likelihood)
+    model = ExactGPModel(local_x, local_y, likelihood)
 
     # os environment variables for distributed training
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12345'
-    os.environ['WORLD_SIZE'] = str(world_size)
-    os.environ['RANK'] = '0'
 
-    # Train the model
-    model, likelihood = train_model(model, likelihood, train_x, train_y, num_epochs=5, backend='nccl')
+    # Train the local model
+    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=5, backend='gloo')
 
     # Test the model
     test_x = torch.linspace(0, 1, 51)
     mean, lower, upper = test_model(model, likelihood, test_x)
 
-    # Plot the results
-    plot_results(train_x, train_y, test_x, mean, lower, upper)
+    # Plot the local results
+    plot_results(local_x, local_y, test_x, mean, lower, upper)
