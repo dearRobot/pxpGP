@@ -25,6 +25,8 @@ class cADMM(Optimizer):
             rho: Augmented Lagrangian parameter
             max_iter: Maximum number of iterations for ADMM
             lr: Learning rate for the primal variable (x) update
+            rank: Process rank (default: 0).
+            world_size: Total number of processes (default: 1).
         """        
         
         if not dist.is_initialized():
@@ -82,16 +84,16 @@ class cADMM(Optimizer):
                 lambda_ = self.state[param]['lambda']
 
                 # Step 1: update x i.e. the primal variable or model param
-                param_old = param.clone().detach() # might be not needed
-                Optimizer_ = torch.optim.SGD([param], lr=lr)
+                # param_old = param.clone().detach() # might be not needed
+                optimizer_ = torch.optim.SGD([param], lr=lr)
 
                 for _ in range(max_iter):
-                    Optimizer_.zero_grad()
+                    optimizer_.zero_grad()
                     loss, output = closure()
                     penalty = (lambda_ + rho * (param - z)).sum() + (rho / 2) * (param - z).pow(2).sum()
                     total_loss = loss + penalty
                     total_loss.backward()
-                    Optimizer_.step()
+                    optimizer_.step()
 
                 # if self.rank == 0:
                     # print("Rank {}: loss: {}".format(self.rank, total_loss.item()))
@@ -116,7 +118,14 @@ class cADMM(Optimizer):
                 # update state
                 self.state[param]['z'] = z_new
                 self.state[param]['lambda'] = lambda_new
-        
+    
+    
+    # check if this is needed and actually affect the model
+    def synchronize_parameters(self): 
+        for group in self.param_groups:
+            for param in group['params']:
+                dist.all_reduce(param.data, op=dist.ReduceOp.SUM)
+                param.data /= self.world_size
 
 def cadmm(params, **kwargs):
     """
