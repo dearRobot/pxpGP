@@ -19,7 +19,7 @@ class cADMM(Optimizer):
         """
         cADMM optimizer
         Here we distribute dataset, parallelize computation and co-ordinate z-update among agents
-        torch.multiprocessing is used to parallelize the computation
+        torch.distributed is used to parallelize the computation
         Args:
             params: Parameters to optimize.
             rho: Augmented Lagrangian parameter

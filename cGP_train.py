@@ -22,7 +22,7 @@ class ExactGPModel(gpytorch.models.ExactGP):
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
 
-# global GP model
+# global GP model used for prediction as a combination of local models
 class GlobalGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood, global_covar_inv):
         super().__init__(train_x, train_y, likelihood)
@@ -86,18 +86,6 @@ def train_model(model, likelihood, train_x, train_y, num_epochs=10, backend='ncc
     noise = model.likelihood.noise.detach().cpu()
 
     print(f"Rank {rank}: Lengthscale: {lengthscale}, Outputscale: {outputscale}, Noise: {noise}")
-
-    
-    # Rank 0: Lengthscale: tensor([[0.3729]]), Outputscale: 2.439328193664551, Noise: tensor([0.1141])
-
-    # Rank 0: Lengthscale: tensor([[0.3437]]), Outputscale: 2.160946846008301, Noise: tensor([0.0390])
-    # Rank 1: Lengthscale: tensor([[0.3378]]), Outputscale: 2.20019268989563, Noise: tensor([0.0398])
-
-    # Rank 2: Lengthscale: tensor([[0.3260]]), Outputscale: 1.8940331935882568, Noise: tensor([0.0392])
-    # Rank 1: Lengthscale: tensor([[0.3166]]), Outputscale: 1.8676905632019043, Noise: tensor([0.0400])
-    # Rank 0: Lengthscale: tensor([[0.3379]]), Outputscale: 1.8880828619003296, Noise: tensor([0.0389])
-
-
 
     # compute local inverse covariance matrix
     # with torch.no_grad():
@@ -236,3 +224,16 @@ if __name__ == "__main__":
 
     # Plot the local results
     plot_results(local_x, local_y, test_x, mean, lower, upper)
+
+
+
+# Rank 0: Lengthscale: tensor([[0.3729]]), Outputscale: 2.439328193664551, Noise: tensor([0.1141])
+
+# Rank 0: Lengthscale: tensor([[0.3437]]), Outputscale: 2.160946846008301, Noise: tensor([0.0390])
+# Rank 1: Lengthscale: tensor([[0.3378]]), Outputscale: 2.20019268989563, Noise: tensor([0.0398])
+
+# Rank 2: Lengthscale: tensor([[0.3260]]), Outputscale: 1.8940331935882568, Noise: tensor([0.0392])
+# Rank 1: Lengthscale: tensor([[0.3166]]), Outputscale: 1.8676905632019043, Noise: tensor([0.0400])
+# Rank 0: Lengthscale: tensor([[0.3379]]), Outputscale: 1.8880828619003296, Noise: tensor([0.0389])
+
+
