@@ -1,5 +1,6 @@
 from .admm import ADMM, admm
 from .cadmm import cADMM, cadmm, c_admm
+from .pxadmm import pxADMM, pxadmm, px_admm
 
 def admm(params, **kwargs):
     """
@@ -27,5 +28,19 @@ def cadmm(params, **kwargs):
     """
     return cADMM(params, **kwargs)
 
+def pxadmm(params, **kwargs):
+    """
+    Create a pxADMM optimizer.
+    
+    Args:
+        params: Parameters to optimize.
+        kwargs: Additional arguments for the pxADMM optimizer.
+        
+    Returns:
+        An instance of the pxADMM optimizer.
+    """
+    return pxADMM(params, **kwargs)
+
 __all__ = ["ADMM", "admm"]
 __all__ += ["cADMM", "cadmm", "c_admm"]
+__all__ += ["pxADMM", "pxadmm", "px_admm"]

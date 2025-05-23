@@ -160,7 +160,7 @@ def train_model(model, likelihood, train_x, train_y, num_epochs=10, backend='ncc
 def test_model(model, likelihood, test_x):
     model.eval()
     likelihood.eval()
-    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+    # mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():

@@ -32,6 +32,94 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
 
     return world_size, rank
 
+def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: float=0.8, 
+                            lip: float=1.0, tol: float=1e-6, backend='nccl'):
+    """
+    Train the model using pxADMM optimizer
+    Args:
+        model: The GP model to train.
+        likelihood: The likelihood function.
+        train_x: Training input data.
+        train_y: Training output data.
+        optimizer: The pxADMM optimizer.
+        num_epochs: Number of training epochs.
+    """
+
+    # intialize distributed training
+    world_size, rank = init_distributed_mode(backend=backend)
+
+    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+
+    # move data to device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device) 
+    likelihood = likelihood.to(device)
+    mll = mll.to(device)
+    train_x = train_x.to(device)
+    train_y = train_y.to(device)
+
+    print("Rank {}: model parameters are {}".format(rank, [p.shape for p in model.parameters()]))
+
+    # optimizer
+    optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol=tol, rank=rank, world_size=world_size)
+
+    def closure():
+        optimizer.zero_grad()
+        with gpytorch.settings.min_preconditioning_size(0.005):
+            output = model(train_x)
+            # loss = -likelihood(output).log_prob(train_y)
+            loss = -mll(output, train_y)
+            loss.backward() 
+            grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model.parameters()])
+        return loss, grad   
+
+    model.train()
+    likelihood.train()
+
+    for epoch in range(num_epochs):
+        converged_ = optimizer.step(closure)
+        if rank == 0:
+            print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure()[0].item()}") 
+        
+        if converged_:
+            if rank == 0:
+                print("Converged at epoch {}".format(epoch + 1))
+            break
+    
+    dist.destroy_process_group()
+    return model, likelihood
+
+
+def test_model(model, likelihood, test_x):
+    """
+    Test the model using pxADMM optimizer
+    Args:
+        model: The GP model to test.
+        likelihood: The likelihood function.
+        test_x: Testing input data.
+    """
+    model.eval()
+    likelihood.eval()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    with torch.no_grad(), gpytorch.settings.fast_pred_var():
+        test_x = test_x.to(device)
+        observed_pred = likelihood(model(test_x))
+        mean = observed_pred.mean
+        lower, upper = observed_pred.confidence_region()
+
+    return mean, lower, upper
+        
+
+def plot_results(train_x, train_y, test_x, mean, lower, upper):
+    plt.figure(figsize=(12, 6))
+    plt.plot(train_x.cpu().numpy(), train_y.cpu().numpy(), 'k*', label='Train Data')
+    plt.plot(test_x.cpu().numpy(), mean.cpu().numpy(), 'b', label='Mean Prediction')
+    plt.fill_between(test_x.cpu().numpy(), lower.cpu().numpy(), upper.cpu().numpy(), alpha=0.5, color='blue', label='Confidence Interval')
+    plt.title('Gaussian Process Regression Rank {}'.format(os.environ['RANK']))
+    plt.legend()
+    plt.show()
+
 
 if __name__ == "__main__":
       
@@ -58,3 +146,22 @@ if __name__ == "__main__":
     if rank == 0:
         print("local_x shape:", local_x.shape)
         print("local_y shape:", local_y.shape)
+
+    # create the local model and likelihood
+    likelihood = gpytorch.likelihoods.GaussianLikelihood()  
+    model = ExactGPModel(local_x, local_y, likelihood)
+
+    # OS enviorment variables for distributed training
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12345'
+
+    # train the model
+    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=10,
+                                    rho=0.8, lip=1.0, tol=1e-6, backend='gloo')
+    
+    # test the model
+    test_x = torch.linspace(0, 1, 1000)
+    mean, lower, upper = test_model(model, likelihood, test_x)
+
+    # plot the results
+    plot_results(local_x, local_y, test_x, mean, lower, upper)
