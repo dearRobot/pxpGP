@@ -102,6 +102,7 @@ class pxADMM(Optimizer):
                 i += 1
 
 
+    # TODO: Implement scaled pxADMM and adaptive tolerance
     def step(self, closure=None):
         """
         Performs a single optimization step.
@@ -161,6 +162,7 @@ class pxADMM(Optimizer):
             primal_residual = torch.norm(x_new - z_new, p=2)
             dual_residual = torch.norm(rho * (z_new - z_old), p=2)
 
+                        
             # adaptive tolerance 
             # will work in scaled version of pxADMM not for normal version
             # p = self.total_params
