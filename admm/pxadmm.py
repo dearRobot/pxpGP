@@ -103,7 +103,7 @@ class pxADMM(Optimizer):
 
 
     # TODO: Implement scaled pxADMM and adaptive tolerance
-    def step(self, closure=None):
+    def step(self, closure=None, consensus: bool=False):
         """
         Performs a single optimization step.
         lip : Lipschitz constant of the gradient of the loss function
@@ -135,9 +135,12 @@ class pxADMM(Optimizer):
             # local update : (x_i^{k} + lambda_i^{k}/rho)
             z_new = self.flat_param.detach() + self.state['flat']['lambda'] / rho
 
-            # synchronize z across all processes
-            dist.all_reduce(z_new, op=dist.ReduceOp.SUM)
-            z_new /= self.world_size 
+            if consensus:
+                # synchronize z across all processes
+                # print(f"Rank {self.rank}: z_new before all_reduce: {z_new}")
+                dist.all_reduce(z_new, op=dist.ReduceOp.SUM)
+                z_new /= self.world_size 
+
 
             # Step 2: update the primal variable (x) using the proximal linearized gradient
             # x_i^{k+1} = z_i^k - (1/rho+ lip) * (\nabla L_i(z^k) + lambda_i^k)
@@ -182,7 +185,10 @@ class pxADMM(Optimizer):
 
 
             constraint_norm = torch.norm(x_new - z_new, p=2)
-            dist.all_reduce(constraint_norm, op=dist.ReduceOp.MAX)
+            
+            if consensus:
+                dist.all_reduce(constraint_norm, op=dist.ReduceOp.MAX)
+
             if constraint_norm.item() < tol_abs:
                 self.isConverged = True
                 if self.rank == 0:

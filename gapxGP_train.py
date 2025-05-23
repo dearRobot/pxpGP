@@ -20,7 +20,7 @@ class ExactGPModel(gpytorch.models.ExactGP):
         mean_x = self.mean_module(x)
         covar_x = self.covar_module(x)
         return gpytorch.distributions.MultivariateNormal(mean_x, covar_x)
-    
+   
 
 # distributed enviorment
 def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='12345'):
@@ -31,6 +31,34 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
                             world_size=world_size, rank=rank)
 
     return world_size, rank
+
+
+def normalize_data(train_x, train_y):
+    """
+    Normalize the data to the range [0, 1]
+    Args:
+        data: Input data.
+    Returns:
+        Normalized data.
+    """
+    min_val = torch.min(data)
+    max_val = torch.max(data)
+    return (data - min_val) / (max_val - min_val)
+
+
+def create_communication_dataset(train_x, train_y, world_size, rank):
+    """
+    Create communication dataset for distributed training
+    Args:
+        train_x: Local training input data.
+        train_y: Local training output data.
+        world_size: Number of processes.
+        rank: Current process rank.
+    Returns:
+        aug_x : Local communication training input data.
+        aug_y : Local communication training output data.
+    """
+
 
 def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: float=0.8, 
                             lip: float=1.0, tol_abs: float=1e-6, tol_rel: float=1e-4, backend='nccl'):
@@ -43,8 +71,16 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
         train_y: Training output data.
         optimizer: The pxADMM optimizer.
         num_epochs: Number of training epochs.
+
+    1. Each agent will train its local model with local dataset.(with or without z consensus update)
+    2. Each agent will create its local sample dataset
+    3. Share the local sample dataset with other agents as communication dataset
+    4. Each agent will crate augmented dataset using local dataset + communication dataset
+    5. Each agent will train its local model with augmented dataset again. (with or without z consensus update)
     """
 
+# Train the local model with local dataset without z consensus update
+    
     # intialize distributed training
     world_size, rank = init_distributed_mode(backend=backend)
 
@@ -71,13 +107,13 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
             loss = -mll(output, train_y)
             loss.backward() 
             grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model.parameters()])
-        return loss, grad   
-
+        return loss, grad 
+    
     model.train()
     likelihood.train()
 
     for epoch in range(num_epochs):
-        converged_ = optimizer.step(closure, consensus=True)
+        converged_ = optimizer.step(closure, consensus=False)
         if rank == 0:
             print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure()[0].item()}") 
         
@@ -85,10 +121,9 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
             if rank == 0:
                 print("Converged at epoch {}".format(epoch + 1))
             break
-    
+
     dist.destroy_process_group()
     return model, likelihood
-
 
 def test_model(model, likelihood, test_x):
     """
@@ -109,7 +144,7 @@ def test_model(model, likelihood, test_x):
         lower, upper = observed_pred.confidence_region()
 
     return mean, lower, upper
-        
+
 
 def plot_results(train_x, train_y, test_x, mean, lower, upper):
     plt.figure(figsize=(12, 6))
@@ -155,7 +190,7 @@ if __name__ == "__main__":
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12345'
 
-    # train the model
+     # train the model
     model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=100,
                                     rho=0.8, lip=1.0, tol_abs=1e-5, tol_rel=1e-3, backend='gloo')
     
