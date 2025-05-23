@@ -33,7 +33,7 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     return world_size, rank
 
 def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: float=0.8, 
-                            lip: float=1.0, tol: float=1e-6, backend='nccl'):
+                            lip: float=1.0, tol_abs: float=1e-6, tol_rel: float=1e-4, backend='nccl'):
     """
     Train the model using pxADMM optimizer
     Args:
@@ -61,13 +61,13 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     print("Rank {}: model parameters are {}".format(rank, [p.shape for p in model.parameters()]))
 
     # optimizer
-    optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol=tol, rank=rank, world_size=world_size)
+    optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
+                       rank=rank, world_size=world_size)
 
     def closure():
         optimizer.zero_grad()
         with gpytorch.settings.min_preconditioning_size(0.005):
             output = model(train_x)
-            # loss = -likelihood(output).log_prob(train_y)
             loss = -mll(output, train_y)
             loss.backward() 
             grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model.parameters()])
@@ -156,8 +156,8 @@ if __name__ == "__main__":
     os.environ['MASTER_PORT'] = '12345'
 
     # train the model
-    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=10,
-                                    rho=0.8, lip=1.0, tol=1e-6, backend='gloo')
+    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=100,
+                                    rho=0.8, lip=1.0, tol_abs=1e-5, tol_rel=1e-3, backend='gloo')
     
     # test the model
     test_x = torch.linspace(0, 1, 1000)
