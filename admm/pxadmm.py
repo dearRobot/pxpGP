@@ -40,7 +40,7 @@ class pxADMM(Optimizer):
         if not dist.is_available():
             raise RuntimeError("Distributed package is not available. Please install torch with distributed support.")
         
-        print(f"pxADMM optimizer initialized with rho: {rho}, lip: {lip}, tol_abs: {tol_abs}, tol_rel: {tol_rel}")
+        # print(f"pxADMM optimizer initialized with rho: {rho}, lip: {lip}, tol_abs: {tol_abs}, tol_rel: {tol_rel}")
         
         if rho <= 0.0:
             raise ValueError("rho must be positive and greater than 0.0")

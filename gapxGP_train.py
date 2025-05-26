@@ -1,13 +1,17 @@
 import torch
 import gpytorch
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 from admm import pxadmm
 import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
 
+from utils import generateTrainingData, loadYAMLConfig
+from utils.results import plot_result
+
 import warnings
 warnings.filterwarnings("ignore", message="Unable to import Axes3D")
+
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -58,6 +62,7 @@ def create_communication_dataset(train_x, train_y, world_size, rank):
         aug_x : Local communication training input data.
         aug_y : Local communication training output data.
     """
+    local_comm_dataset_size = 50
 
 
 def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: float=0.8, 
@@ -94,8 +99,6 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
-    print("Rank {}: model parameters are {}".format(rank, [p.shape for p in model.parameters()]))
-
     # optimizer
     optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
                        rank=rank, world_size=world_size)
@@ -122,6 +125,10 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
                 print("Converged at epoch {}".format(epoch + 1))
             break
 
+    # generate local sample communication dataset
+    
+    
+    
     dist.destroy_process_group()
     return model, likelihood
 
@@ -146,41 +153,26 @@ def test_model(model, likelihood, test_x):
     return mean, lower, upper
 
 
-def plot_results(train_x, train_y, test_x, mean, lower, upper):
-    plt.figure(figsize=(12, 6))
-    plt.plot(train_x.cpu().numpy(), train_y.cpu().numpy(), 'k*', label='Train Data')
-    plt.plot(test_x.cpu().numpy(), mean.cpu().numpy(), 'b', label='Mean Prediction')
-    plt.fill_between(test_x.cpu().numpy(), lower.cpu().numpy(), upper.cpu().numpy(), alpha=0.5, color='blue', label='Confidence Interval')
-    plt.title('Gaussian Process Regression Rank {}'.format(os.environ['RANK']))
-    plt.legend()
-    plt.show()
-
 
 if __name__ == "__main__":
       
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
 
-    # 1D Data
-    train_x = torch.linspace(0, 1, 1000)
-    train_y = torch.sin(train_x * (2 * torch.pi)) + torch.randn(train_x.size()) * 0.2
+    # load yaml configuration
+    config_path = 'config/gapxGP.yaml'
+    config = loadYAMLConfig(config_path)
 
-    if rank == 0:
-        print("Starting training...")
-        print("global train_x shape:", train_x.shape)
-        print("global train_y shape:", train_y.shape)
+    num_epochs = config.get('num_epochs', 100)
+    rho = config.get('rho', 1.0)
+    lip = config.get('lip', 1.0)
+    tol_abs = float(config.get('tol_abs', 1e-6))
+    tol_rel = float(config.get('tol_rel', 1e-4))
+    backend = str(config.get('backend', 'nccl'))
 
-    # divide dataset into m parts based on world size and rank
-    torch.manual_seed(42) 
-    local_indices = torch.randperm(train_x.size(0))
-    split_indices = torch.chunk(local_indices, world_size)
-    local_indices = split_indices[rank]
-    local_x = train_x[local_indices]
-    local_y = train_y[local_indices]
-
-    if rank == 0:
-        print("local_x shape:", local_x.shape)
-        print("local_y shape:", local_y.shape)
+    # generate local training data
+    local_x, local_y = generateTrainingData(num_samples=1000, input_dim=1, rank=rank, 
+                                                world_size=world_size)
 
     # create the local model and likelihood
     likelihood = gpytorch.likelihoods.GaussianLikelihood()  
@@ -191,12 +183,12 @@ if __name__ == "__main__":
     os.environ['MASTER_PORT'] = '12345'
 
      # train the model
-    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=100,
-                                    rho=0.8, lip=1.0, tol_abs=1e-5, tol_rel=1e-3, backend='gloo')
+    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=num_epochs,
+                                    rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel, backend=backend)
     
     # test the model
     test_x = torch.linspace(0, 1, 1000)
     mean, lower, upper = test_model(model, likelihood, test_x)
 
     # plot the results
-    plot_results(local_x, local_y, test_x, mean, lower, upper)
+    plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
