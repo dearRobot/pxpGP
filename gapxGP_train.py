@@ -49,30 +49,79 @@ def normalize_data(train_x, train_y):
     return (data - min_val) / (max_val - min_val)
 
 
-def create_communication_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
-                                 partition_criteria: str='random'):
+
+def create_augmented_dataset(local_x, local_y, comm_x, comm_y):
     """
-    Create communication dataset for distributed training
+    Create augmented dataset using local dataset and communication dataset
     Args:
         local_x: Local training input data.
         local_y: Local training output data.
+        comm_x: Local communication training input data.
+        comm_y: Local communication training output data.
+    Returns:
+        augmented_x : Augmented training input data.
+        augmented_y : Augmented training output data.
+    """
+
+
+
+
+def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
+                                 partition_criteria: str='random'):
+    """
+    Create augmented dataset (D_c+) = local dataset (D_i) + global communication dataset (D_c)
+    Args:
+        local_x: Local training input data. (D_i)
+        local_y: Local training output data. (D_i)
         world_size: Number of processes.
         rank: Current process rank.
         dataset_size: Size of the communication dataset to create.
         partition_criteria: Criteria for partitioning the dataset (default: 'random').
     Returns:
-        aug_x : Local communication training input data.
-        aug_y : Local communication training output data.
+        aug_x : Augmented training input data. (D_c)
+        aug_y : Augmented training output data. (D_c)
     """
-    
-    print(f"Rank {rank} creating communication dataset...")
-    
+        
     if not isinstance(rank, int) or rank < 0:
         raise ValueError("Rank must be a non-negative integer.")
     if not isinstance(dataset_size, int) or dataset_size <= 0:
         raise ValueError("Dataset size must be a positive integer.")
     if world_size <= 0:
         raise ValueError("World size must be greater than 0.")
+    
+    # create local communication dataset
+    torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
+    
+    sample_indices = torch.randperm(local_x.size(0))[:dataset_size]
+    local_comm_x = local_x[sample_indices]
+    local_comm_y = local_y[sample_indices]
+
+    # communicate local communication dataset to central node rank 0
+    sample_x_list = [torch.zeros_like(local_comm_x) for _ in range(world_size)]
+    sample_y_list = [torch.zeros_like(local_comm_x) for _ in range(world_size)]
+
+    dist.gather(local_comm_x, gather_list=sample_x_list if rank == 0 else None, dst=0)
+    dist.gather(local_comm_x, gather_list=sample_y_list if rank == 0 else None, dst=0)
+
+    # form communication dataset at rank 0 central node
+    if rank == 0:
+        comm_x = torch.cat(sample_x_list, dim=0)
+        comm_y = torch.cat(sample_y_list, dim=0)
+    else:
+        comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=local_x.device)
+        comm_y = torch.zeros(dataset_size * world_size, dtype=local_y.dtype, device=local_y.device)
+
+    # broadcast the communication dataset to all agents from rank 0
+    dist.broadcast(comm_x, src=0)
+    dist.broadcast(comm_y, src=0)
+
+    # create augmented dataset
+    aug_x = torch.cat([local_x, comm_x], dim=0)
+    aug_y = torch.cat([local_y, comm_y], dim=0)
+
+    print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
+    
+    return aug_x, aug_y
 
 
 def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: float=0.8, 
@@ -94,9 +143,8 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     5. Each agent will train its local model with augmented dataset again. (with or without z consensus update)
     """
 
-# Train the local model with local dataset without z consensus update
-    
-    # intialize distributed training
+    # Stage 1: Train local model on local dataset without consensus    
+    # Intialize distributed training
     world_size, rank = init_distributed_mode(backend=backend)
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
@@ -109,7 +157,6 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
-    # optimizer
     optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
                        rank=rank, world_size=world_size)
 
@@ -135,12 +182,60 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
                 print("Converged at epoch {}".format(epoch + 1))
             break
 
-    # generate local sample communication dataset
-    comm_x, comm_y = create_communication_dataset(train_x, train_y, world_size, rank, dataset_size=50)
+    # generate augmented dataset
+    aug_x, aug_y = create_augmented_dataset(train_x, train_y, world_size, rank, dataset_size=50)
+    
+    # Stage 2: Train on augmented dataset with warm start
+    likelihood_aug = gpytorch.likelihoods.GaussianLikelihood() 
+    model_aug = ExactGPModel(aug_x, aug_y, likelihood_aug)
+
+    # warm start
+    model_aug.mean_module.constant.data = model.mean_module.constant.data.clone()
+    model_aug.covar_module.base_kernel.lengthscale.data = model.covar_module.base_kernel.lengthscale.data.clone()
+    model_aug.covar_module.outputscale.data = model.covar_module.outputscale.data.clone()
+    likelihood_aug.noise.data = likelihood.noise.data.clone()
+        
+    mll_aug = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood_aug, model_aug)
+
+    # # Clear previous model and data from device to free memory
+    # del model, likelihood, mll, train_x, train_y
+    # torch.cuda.empty_cache()
+
+    model_aug = model_aug.to(device)
+    likelihood_aug = likelihood_aug.to(device)
+    mll_aug = mll_aug.to(device)
+    aug_x = aug_x.to(device)
+    aug_y = aug_y.to(device)
+
+    # warm start the pxADMM optimizer with the previous local trained model parameters
+    optimizer_aug = pxadmm(model_aug.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
+                           rank=rank, world_size=world_size)
+    
+    def closure_aug():
+        optimizer_aug.zero_grad()
+        with gpytorch.settings.min_preconditioning_size(0.005):
+            output_aug = model_aug(aug_x)
+            loss_aug = -mll_aug(output_aug, aug_y)
+            loss_aug.backward() 
+            grad_aug = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model_aug.parameters()])
+        return loss_aug, grad_aug
+    
+    model_aug.train()
+    likelihood_aug.train()
+
+    for epoch in range(num_epochs):
+        converged_aug = optimizer_aug.step(closure_aug, consensus=True)
+        if rank == 0:
+            print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure_aug()[0].item()}") 
+        
+        if converged_aug:
+            if rank == 0:
+                print("Converged at epoch {}".format(epoch + 1))
+            break
     
     
     dist.destroy_process_group()
-    return model, likelihood
+    return model_aug, likelihood_aug, aug_x, aug_y
 
 def test_model(model, likelihood, test_x):
     """
@@ -193,7 +288,7 @@ if __name__ == "__main__":
     os.environ['MASTER_PORT'] = '12345'
 
      # train the model
-    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=num_epochs,
+    model, likelihood, aug_x, aug_y = train_model(model, likelihood, local_x, local_y, num_epochs=num_epochs,
                                     rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel, backend=backend)
     
     # test the model
@@ -201,4 +296,5 @@ if __name__ == "__main__":
     mean, lower, upper = test_model(model, likelihood, test_x)
 
     # plot the results
-    plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
+    # plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
+    plot_result(aug_x, aug_y, test_x, mean, lower, upper, rank=rank)
