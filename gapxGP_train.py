@@ -1,6 +1,5 @@
 import torch
 import gpytorch
-# from matplotlib import pyplot as plt
 from admm import pxadmm
 import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
@@ -50,19 +49,30 @@ def normalize_data(train_x, train_y):
     return (data - min_val) / (max_val - min_val)
 
 
-def create_communication_dataset(train_x, train_y, world_size, rank):
+def create_communication_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
+                                 partition_criteria: str='random'):
     """
     Create communication dataset for distributed training
     Args:
-        train_x: Local training input data.
-        train_y: Local training output data.
+        local_x: Local training input data.
+        local_y: Local training output data.
         world_size: Number of processes.
         rank: Current process rank.
+        dataset_size: Size of the communication dataset to create.
+        partition_criteria: Criteria for partitioning the dataset (default: 'random').
     Returns:
         aug_x : Local communication training input data.
         aug_y : Local communication training output data.
     """
-    local_comm_dataset_size = 50
+    
+    print(f"Rank {rank} creating communication dataset...")
+    
+    if not isinstance(rank, int) or rank < 0:
+        raise ValueError("Rank must be a non-negative integer.")
+    if not isinstance(dataset_size, int) or dataset_size <= 0:
+        raise ValueError("Dataset size must be a positive integer.")
+    if world_size <= 0:
+        raise ValueError("World size must be greater than 0.")
 
 
 def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: float=0.8, 
@@ -126,7 +136,7 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
             break
 
     # generate local sample communication dataset
-    
+    comm_x, comm_y = create_communication_dataset(train_x, train_y, world_size, rank, dataset_size=50)
     
     
     dist.destroy_process_group()
@@ -163,9 +173,9 @@ if __name__ == "__main__":
     config_path = 'config/gapxGP.yaml'
     config = loadYAMLConfig(config_path)
 
-    num_epochs = config.get('num_epochs', 100)
-    rho = config.get('rho', 1.0)
-    lip = config.get('lip', 1.0)
+    num_epochs = int(config.get('num_epochs', 100))
+    rho = float(config.get('rho', 1.0))
+    lip = float(config.get('lip', 1.0))
     tol_abs = float(config.get('tol_abs', 1e-6))
     tol_rel = float(config.get('tol_rel', 1e-4))
     backend = str(config.get('backend', 'nccl'))
