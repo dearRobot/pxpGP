@@ -50,22 +50,6 @@ def normalize_data(train_x, train_y):
 
 
 
-def create_augmented_dataset(local_x, local_y, comm_x, comm_y):
-    """
-    Create augmented dataset using local dataset and communication dataset
-    Args:
-        local_x: Local training input data.
-        local_y: Local training output data.
-        comm_x: Local communication training input data.
-        comm_y: Local communication training output data.
-    Returns:
-        augmented_x : Augmented training input data.
-        augmented_y : Augmented training output data.
-    """
-
-
-
-
 def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
                                  partition_criteria: str='random'):
     """
@@ -146,7 +130,6 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     """
 
     # Stage 1: Train local model on local dataset without consensus    
-    # Intialize distributed training
     world_size, rank = init_distributed_mode(backend=backend)
 
     # move data to device
@@ -201,10 +184,6 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
         
     mll_aug = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood_aug, model_aug)
 
-    # # Clear previous model and data from device to free memory
-    # del model, likelihood, mll, train_x, train_y
-    # torch.cuda.empty_cache()
-
     model_aug = model_aug.to(device)
     likelihood_aug = likelihood_aug.to(device)
     mll_aug = mll_aug.to(device)
@@ -237,7 +216,6 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
             if rank == 0:
                 print("Converged at epoch {}".format(epoch + 1))
             break
-    
     
     dist.destroy_process_group()
     return model_aug, likelihood_aug, aug_x, aug_y
@@ -292,7 +270,7 @@ if __name__ == "__main__":
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12345'
 
-     # train the model
+    # train the model
     model, likelihood, aug_x, aug_y = train_model(model, likelihood, local_x, local_y, num_epochs=num_epochs,
                                     rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel, backend=backend)
     

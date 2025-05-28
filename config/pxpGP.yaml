@@ -1,9 +1,9 @@
 # training configuration for gapxGP
 
 num_samples: 1000
-num_epochs: 100
-rho: 0.8
-lip: 1.0 # Lipschitz constant
+num_epochs: 200
+rho: 0.9
+lip: 1.1 # Lipschitz constant
 tol_abs: 1e-5
 tol_rel: 1e-3
 backend: 'gloo'
