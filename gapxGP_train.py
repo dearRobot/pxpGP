@@ -92,16 +92,17 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     # create local communication dataset
     torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
     
+    dataset_size = min(dataset_size, local_x.size(0))  
     sample_indices = torch.randperm(local_x.size(0))[:dataset_size]
     local_comm_x = local_x[sample_indices]
     local_comm_y = local_y[sample_indices]
-
+    
     # communicate local communication dataset to central node rank 0
-    sample_x_list = [torch.zeros_like(local_comm_x) for _ in range(world_size)]
-    sample_y_list = [torch.zeros_like(local_comm_x) for _ in range(world_size)]
+    sample_x_list = [torch.empty_like(local_comm_x) for _ in range(world_size)]
+    sample_y_list = [torch.empty_like(local_comm_y) for _ in range(world_size)]
 
     dist.gather(local_comm_x, gather_list=sample_x_list if rank == 0 else None, dst=0)
-    dist.gather(local_comm_x, gather_list=sample_y_list if rank == 0 else None, dst=0)
+    dist.gather(local_comm_y, gather_list=sample_y_list if rank == 0 else None, dst=0)
 
     # form communication dataset at rank 0 central node
     if rank == 0:
@@ -110,6 +111,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     else:
         comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=local_x.device)
         comm_y = torch.zeros(dataset_size * world_size, dtype=local_y.dtype, device=local_y.device)
+
 
     # broadcast the communication dataset to all agents from rank 0
     dist.broadcast(comm_x, src=0)
@@ -147,16 +149,14 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     # Intialize distributed training
     world_size, rank = init_distributed_mode(backend=backend)
 
-    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-
     # move data to device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device) 
     likelihood = likelihood.to(device)
-    mll = mll.to(device)
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
+    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
                        rank=rank, world_size=world_size)
 
@@ -182,6 +182,10 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
                 print("Converged at epoch {}".format(epoch + 1))
             break
 
+    # Clear gradients and optimizer state
+    optimizer.zero_grad(set_to_none=True)
+    torch.cuda.empty_cache()
+    
     # generate augmented dataset
     aug_x, aug_y = create_augmented_dataset(train_x, train_y, world_size, rank, dataset_size=50)
     
@@ -217,7 +221,8 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
             output_aug = model_aug(aug_x)
             loss_aug = -mll_aug(output_aug, aug_y)
             loss_aug.backward() 
-            grad_aug = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model_aug.parameters()])
+            grad_aug = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() 
+                                  for p in model_aug.parameters()])
         return loss_aug, grad_aug
     
     model_aug.train()
