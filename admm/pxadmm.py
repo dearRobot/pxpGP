@@ -106,9 +106,18 @@ class pxADMM(Optimizer):
     def step(self, closure=None, consensus: bool=False):
         """
         Performs a single optimization step.
-        lip : Lipschitz constant of the gradient of the loss function
+        This step includes:
+        - updating local primal variables using proximal linearized gradient,
+        - computing consensus over z using all-reduce (if enabled),
+        - updating dual variables (lambda),
+        - checking for convergence based on residuals.
+
         Args:
-            closure: A closure that reevaluates the model and returns the loss.
+            closure (callable): A closure that reevaluates the model and returns (loss, gradient).
+            consensus (bool): Whether to synchronize consensus variable z across processes.
+
+        Returns:
+            bool: True if converged based on stopping condition; otherwise, False.
         """
         if self.isConverged:
             return True
@@ -137,7 +146,6 @@ class pxADMM(Optimizer):
 
             if consensus:
                 # synchronize z across all processes
-                # print(f"Rank {self.rank}: z_new before all_reduce: {z_new}")
                 dist.all_reduce(z_new, op=dist.ReduceOp.SUM)
                 z_new /= self.world_size 
 
@@ -208,8 +216,15 @@ def pxadmm(params, **kwargs):
     """
     Create a pxADMM optimizer.
     Args:
-        params: Parameters to optimize.
-        kwargs: Additional arguments for pxADMM.
+        params (iterable): Iterable of model parameters to optimize.
+        **kwargs: Additional arguments passed to the pxADMM constructor, such as:
+            - rho (float): Augmented Lagrangian parameter.
+            - lip (float): Lipschitz constant.
+            - rank (int): Process rank.
+            - world_size (int): Total number of distributed processes.
+
+    Returns:
+        pxADMM: An instance of the pxADMM optimizer.
     """
     return pxADMM(params, **kwargs)
 
@@ -217,8 +232,15 @@ def px_admm(params, **kwargs):
     """
     Create a pxADMM optimizer.
     Args:
-        params: Parameters to optimize.
-        kwargs: Additional arguments for pxADMM.
+        params (iterable): Iterable of model parameters to optimize.
+        **kwargs: Additional arguments passed to the pxADMM constructor, such as:
+            - rho (float): Augmented Lagrangian parameter.
+            - lip (float): Lipschitz constant.
+            - rank (int): Process rank.
+            - world_size (int): Total number of distributed processes.
+
+    Returns:
+        pxADMM: An instance of the pxADMM optimizer.
     """
     return pxADMM(params, **kwargs)
 

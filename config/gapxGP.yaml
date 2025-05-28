@@ -1,6 +1,6 @@
 # training configuration for gapxGP
 
-num_epochs: 101
+num_epochs: 100
 rho: 0.8
 lip: 1.0 # Lipschitz constant
 tol_abs: 1e-5
