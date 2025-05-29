@@ -35,7 +35,7 @@ class cADMM(Optimizer):
         if not dist.is_available():
             raise RuntimeError("Distributed package is not available. Please install torch with distributed support.")
         
-        print("cADMM optimizer initialized with rho: {}, max_iter: {}, lr: {}".format(rho, max_iter, lr))
+        # print("cADMM optimizer initialized with rho: {}, max_iter: {}, lr: {}".format(rho, max_iter, lr))
         
         if rho <= 0.0:
             raise ValueError("rho must be positive and greater than 0.0")
@@ -84,7 +84,6 @@ class cADMM(Optimizer):
                 lambda_ = self.state[param]['lambda']
 
                 # Step 1: update x i.e. the primal variable or model param
-                # param_old = param.clone().detach() # might be not needed
                 optimizer_ = torch.optim.SGD([param], lr=lr)
 
                 for _ in range(max_iter):
@@ -95,8 +94,6 @@ class cADMM(Optimizer):
                     total_loss.backward()
                     optimizer_.step()
 
-                # if self.rank == 0:
-                    # print("Rank {}: loss: {}".format(self.rank, total_loss.item()))
                 
                 # Step 2: update z i.e. the auxilary variable
                 # closed form solution for z in GP in general it is also an argmin problem

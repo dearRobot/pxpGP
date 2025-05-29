@@ -1,0 +1,9 @@
+# training configuration for cGP
+
+num_samples: 1000
+input_dim: 1
+num_epochs: 50
+rho: 0.8
+lr: 0.005 # learning rate for x update step 
+max_iter: 10
+backend: 'gloo'

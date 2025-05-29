@@ -1,5 +1,5 @@
-from .utils import generateTrainingData, loadYAMLConfig
+from .utils import generate_training_data, load_yaml_config
 from .results import plot_result, plot_pxpGP_result
 
-__all__ = ['generateTrainingData', 'loadYAMLConfig']
+__all__ = ['generate_training_data', 'load_yaml_config']
 __all__ += ['plot_result', 'plot_pxpGP_result']

@@ -5,7 +5,7 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
 
-from utils import generateTrainingData, loadYAMLConfig
+from utils import generate_training_data, load_yaml_config
 from utils.results import plot_result
 
 import warnings
@@ -73,15 +73,16 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     if world_size <= 0:
         raise ValueError("World size must be greater than 0.")
     
-    # create local communication dataset
+    # Step 1: create local communication dataset
     torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
     
-    dataset_size = min(dataset_size, local_x.size(0))  
+    dataset_size = int(local_x.size(0) / world_size)
+    # dataset_size = min(dataset_size, local_x.size(0))  
     sample_indices = torch.randperm(local_x.size(0))[:dataset_size]
     local_comm_x = local_x[sample_indices]
     local_comm_y = local_y[sample_indices]
     
-    # communicate local communication dataset to central node rank 0
+    # Step 2: communicate local communication dataset to central node rank 0
     sample_x_list = [torch.empty_like(local_comm_x) for _ in range(world_size)]
     sample_y_list = [torch.empty_like(local_comm_y) for _ in range(world_size)]
 
@@ -105,12 +106,12 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     aug_x = torch.cat([local_x, comm_x], dim=0)
     aug_y = torch.cat([local_y, comm_y], dim=0)
 
-    print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
+    # print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
     
     return aug_x, aug_y
 
 
-def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: float=0.8, 
+def train_model(model, likelihood, train_x, train_y, device, num_epochs: int=100, rho: float=0.8, 
                             lip: float=1.0, tol_abs: float=1e-6, tol_rel: float=1e-4, backend='nccl'):
     """
     Train the model using pxADMM optimizer
@@ -133,64 +134,63 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     world_size, rank = init_distributed_mode(backend=backend)
 
     # move data to device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device) 
-    likelihood = likelihood.to(device)
-    train_x = train_x.to(device)
-    train_y = train_y.to(device)
+    # model = model.to(device) 
+    # likelihood = likelihood.to(device)
+    # train_x = train_x.to(device)
+    # train_y = train_y.to(device)
 
-    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
-                       rank=rank, world_size=world_size)
+    # mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+    # optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
+    #                    rank=rank, world_size=world_size)
 
-    def closure():
-        optimizer.zero_grad()
-        with gpytorch.settings.min_preconditioning_size(0.005):
-            output = model(train_x)
-            loss = -mll(output, train_y)
-            loss.backward() 
-            grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model.parameters()])
-        return loss, grad 
+    # def closure():
+    #     optimizer.zero_grad()
+    #     with gpytorch.settings.min_preconditioning_size(0.005):
+    #         output = model(train_x)
+    #         loss = -mll(output, train_y)
+    #         loss.backward() 
+    #         grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model.parameters()])
+    #     return loss, grad 
     
-    model.train()
-    likelihood.train()
+    # model.train()
+    # likelihood.train()
 
-    for epoch in range(num_epochs):
-        converged_ = optimizer.step(closure, consensus=False)
-        if rank == 0:
-            print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure()[0].item()}") 
+    # for epoch in range(num_epochs):
+    #     converged_ = optimizer.step(closure, consensus=False)
+    #     if rank == 0 and (epoch + 1) % 10 == 0:
+    #         print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure()[0].item()}") 
         
-        if converged_:
-            if rank == 0:
-                print("Converged at epoch {}".format(epoch + 1))
-            break
+    #     if converged_:
+    #         if rank == 0:
+    #             print("Converged at epoch {}".format(epoch + 1))
+    #         break
 
-    # Clear gradients and optimizer state
-    optimizer.zero_grad(set_to_none=True)
-    torch.cuda.empty_cache()
+    # # Clear gradients and optimizer state
+    # optimizer.zero_grad(set_to_none=True)
+    # torch.cuda.empty_cache()
     
     # generate augmented dataset
     aug_x, aug_y = create_augmented_dataset(train_x, train_y, world_size, rank, dataset_size=50)
     
+    
+    print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
+   
     # Stage 2: Train on augmented dataset with warm start
     likelihood_aug = gpytorch.likelihoods.GaussianLikelihood() 
     model_aug = ExactGPModel(aug_x, aug_y, likelihood_aug)
 
     # warm start
-    model_aug.mean_module.constant.data = model.mean_module.constant.data.clone()
-    model_aug.covar_module.base_kernel.lengthscale.data = model.covar_module.base_kernel.lengthscale.data.clone()
-    model_aug.covar_module.outputscale.data = model.covar_module.outputscale.data.clone()
-    likelihood_aug.noise.data = likelihood.noise.data.clone()
-        
-    mll_aug = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood_aug, model_aug)
+    # model_aug.mean_module.constant.data = model.mean_module.constant.data.clone()
+    # model_aug.covar_module.base_kernel.lengthscale.data = model.covar_module.base_kernel.lengthscale.data.clone()
+    # model_aug.covar_module.outputscale.data = model.covar_module.outputscale.data.clone()
+    # likelihood_aug.noise.data = likelihood.noise.data.clone()     
 
     model_aug = model_aug.to(device)
     likelihood_aug = likelihood_aug.to(device)
-    mll_aug = mll_aug.to(device)
     aug_x = aug_x.to(device)
     aug_y = aug_y.to(device)
 
-    # warm start the pxADMM optimizer with the previous local trained model parameters
+    mll_aug = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood_aug, model_aug)
     optimizer_aug = pxadmm(model_aug.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
                            rank=rank, world_size=world_size)
     
@@ -209,7 +209,8 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
 
     for epoch in range(num_epochs):
         converged_aug = optimizer_aug.step(closure_aug, consensus=True)
-        if rank == 0:
+        
+        if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure_aug()[0].item()}") 
         
         if converged_aug:
@@ -217,20 +218,27 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
                 print("Converged at epoch {}".format(epoch + 1))
             break
     
+    torch.cuda.empty_cache() 
+    
     dist.destroy_process_group()
     return model_aug, likelihood_aug, aug_x, aug_y
 
-def test_model(model, likelihood, test_x):
+
+def test_model(model, likelihood, test_x, device):
     """
     Test the model using pxADMM optimizer
     Args:
         model: The GP model to test.
         likelihood: The likelihood function.
         test_x: Testing input data.
+        device: Device to run the model on (CPU or GPU).
+    Returns:
+        mean: Predicted mean of the test data.
+        lower: Lower bound of the confidence interval.
+        upper: Upper bound of the confidence interval.
     """
     model.eval()
     likelihood.eval()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         test_x = test_x.to(device)
@@ -246,11 +254,14 @@ if __name__ == "__main__":
       
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/gapxGP.yaml'
-    config = loadYAMLConfig(config_path)
+    config = load_yaml_config(config_path)
 
+    num_samples = int(config.get('num_samples', 1000))
+    input_dim = int(config.get('input_dim', 1))
     num_epochs = int(config.get('num_epochs', 100))
     rho = float(config.get('rho', 1.0))
     lip = float(config.get('lip', 1.0))
@@ -259,8 +270,8 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
 
     # generate local training data
-    local_x, local_y = generateTrainingData(num_samples=1000, input_dim=1, rank=rank, 
-                                                world_size=world_size)
+    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
+                                                world_size=world_size, partition='sequential')
 
     # create the local model and likelihood
     likelihood = gpytorch.likelihoods.GaussianLikelihood()  
@@ -271,12 +282,13 @@ if __name__ == "__main__":
     os.environ['MASTER_PORT'] = '12345'
 
     # train the model
-    model, likelihood, aug_x, aug_y = train_model(model, likelihood, local_x, local_y, num_epochs=num_epochs,
-                                    rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel, backend=backend)
+    model, likelihood, aug_x, aug_y = train_model(model, likelihood, local_x, local_y, device, 
+                                    num_epochs=num_epochs, rho=rho, lip=lip, tol_abs=tol_abs, 
+                                    tol_rel=tol_rel, backend=backend)
     
     # test the model
     test_x = torch.linspace(0, 1, 1000)
-    mean, lower, upper = test_model(model, likelihood, test_x)
+    mean, lower, upper = test_model(model, likelihood, test_x, device)
 
     # plot the results
     # plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)

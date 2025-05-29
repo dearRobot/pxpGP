@@ -6,9 +6,10 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
 
+from utils import load_yaml_config, generate_training_data
+
 import warnings
 warnings.filterwarnings("ignore", message="Unable to import Axes3D")
-
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -47,29 +48,42 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     return world_size, rank
 
 
-def train_model(model, likelihood, train_x, train_y, num_epochs=10, backend='nccl'):
+def train_model(model, likelihood, train_x, train_y, device, num_epochs: int=100, rho: float=0.8, 
+                lr: float=0.01, max_iter: int=100, backend='nccl'):
+    """
+    Train the Gaussian Process model using ADMM optimization.
+    Args:
+        model: The Gaussian Process model to train.
+        likelihood: The likelihood function for the model.
+        train_x: Training input data.
+        train_y: Training output data.
+        num_epochs: Number of training epochs.
+        rho: ADMM parameter for convergence.
+        lip: Lipschitz constant for the kernel function.
+        tol_abs: Absolute tolerance for convergence.
+        tol_rel: Relative tolerance for convergence.
+        backend: Distributed backend to use ('nccl', 'gloo', etc.).
+    Returns:
+        model: The trained Gaussian Process model.
+        likelihood: The likelihood function for the model.
+    """
+    
     # Initialize distributed training
     world_size, rank = init_distributed_mode(backend=backend)
     
     # move data to device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device) 
     likelihood = likelihood.to(device)
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
-    # # split dataset 
-    # dataset = TensorDataset(train_x, train_y)
-    # sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank)
-    # train_loader = DataLoader(dataset, batch_size=1, sampler=sampler)
-
-    # optimizer
-    optimizer = cadmm(model.parameters(), lr=0.005, max_iter=10, rho=0.85, rank=rank, world_size=world_size)
+    mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
+    optimizer = cadmm(model.parameters(), lr=lr, max_iter=max_iter, rho=rho, rank=rank, world_size=world_size)
 
     def closure():
         optimizer.zero_grad()
         output = model(train_x)
-        loss = -model.likelihood(output).log_prob(train_y)
+        loss = -mll(output, train_y)
         return loss, output
     
     model.train()
@@ -77,91 +91,32 @@ def train_model(model, likelihood, train_x, train_y, num_epochs=10, backend='ncc
 
     for epoch in range(num_epochs):
         optimizer.step(closure)
-        print(f"Epoch {epoch+1}/{num_epochs} Loss: {closure()[0].item()}")  
 
+        if rank == 0 and (epoch + 1) % 10 == 0:
+            print(f"Epoch {epoch+1}/{num_epochs} Loss: {closure()[0].item()}")  
 
-    # verification of model hyperparameters
-    lengthscale = model.covar_module.base_kernel.lengthscale.detach().cpu()
-    outputscale = model.covar_module.outputscale.detach().cpu()
-    noise = model.likelihood.noise.detach().cpu()
+    optimizer.zero_grad(set_to_none=True)
+    torch.cuda.empty_cache() 
 
-    print(f"Rank {rank}: Lengthscale: {lengthscale}, Outputscale: {outputscale}, Noise: {noise}")
-
-    # compute local inverse covariance matrix
-    # with torch.no_grad():
-    #     model.eval()
-    #     likelihood.eval()
-    #     local_covar = model.covar_module(train_x).evaluate()
-    #     local_covar += (likelihood.noise) * torch.eye(local_covar.size(0), device=device) # K + \sigma^2I
-    #     local_covar_inv = torch.inverse(local_covar).contiguous() # K^{-1}
-
-    # print("Rank {}: local_covar_inv size: {}".format(rank, local_covar_inv.size()))
-    
-    # PyTorch’s distributed communication functions (dist.send, dist.recv, dist.all_gather) require tensors to be contiguous
-    
-    # synchronize x parameter why? each agent updates its local x (model parameters) independently, but 
-    # z (auxiliary variable) is synchronized. Averaging x ensures the global model uses a consensus set 
-    # of parameters, aligning the kernel function across agents.
-    # optimizer.synchronize_parameters()
-    
-    # gather local inverse covariance matrix sizes
-    # local_covar_inv_size = torch.tensor(local_covar_inv.size(0), device=device)
-    # all_covar_inv_sizes = [torch.tensor(0, device=device) for _ in range(world_size)] # list of tensors to store the sizes from all agents.
-    # dist.all_gather(all_covar_inv_sizes, local_covar_inv_size)
-
-    # dist.barrier()  # Synchronize before send/receive
-    
-    # # form global covariance matrix 
-    # total_size = sum(size.item() for size in all_covar_inv_sizes)
-    # global_covar_inv = torch.zeros(total_size, total_size, device=device)
-
-    # if rank == 0:
-    #     # Collects the local inverted covariance matrices
-    #     offset = 0
-    #     for i, size in enumerate(all_covar_inv_sizes):
-    #         size = size.item()
-    #         print("Rank {}: local_covar_inv size: {}".format(i, size))
-    #         if i == 0: # for rank 0
-    #             global_covar_inv[offset:offset+size, offset:offset+size] = local_covar_inv
-    #         else:
-    #             temp = torch.zeros(size, size, device=device)
-    #             print("Rank {}: temp size: {}".format(i, temp.size()))
-                
-    #             # dist.recv(temp, src=i)
-    #             req = dist.irecv(temp, src=i)
-    #             req.wait()  # Wait for receive to complete
-                
-    #             print("Rank {}: temp size after recv: {}".format(i, temp.size()))
-    #             global_covar_inv[offset:offset+size, offset:offset+size] = temp
-    #         offset += size
-    # else:
-    #     # send local inverted covariance matrix to rank 0
-    #     print(f"Rank {rank}: Sending local_covar_inv size {local_covar_inv.size()} to rank 0")
-    #     req = dist.isend(local_covar_inv, dst=0)
-    #     req.wait()  # Wait for send to complete
-    #     # dist.send(local_covar_inv, dst=0)
-    #     print(f"Rank {rank}: Completed sending local_covar_inv to rank 0")
-        
-    # dist.barrier() # synchronize all processes. Ensures all processes wait until the global model is created before returning. 
-
-    # global covariance matrix = block diagonal matrix(local covariance matrices)
-    # gather local training data, not required for now centralized training but useful for decentralized and pseudo-distributed training
-    # local_x_size = torch.tensor(local_x.size(0), device=device)
-    # all_x_sizes = [torch.tensor(0, device=device) for _ in range(world_size)]
-    # dist.all_gather(all_x_sizes, local_x_size)
-
-    # if rank == 0:
-    #     print("Global covariance matrix size:", global_covar_inv.size())
-    #     print("Global covariance matrix:", global_covar_inv)
-    
     dist.destroy_process_group()
     return model, likelihood
 
-def test_model(model, likelihood, test_x):
+
+def test_model(model, likelihood, test_x, device):
+    """
+    Test the model using pxADMM optimizer
+    Args:
+        model: The GP model to test.
+        likelihood: The likelihood function.
+        test_x: Testing input data.
+        device: Device to run the model on (CPU or GPU).
+    Returns:
+        mean: Predicted mean of the test data.
+        lower: Lower bound of the confidence interval.
+        upper: Upper bound of the confidence interval.
+    """
     model.eval()
     likelihood.eval()
-    # mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         test_x = test_x.to(device)
@@ -170,6 +125,7 @@ def test_model(model, likelihood, test_x):
         lower, upper = observed_pred.confidence_region()
 
     return mean, lower, upper
+
 
 def plot_results(train_x, train_y, test_x, mean, lower, upper):
     plt.figure(figsize=(12, 6))
@@ -185,27 +141,24 @@ if __name__ == "__main__":
       
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # 1D Data
-    train_x = torch.linspace(0, 1, 1000)
-    train_y = torch.sin(train_x * (2 * torch.pi)) + torch.randn(train_x.size()) * 0.2
+    # load yaml configuration
+    config_path = 'config/cGP.yaml'
+    config = load_yaml_config(config_path)
+    
+    num_samples = int(config.get('num_samples', 1000))
+    input_dim = int(config.get('input_dim', 1))
+    num_epochs = int(config.get('num_epochs', 100))
+    rho = float(config.get('rho', 1.0))
+    lr = float(config.get('lr', 0.001))
+    max_iter = int(config.get('max_iter', 100))
+    backend = str(config.get('backend', 'nccl'))
+    
+    # generate local training data
+    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
+                                                world_size=world_size, partition='random')
 
-    if rank == 0:
-        print("Starting training...")
-        print("global train_x shape:", train_x.shape)
-        print("global train_y shape:", train_y.shape)
-
-    # divide dataset into m parts based on world size and rank
-    torch.manual_seed(42) 
-    local_indices = torch.randperm(train_x.size(0))
-    split_indices = torch.chunk(local_indices, world_size)
-    local_indices = split_indices[rank]
-    local_x = train_x[local_indices]
-    local_y = train_y[local_indices]
-
-    if rank == 0:
-        print("local_x shape:", local_x.shape)
-        print("local_y shape:", local_y.shape)
 
     # Create the local model and likelihood    
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
@@ -216,24 +169,16 @@ if __name__ == "__main__":
     os.environ['MASTER_PORT'] = '12345'
 
     # Train the local model
-    model, likelihood = train_model(model, likelihood, local_x, local_y, num_epochs=5, backend='gloo')
-
+    model, likelihood = train_model(model, likelihood, local_x, local_y, device, num_epochs=num_epochs, 
+                                    rho=rho, lr=lr, max_iter=max_iter, backend=backend)
+    
+    
     # Test the model
     test_x = torch.linspace(0, 1, 51)
-    mean, lower, upper = test_model(model, likelihood, test_x)
+    mean, lower, upper = test_model(model, likelihood, test_x, device)
 
     # Plot the local results
     plot_results(local_x, local_y, test_x, mean, lower, upper)
 
-
-
-# Rank 0: Lengthscale: tensor([[0.3729]]), Outputscale: 2.439328193664551, Noise: tensor([0.1141])
-
-# Rank 0: Lengthscale: tensor([[0.3437]]), Outputscale: 2.160946846008301, Noise: tensor([0.0390])
-# Rank 1: Lengthscale: tensor([[0.3378]]), Outputscale: 2.20019268989563, Noise: tensor([0.0398])
-
-# Rank 2: Lengthscale: tensor([[0.3260]]), Outputscale: 1.8940331935882568, Noise: tensor([0.0392])
-# Rank 1: Lengthscale: tensor([[0.3166]]), Outputscale: 1.8676905632019043, Noise: tensor([0.0400])
-# Rank 0: Lengthscale: tensor([[0.3379]]), Outputscale: 1.8880828619003296, Noise: tensor([0.0389])
 
 
