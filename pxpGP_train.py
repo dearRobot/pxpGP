@@ -53,30 +53,20 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     return world_size, rank
 
 
-def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
-                                num_epochs: int = 100, partition_criteria: str='random'):
+def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, rank: int=0, num_epochs: int=100):
     """
-    Create augmented dataset (D_c+) = local dataset (D_i) + global communication dataset (D_c)
+    Create local pseudo dataset (D_i) = local dataset (D_i)
     Args:
         local_x: Local training input data. (D_i)
         local_y: Local training output data. (D_i)
-        world_size: Number of processes.
+        device: Device to use for training (e.g., 'cuda' or 'cpu').
+        dataset_size: Size of the pseudo dataset to create.
         rank: Current process rank.
-        dataset_size: Size of the communication dataset to create.
-        partition_criteria: Criteria for partitioning the dataset (default: 'random').
+        num_epochs: Number of training epochs for the local sparse GP model.
     Returns:
-        aug_x : Augmented training input data. (D_c)
-        aug_y : Augmented training output data. (D_c)
+        local_pseudo_x : Local pseudo training input data. (D_i)
+        local_pseudo_y : Local pseudo training output data. (D_i)
     """
-        
-    if not isinstance(rank, int) or rank < 0:
-        raise ValueError("Rank must be a non-negative integer.")
-    if not isinstance(dataset_size, int) or dataset_size <= 0:
-        raise ValueError("Dataset size must be a positive integer.")
-    if world_size <= 0:
-        raise ValueError("World size must be greater than 0.")
-    
-    # Step 1: create local pseudo dataset
     torch.manual_seed(rank + 42)  
     
     dataset_size = min(dataset_size, int(local_x.size(0)/world_size))  
@@ -85,20 +75,17 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     local_pseudo_x = local_x[sample_indices]
     
     model_sparse = SparseGPModel(local_pseudo_x)
-    likelihood_sparse = gpytorch.likelihoods.GaussianLikelihood()    
-    
+    likelihood_sparse = gpytorch.likelihoods.GaussianLikelihood() 
+
     # move data to device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_sparse = model_sparse.to(device)
     likelihood_sparse = likelihood_sparse.to(device)
-    local_x = local_x.to(device)
-    local_y = local_y.to(device)
     local_pseudo_x = local_pseudo_x.to(device)
 
     mll_sparse = gpytorch.mlls.VariationalELBO(likelihood_sparse, model_sparse, num_data=local_x.size(0))
         
     optimizer_sparse = torch.optim.Adam(model_sparse.parameters(), lr=0.03)
-    
+
     # optimizer_sparse = pxadmm(model_sparse.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
     #                            rank=rank, world_size=world_size)
     
@@ -128,7 +115,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
 
     local_pseudo_x = model_sparse.variational_strategy.inducing_points.detach().clone()
     local_pseudo_x = local_pseudo_x.squeeze(-1) 
-    
+
     # clear gradients
     optimizer_sparse.zero_grad(set_to_none=True)
     torch.cuda.empty_cache()
@@ -137,14 +124,42 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     model_sparse.eval()
     likelihood_sparse.eval()
 
-    local_pseudo_y, _, _ = test_model(model_sparse, likelihood_sparse, local_pseudo_x)
+    local_pseudo_y, _, _ = test_model(model_sparse, likelihood_sparse, local_pseudo_x)    
+   
+    return local_pseudo_x, local_pseudo_y, model_sparse, likelihood_sparse
+
+
+
+def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
+                                num_epochs: int = 100, partition_criteria: str='random'):
+    """
+    Create augmented dataset (D_c+) = local dataset (D_i) + global communication dataset (D_c)
+    Args:
+        local_x: Local training input data. (D_i)
+        local_y: Local training output data. (D_i)
+        world_size: Number of processes.
+        rank: Current process rank.
+        dataset_size: Size of the communication dataset to create.
+        partition_criteria: Criteria for partitioning the dataset (default: 'random').
+    Returns:
+        aug_x : Augmented training input data. (D_c)
+        aug_y : Augmented training output data. (D_c)
+    """
+        
+    if not isinstance(rank, int) or rank < 0:
+        raise ValueError("Rank must be a non-negative integer.")
+    if not isinstance(dataset_size, int) or dataset_size <= 0:
+        raise ValueError("Dataset size must be a positive integer.")
+    if world_size <= 0:
+        raise ValueError("World size must be greater than 0.")
     
+    # Step 1: create local pseudo dataset    
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    local_x = local_x.to(device)
+    local_y = local_y.to(device)
     
-    # print(f"Rank {rank} - Local pseudo dataset x shape: {local_pseudo_x.shape}")
-    # print(f"Rank {rank} - Local pseudo dataset y shape: {local_pseudo_y.shape}")
-    
-    # print(f"Rank {rank} - Local pseudo dataset x: {local_pseudo_x}")
-    # print(f"Rank {rank} - Local pseudo dataset y: {local_pseudo_y}")
+    local_pseudo_x, local_pseudo_y, model_sparse, likelihood_sparse = create_local_pseudo_dataset(local_x, local_y,
+                            device=device, dataset_size=dataset_size, rank=rank, num_epochs=num_epochs)
     
     
     # Step 2: gather local pseudo dataset from all processes and create global pseudo dataset
@@ -158,21 +173,39 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
         comm_x = torch.cat(sample_x_list, dim=0)
         comm_y = torch.cat(sample_y_list, dim=0)
     else:
-        comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=local_x.device)
-        comm_y = torch.zeros(dataset_size * world_size, dtype=local_y.dtype, device=local_y.device)
+        comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=device)
+        comm_y = torch.zeros(dataset_size * world_size, dtype=local_y.dtype, device=device)
 
     # broadcast the communication dataset to all agents from rank 0
     dist.broadcast(comm_x, src=0)
     dist.broadcast(comm_y, src=0)
-
-    # print(f"Rank {rank} - Communication dataset x: {comm_x}")
-    # print(f"Rank {rank} - Communication dataset y: {comm_y}")
     
     # create augmented dataset
     pseudo_x = torch.cat([local_x, comm_x], dim=0)
     pseudo_y = torch.cat([local_y, comm_y], dim=0)
+
+    # Step 3: Share the local model hyperparameters with the central node (rank 0) to form average
+    local_hyperparams = torch.tensor([model_sparse.mean_module.constant.item(),
+                                    model_sparse.covar_module.base_kernel.lengthscale.item(),
+                                    model_sparse.covar_module.outputscale.item()], dtype=torch.float32, device=device)
+
+    hyperparams_list = [torch.empty_like(local_hyperparams) for _ in range(world_size)] 
+    dist.gather(local_hyperparams, gather_list=hyperparams_list if rank == 0 else None, dst=0)
+
+    if rank == 0:   
+        hyperparam_stack = torch.stack(hyperparams_list)
+        avg_hyperparams_ = hyperparam_stack.mean(dim=0)
+    else:
+        avg_hyperparams_ = torch.zeros_like(local_hyperparams, dtype=torch.float32, device=device)
+
+    dist.broadcast(avg_hyperparams_, src=0)
+
+    avg_hyperparams = {'mean_constant': avg_hyperparams_[0].item(),
+                        'lengthscale': avg_hyperparams_[1].item(),
+                        'outputscale': avg_hyperparams_[2].item()}
     
-    return pseudo_x, pseudo_y, model_sparse, likelihood_sparse
+    torch.cuda.empty_cache()
+    return pseudo_x, pseudo_y, avg_hyperparams
 
 
 
@@ -200,9 +233,8 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     # Stage 1: Train local sparse GP model on local dataset and find optimal inducing points   
     world_size, rank = init_distributed_mode(backend=backend)
 
-    pseudo_x, pseudo_y, model_sparse, likelihood_sparse = create_augmented_dataset(train_x, train_y, 
-                            world_size=world_size, rank=rank, dataset_size=50, num_epochs=num_epochs, 
-                            partition_criteria='random')
+    pseudo_x, pseudo_y, avg_hyperparams = create_augmented_dataset(train_x, train_y, world_size=world_size,
+                            rank=rank, dataset_size=50, num_epochs=num_epochs, partition_criteria='random')
 
     
     # Stage 2: Train on augmented dataset with warm start
@@ -210,10 +242,9 @@ def train_model(model, likelihood, train_x, train_y, num_epochs: int=100, rho: f
     model = ExactGPModel(pseudo_x, pseudo_y, likelihood)
 
     # warm start
-    model.mean_module.constant.data = model_sparse.mean_module.constant.data.clone()
-    model.covar_module.base_kernel.lengthscale.data = model_sparse.covar_module.base_kernel.lengthscale.data.clone()
-    model.covar_module.outputscale.data = model_sparse.covar_module.outputscale.data.clone()
-    # likelihood = likelihood_sparse.noise.data.clone()
+    model.mean_module.constant.data = avg_hyperparams['mean_constant'] * torch.ones_like(model.mean_module.constant.data)
+    model.covar_module.base_kernel.lengthscale.data = avg_hyperparams['lengthscale'] * torch.ones_like(model.covar_module.base_kernel.lengthscale.data)
+    model.covar_module.outputscale.data = avg_hyperparams['outputscale'] * torch.ones_like(model.covar_module.outputscale.data)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
