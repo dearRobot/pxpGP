@@ -40,7 +40,7 @@ Run  cGP using c-ADMM optimization in multi-agent environment:
 torchrun --nproc_per_node=2 --master_addr=localhost --master_port=12345 gapxGP_train.py
 ```
 
-### gapxGP: (Centralized Pseudo Approximate Proximal GP) (*Proposed method)
+### pxpGP: (Centralized Pseudo Approximate Proximal GP) (*Proposed method)
 Run  cGP using c-ADMM optimization in multi-agent environment:
 
 ```
