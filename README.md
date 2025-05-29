@@ -5,6 +5,17 @@
 
 <!-- -------------------------------------------------------------------------------------- -->
 
+## Python virtual environment setup:
+
+```
+python3 -m venv gpenv
+source gpenv/bin/activate
+pip3 install -r gpenv_requirements.txt
+```
+
+
+<!-- -------------------------------------------------------------------------------------- -->
+
 ## Configuration parameters:
 
 All parameters related to GP models training is located inside `config` folder.
