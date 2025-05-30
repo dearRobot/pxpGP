@@ -10,4 +10,4 @@ tol_rel: 1e-3
 backend: 'gloo'
 
 # data augmentation
-aug_dataset_size: 100
+aug_dataset_size: 50
