@@ -8,6 +8,8 @@ import os
 from utils import generate_training_data, generate_test_data, load_yaml_config
 from utils.results import plot_pxpGP_result, plot_result
 
+from sklearn.cluster import KMeans
+
 import warnings
 warnings.filterwarnings("ignore", message="Unable to import Axes3D")
 
@@ -58,6 +60,7 @@ def inducing_penalty(inducing_x, x_min: float=0.0, x_max: float=1.0, margin=0.01
     return (below**2 + above**2).sum()
 
 
+
 def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, world_size: int=1, rank: int=0, num_epochs: int=100):
     """
     Create local pseudo dataset (D_i) = local dataset (D_i)
@@ -86,16 +89,32 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     x_min = local_x.min().item()
     x_max = local_x.max().item()
     
-    indices = torch.randperm(local_x.size(0))[:dataset_size]
-    local_pseudo_x = local_x[indices].unsqueeze(-1).to(device)  # unsqueeze to make it 2D
+    # indices = torch.randperm(local_x.size(0))[:dataset_size]
+    # local_pseudo_x = local_x[indices].unsqueeze(-1).to(device)  # unsqueeze to make it 2D
 
-# TODO: FIx this kemans clustering part
-    
+    # print(f"Rank {rank} - Local pseudo dataset is :{local_pseudo_x}")
+    # print(f"Rank {rank} - Local pseudo dataset size: {local_pseudo_x.size(0)}")
 
-    # from sklearn.cluster import KMeans
+    # normalize local_x before clustering and then denormalize the pseudo dataset
+    # x_mean, x_std = local_x.mean(), local_x.std()
+    # local_x_normalized = (local_x - x_mean) / (x_std + 1e-6)
+    # local_y_normalized = (local_y - local_y.mean()) / (local_y.std() + 1e-6)
 
-    # kmeans = KMeans(n_clusters=dataset_size)
-    # local_pseudo_x = torch.tensor(kmeans.fit(local_x.cpu().numpy()).cluster_centers_, dtype=torch.float32).to(device)
+
+    # check how noramalized the local_x is affectiing the results
+    kmeans = KMeans(n_clusters=dataset_size, random_state=rank + 42, n_init=10)
+    kmeans.fit(local_x.cpu().numpy().reshape(-1, 1))  # fit on CPU for KMeans
+    # kmeans.fit(local_x_normalized.cpu().numpy().reshape(-1, 1))  # fit on CPU for KMeans
+
+    local_pseudo_x = torch.tensor(kmeans.cluster_centers_, dtype=torch.float32, device=device)
+
+    # local_pseudo_x = local_pseudo_x * x_std + x_mean # denormalize the pseudo dataset
+
+    # print(f"Rank {rank} - Local pseudo dataset is :{local_pseudo_x}")
+    # print(f"Rank {rank} - Local pseudo dataset size: {local_pseudo_x.size(0)}")
+
+
+
 
     model_sparse = SparseGPModel(local_pseudo_x).to(device)
     likelihood_sparse = gpytorch.likelihoods.GaussianLikelihood().to(device)
@@ -103,7 +122,7 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
 
     optimizer_sparse = torch.optim.Adam( [{'params': model_sparse.parameters()},
                                         {'params': likelihood_sparse.parameters()}],
-                                        lr=0.01,             
+                                        lr=0.015,             
                                         betas=(0.9, 0.999),   # Default, but explicit for clarity
                                         eps=1e-8,             # Default
                                         weight_decay=1e-4,    # Add regularization
@@ -117,7 +136,7 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     train_dataset = TensorDataset(local_x, local_y)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-    num_epochs = 100
+    num_epochs = 200
     for epoch in range(num_epochs):
         for batch_x, batch_y in train_loader:
             batch_x = batch_x.to(device)  

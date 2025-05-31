@@ -34,9 +34,9 @@ def generate_training_data(num_samples, input_dim: int=1, rank: int=0, world_siz
     if input_dim == 1:
         # f (x) = 5 x^2 sin(12x) + (x^3 − 0.5) sin(3x − 0.5)+ 4 cos(2x) + noise,
         train_x = torch.linspace(0, 1, num_samples)
-        # train_y = 5 * train_x**2 * torch.sin(12*train_x) + (train_x**3 - 0.5) * torch.sin(3*train_x - 0.5) + 4 * torch.cos(2*train_x) + torch.randn(train_x.size()) * 0.2
+        train_y = 5 * train_x**2 * torch.sin(12*train_x) + (train_x**3 - 0.5) * torch.sin(3*train_x - 0.5) + 4 * torch.cos(2*train_x) + torch.randn(train_x.size()) * 0.2
 
-        train_y = torch.sin(train_x * (2 * torch.pi)) + torch.randn(train_x.size()) * 0.2
+        # train_y = torch.sin(train_x * (2 * torch.pi)) + torch.randn(train_x.size()) * 0.2
 
 
     elif input_dim == 2:
