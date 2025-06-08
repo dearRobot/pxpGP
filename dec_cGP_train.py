@@ -1,6 +1,6 @@
 from utils.graph import DecentralizedNetwork
 
-dec_graph = DecentralizedNetwork(num_nodes=4, graph_type='ring', dim=1, seed=42)
+dec_graph = DecentralizedNetwork(num_nodes=10, graph_type='degree', dim=1, degree=5, seed=42)
 
 print("Directed Graph nodes:", dec_graph.G_directed.nodes())
 print("Directed Graph edges:", dec_graph.G_directed.edges())

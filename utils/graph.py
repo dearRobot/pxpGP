@@ -2,20 +2,24 @@ import numpy as np
 import networkx as nx
 
 class DecentralizedNetwork:
-    def __init__(self, num_nodes: int=2, dim: int = 1, graph_type: str='ring', seed: int=42):
+    def __init__(self, num_nodes: int=2, dim: int = 1, graph_type: str='ring', seed: int=42, 
+                    p: float=0.3, degree: int=2):
         """
         Initialize a Graph object.
         
         Args:
             num_nodes (int): Number of nodes in the graph. (L)
             dim (int): Dimension of the data associated with each node. (N)
-            graph_type (str): Type of the graph ('ring' or 'complete').
+            graph_type (str): Type of the graph (ring, complete, line, random, degree).
             seed (int): Random seed for reproducibility.
+            p (float): Probability of edge creation for random graphs.
         """
         self.num_nodes = num_nodes
         self.graph_type = graph_type
         self.seed = seed
         self.dim = dim
+        self.p = p
+        self.degree = degree
 
         if num_nodes <= 0:
             raise ValueError("Number of nodes must be a positive integer.")
@@ -40,10 +44,27 @@ class DecentralizedNetwork:
 
         if self.graph_type == 'ring':
             G_undir = nx.cycle_graph(self.num_nodes)
+        
         elif self.graph_type == 'complete':
             G_undir = nx.complete_graph(self.num_nodes)
+        
         elif self.graph_type == 'line':
             G_undir = nx.path_graph(self.num_nodes)
+        
+        elif self.graph_type == 'random':
+            G_undir = nx.erdos_renyi_graph(self.num_nodes, self.p, seed=self.seed)
+        
+        elif self.graph_type == 'degree':
+            if self.degree >= self.num_nodes:
+                raise ValueError("Degree must be less than the number of nodes for degree-based graph generation.")
+            elif self.degree is None or self.degree < 2:
+                raise ValueError("Degree must be a positive integer greater than 1.")
+            
+            if self.degree == 2:
+                G_undir = nx.cycle_graph(self.num_nodes)
+            else:
+                G_undir = nx.random_regular_graph(self.degree, self.num_nodes, seed=self.seed)
+        
         else:
             raise ValueError("Unsupported graph type.")
         
