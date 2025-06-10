@@ -1,6 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import cast, Optional, Union
-
 import torch
 from torch import Tensor
 from torch.optim import Optimizer
@@ -14,8 +12,8 @@ class cADMM(Optimizer):
     def __init__(self, params, rho: float=1.0,
                                 max_iter: int=100,
                                 lr: float=1e-3, 
-                                rank: Optional[int]=0,
-                                world_size: Optional[int]=1):
+                                rank: int=0,
+                                world_size: int=1):
         """
         cADMM optimizer
         Here we distribute dataset, parallelize computation and co-ordinate z-update among agents

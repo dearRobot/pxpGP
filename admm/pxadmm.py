@@ -1,6 +1,4 @@
 # mypy: allow-untyped-defs
-from typing import cast, Optional, Union
-
 import torch
 from torch import Tensor
 from torch.optim import Optimizer
@@ -11,8 +9,8 @@ import torch.distributed as dist
 all__ = ["pxADMM", "pxadmm", "px_admm"]
 
 class pxADMM(Optimizer):
-    def __init__(self, params, rho: float=1.0, lip: float=1.0, rank: Optional[int]=0,
-                        world_size: Optional[int]=1, tol_abs: float=1e-6, tol_rel: float=1e-4):
+    def __init__(self, params, rho: float=1.0, lip: float=1.0, rank: int=0,
+                        world_size: int=1, tol_abs: float=1e-6, tol_rel: float=1e-4):
         """
         pxADMM optimizer
         Here we distribute dataset, parallelize computation and co-ordinate z-update among agents
