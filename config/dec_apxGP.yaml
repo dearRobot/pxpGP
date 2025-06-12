@@ -1,0 +1,10 @@
+num_samples: 1000
+input_dim: 1
+num_epochs: 30
+rho: 0.75
+lip: 1.0 # Lipschitz constant
+tol_abs: 1e-5
+tol_rel: 1e-3
+backend: 'gloo'
+
+graph_viz: False

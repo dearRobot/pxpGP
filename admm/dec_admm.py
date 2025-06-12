@@ -33,9 +33,7 @@ class decADMM(Optimizer):
         
         if not dist.is_available():
             raise RuntimeError("Distributed package is not available. Please install torch with distributed support.")
-        
-        # print("decADMM optimizer initialized with rho: {}, max_iter: {}, lr: {}".format(rho, max_iter, lr))
-        
+                
         if rho <= 0.0:
             raise ValueError("rho must be positive and greater than 0.0")
         if max_iter <= 0:
@@ -53,9 +51,7 @@ class decADMM(Optimizer):
             raise ValueError("At least one neighbor must be specified for each parameter.")
         
         
-        defaults = dict(rho=rho, 
-                        max_iter=max_iter,
-                        lr=lr)
+        defaults = dict(rho=rho, max_iter=max_iter, lr=lr)
         super(decADMM, self).__init__(params, defaults)
 
         self.rank = rank    
@@ -219,4 +215,4 @@ def dec_admm(param, **kwargs):
     Returns:
         decADMM optimizer instance.
     """
-    return decadmm(param, **kwargs)
+    return decADMM(param, **kwargs)

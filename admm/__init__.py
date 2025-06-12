@@ -2,6 +2,7 @@ from .admm import ADMM, admm
 from .cadmm import cADMM, cadmm, c_admm
 from .pxadmm import pxADMM, pxadmm, px_admm
 from .dec_admm import decADMM, decadmm, dec_admm
+from .dec_pxadmm import decpxADMM, decpxadmm, dec_pxadmm
 
 def admm(params, **kwargs):
     """
@@ -55,7 +56,21 @@ def dec_admm(params, **kwargs):
     """
     return decADMM(params, **kwargs)
 
+def dec_pxadmm(params, **kwargs):
+    """
+    Create a decpxADMM optimizer.
+    
+    Args:
+        params: Parameters to optimize.
+        kwargs: Additional arguments for the decpxADMM optimizer.
+        
+    Returns:
+        An instance of the decpxADMM optimizer.
+    """
+    return decpxADMM(params, **kwargs)
+
 __all__ = ["ADMM", "admm"]
 __all__ += ["cADMM", "cadmm", "c_admm"]
 __all__ += ["pxADMM", "pxadmm", "px_admm"]
 __all__ += ["decADMM", "decadmm", "dec_admm"]
+__all__ += ["decpxADMM", "decpxadmm", "dec_pxadmm"]

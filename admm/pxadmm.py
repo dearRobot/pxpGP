@@ -105,7 +105,7 @@ class pxADMM(Optimizer):
         """
         Performs a single optimization step.
         This step includes:
-        - updating local primal variables using proximal linearized gradient,
+        - updating local primal variables using proximal inexact (linearized) gradient,
         - computing consensus over z using all-reduce (if enabled),
         - updating dual variables (lambda),
         - checking for convergence based on residuals.
@@ -210,6 +210,7 @@ class pxADMM(Optimizer):
                 dist.all_reduce(param.data, op=dist.ReduceOp.SUM)
                 param.data /= self.world_size
 
+
 def pxadmm(params, **kwargs):
     """
     Create a pxADMM optimizer.
@@ -225,6 +226,7 @@ def pxadmm(params, **kwargs):
         pxADMM: An instance of the pxADMM optimizer.
     """
     return pxADMM(params, **kwargs)
+
 
 def px_admm(params, **kwargs):
     """

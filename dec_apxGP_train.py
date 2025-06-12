@@ -1,7 +1,7 @@
 import torch
 import gpytorch
 from matplotlib import pyplot as plt
-from admm import dec_admm
+from admm import dec_pxadmm
 import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
@@ -10,7 +10,6 @@ from datetime import timedelta
 from utils import load_yaml_config, generate_training_data
 from utils.graph import DecentralizedNetwork
 from utils.results import plot_result
-
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -57,6 +56,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, neighb
     world_size, rank = init_distributed_mode(backend=backend, master_addr=master_addr, 
                                               master_port=master_port)
     
+    
     # move data to device
     model = model.to(device) 
     likelihood = likelihood.to(device)
@@ -64,40 +64,32 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, neighb
     train_y = train_y.to(device)
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    optimizer = dec_admm(model.parameters(), neighbors=neighbors, rho=admm_params['rho'], 
-                            max_iter=admm_params['max_iter'], lr=admm_params['lr'], 
-                            rank=rank, world_size=world_size)
+    optimizer = dec_pxadmm(model.parameters(), neighbors=neighbors, rho=admm_params['rho'],
+                            lip=admm_params['lip'], rank=rank, world_size=world_size, 
+                            tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'])
+    
 
     def closure():
         optimizer.zero_grad()
-        output = model(train_x)
-        loss = -mll(output, train_y)
-        return loss, output  
+        with gpytorch.settings.min_preconditioning_size(0.005):
+            output = model(train_x)
+            loss = -mll(output, train_y)
+            loss.backward()
+            grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model.parameters()])
+        return loss, grad
     
     model.train()
     likelihood.train()
 
-    if rank == 0:
-        print(f"Starting training with {world_size} processes, using backend: {backend}")
-    
     for epoch in range(admm_params['num_epochs']):
         optimizer.step(closure)
         
-        if rank == 0:
-            print(f"Rank {rank} - Epoch {epoch+1}/{admm_params['num_epochs']} loss: {closure()[0].item()}")
-        
-        # if rank == 0 and (epoch + 1) % 10 == 0:
-        #     print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}")  
-      
-    
-    if rank == 0:
-        print("Training complete.")
-    
-    optimizer.zero_grad(set_to_none=True)
-    torch.cuda.empty_cache() 
+        if rank == 0 :
+            print(f"Epoch {epoch+1}/{admm_params['num_epochs']}, Loss: {closure()[0].item()}")
+
+        # convergence check
 
     dist.destroy_process_group()
-    
     return model, likelihood
 
 
@@ -112,6 +104,7 @@ def test_model(model, likelihood, test_x, device):
     Returns:
         Predictions and confidence intervals.
     """
+    
     model.eval()
     likelihood.eval()
 
@@ -124,13 +117,13 @@ def test_model(model, likelihood, test_x, device):
     return mean, lower, upper
 
 
-if __name__ == "__main__":    
-    world_size = int(os.environ['WORLD_SIZE'])
-    rank = int(os.environ['RANK'])
+if __name__ == "__main__":
+    world_size = int(os.environ.get('WORLD_SIZE', 1))
+    rank = int(os.environ.get('RANK', 0))
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # load yaml configuration
-    config_path = 'config/dec_cGP.yaml'
+    # Load configuration
+    config_path = 'config/dec_apxGP.yaml'
     config = load_yaml_config(config_path)
 
     num_samples = int(config.get('num_samples', 1000))
@@ -139,19 +132,16 @@ if __name__ == "__main__":
     admm_params = {}
     admm_params['num_epochs'] = int(config.get('num_epochs', 100))
     admm_params['rho'] = float(config.get('rho', 0.8))
-    admm_params['lr'] = float(config.get('lr', 0.01))
-    admm_params['max_iter'] = int(config.get('max_iter', 10))
+    admm_params['lip'] = float(config.get('lip', 1.0))
+    admm_params['tol_abs'] = float(config.get('tol_abs', 1e-6))
+    admm_params['tol_rel'] = float(config.get('tol_rel', 1e-4))
 
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))
 
-    # # OS enviorment variables for distributed training
-    # os.environ['MASTER_ADDR'] = '127.0.0.1'
-    # os.environ['MASTER_PORT'] = '29500'
-
-    # generate local training data
-    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
-                                                world_size=world_size, partition='random')
+    # Generate training data
+    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank,  
+                                              world_size=world_size, partition='random')
     
     # Create the local model and likelihood    
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
@@ -165,14 +155,13 @@ if __name__ == "__main__":
     if graph_viz and rank == 0:
         dec_graph.visualize_graph()
 
-    # train the model 
-    model, likelihood = train_model(model, likelihood, local_x, local_y, device, admm_params=admm_params,
-                                    neighbors=neighbors, backend=backend)
-
-    # test the model
-    test_x = torch.linspace(0, 1, 1000)
+    # Train the model
+    model, likelihood = train_model(model, likelihood, local_x, local_y, device, admm_params, 
+                                    neighbors, backend=backend)
+    
+    # Test the model
+    test_x = torch.linspace(0, 1, 100)
     mean, lower, upper = test_model(model, likelihood, test_x, device)
 
-    # plot the results
+    # Plot the results
     plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
-

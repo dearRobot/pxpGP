@@ -58,6 +58,24 @@ Run  cGP using c-ADMM optimization in multi-agent environment:
 torchrun --nproc_per_node=2 --master_addr=localhost --master_port=12345 gapxGP_train.py
 ```
 
+## Decentralized multi-agent GP Training:
+### dec_cGP: 
+
+```
+torchrun --nproc_per_node=4 --master_addr=127.0.0.1 --master_port=29500 dec_cGP_train.py 
+```
+
+### dec_apxGP:
+
+
+
+### dec_gapxGP:
+
+
+### dec_pxpGP:
+
+
+
 Where,
 
 1. `nproc_per_node` : No of agent in system
