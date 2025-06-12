@@ -7,4 +7,6 @@ tol_abs: 1e-5
 tol_rel: 1e-3
 backend: 'gloo'
 
+aug_dataset_size: 100
+
 graph_viz: False

@@ -67,7 +67,9 @@ torchrun --nproc_per_node=4 --master_addr=127.0.0.1 --master_port=29500 dec_cGP_
 
 ### dec_apxGP:
 
-
+```
+torchrun --nproc_per_node=4 --master_addr=127.0.0.1 --master_port=29500 dec_apxGP_train.py 
+```
 
 ### dec_gapxGP:
 

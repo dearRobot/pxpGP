@@ -171,9 +171,6 @@ def train_model(model, likelihood, train_x, train_y, device, num_epochs: int=100
     
     # generate augmented dataset
     aug_x, aug_y = create_augmented_dataset(train_x, train_y, world_size, rank, dataset_size=50)
-    
-    
-    print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
    
     # Stage 2: Train on augmented dataset with warm start
     likelihood_aug = gpytorch.likelihoods.GaussianLikelihood() 
