@@ -145,8 +145,7 @@ class DecentralizedNetwork:
         nx.draw(self.G_directed, pos, with_labels=True, node_color='lightblue', edge_color='gray')
         plt.title(f"{self.graph_type.capitalize()} Graph with {self.num_nodes} Nodes")
         plt.show()
-        
-        
+
 
 
 

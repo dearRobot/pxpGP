@@ -140,7 +140,7 @@ if __name__ == "__main__":
 
     # Generate training data
     local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank,  
-                                              world_size=world_size, partition='random')
+                                              world_size=world_size, partition='sequential')
     
     # Create the local model and likelihood    
     likelihood = gpytorch.likelihoods.GaussianLikelihood()

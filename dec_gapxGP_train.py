@@ -35,8 +35,25 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     return world_size, rank
 
 
+def flooding_communication(local_x, local_y, world_size: int=1, rank: int=0, neighbors: list=None):
+    """
+    Flooding communication to share local dataset with other agents.
+    Args:
+        local_x: Local training input data.
+        local_y: Local training output data.
+        world_size: Number of processes.
+        rank: Current process rank.
+        neighbors: List of neighbor ranks to communicate with.
+    Returns:
+        comm_x : Communication training input data.
+        comm_y : Communication training output data.
+    """
+    
+    
+
+
 def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
-                                 partition_criteria: str='random'):
+                                neighbors: list=None, partition_criteria: str='random'):
     """
     Create augmented dataset (D_c+) = local dataset (D_i) + global communication dataset (D_c)
     Args:
@@ -106,7 +123,8 @@ def train_model(train_x, train_y, device, admm_params, neighbors, backend='nccl'
                                               master_port=master_port)
     
     # generate augmented dataset
-    aug_x, aug_y = create_augmented_dataset(train_x, train_y, world_size, rank, dataset_size=50)
+    aug_x, aug_y = create_augmented_dataset(train_x, train_y, world_size, rank, dataset_size=50,
+                                            neighbors=neighbors, partition_criteria='random')
     
     # Train on augmented dataset with warm start
     likelihood = gpytorch.likelihoods.GaussianLikelihood() 
