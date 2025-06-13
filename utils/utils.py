@@ -15,6 +15,29 @@ import yaml
 # def generate_3d_data(num_samples, rank: int=0, world_size: int=1, partition: str='random'):
 
 
+def generate_dataset(num_samples, input_dim: int=1):
+    if input_dim <= 0:
+        raise ValueError("Input dimension must be greater than 0.")
+    if num_samples <= 0:
+        raise ValueError("Number of samples must be greater than 0.")
+    
+    # dimensions
+    if input_dim == 1:
+        # f(x) = 5 x^2 sin(12x) + (x^3 − 0.5) sin(3x − 0.5)+ 4 cos(2x) + noise,
+        train_x = torch.linspace(0, 1, num_samples)
+        train_y = 5 * train_x**2 * torch.sin(12*train_x) + (train_x**3 - 0.5) * torch.sin(3*train_x - 0.5) + 4 * torch.cos(2*train_x) 
+        train_y += torch.randn(train_x.size()) * 0.2  # Add noise to the output
+
+    elif input_dim == 2:
+        print("Generating Goldstein-Price 2D training data...")
+    
+    else:
+        raise ValueError("Input dimension must be either 1 or 2 for this function.")
+    
+    return train_x, train_y
+
+
+
 def generate_training_data(num_samples, input_dim: int=1, rank: int=0, world_size: int=1, 
                            partition: str='random'):
     """
