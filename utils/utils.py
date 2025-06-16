@@ -2,6 +2,7 @@
 
 import torch
 import yaml
+import numpy as np
 
 # TODO: make it multi-dimensional
 
@@ -10,9 +11,45 @@ import yaml
 
 # def generate_1d_data(num_samples, rank: int=0, world_size: int=1, partition: str='random'):
 
-# def generate_2d_data(num_samples, rank: int=0, world_size: int=1, partition: str='random'):
+def generate_2d_data(num_samples, input_dim: int=2):
+    # Rosenbrock Function f(x) = (100 * (x2 - x1**2)**2 + (1 - x1)**2) + noise
+    train_x_np = np.random.uniform(low=-1.0, high=1.0, size=(num_samples, input_dim))
+    train_y_np = (100 * (train_x_np[:, 1] - train_x_np[:, 0]**2)**2 + (1 - train_x_np[:, 0])**2)
 
-# def generate_3d_data(num_samples, rank: int=0, world_size: int=1, partition: str='random'):
+    train_x = torch.tensor(train_x_np, dtype=torch.float32)
+    train_y = torch.tensor(train_y_np, dtype=torch.float32) + torch.randn(train_x.size(0)) * 0.2
+
+    return train_x, train_y
+
+def generate_3d_data(num_samples):
+    # Hartmann 3-Dimensional Function
+    train_x_np = np.random.uniform(low=0.0, high=1.0, size=(num_samples, 3))
+    
+    alpha = np.array([1.0, 1.2, 3.0, 3.2])
+    A = np.array([[3.0, 10.0, 30.0],
+                  [0.1, 10.0, 35.0],
+                  [3.0, 10.0, 30.0],
+                  [0.1, 10.0, 35.0]])
+    P = 1e-4 * np.array([[3689.0, 1170.0, 2673.0],
+                         [4699.0, 4387.0, 7470.0],
+                         [1091.0, 8732.0, 5547.0],
+                         [381.0, 5743.0, 8828.0]])
+    
+    x = np.atleast_2d(train_x_np)
+    total = np.zeros(x.shape[0])
+    
+    for i in range(4):
+        inner = np.sum(A[i, :] * (x - P[i, :])**2, axis=1)
+        total += alpha[i] * np.exp(-inner)
+
+    train_y_np = -total
+
+    train_x = torch.tensor(train_x_np, dtype=torch.float32)
+    train_y = torch.tensor(train_y_np, dtype=torch.float32) + torch.randn(train_x.size(0)) * 0.2
+
+    print("Generated 3D data with shape:", train_x.shape, train_y.shape)
+
+    return train_x, train_y
 
 
 def generate_dataset(num_samples, input_dim: int=1):
@@ -28,13 +65,64 @@ def generate_dataset(num_samples, input_dim: int=1):
         train_y = 5 * train_x**2 * torch.sin(12*train_x) + (train_x**3 - 0.5) * torch.sin(3*train_x - 0.5) + 4 * torch.cos(2*train_x) 
         train_y += torch.randn(train_x.size()) * 0.2  # Add noise to the output
 
+        return train_x, train_y
+
     elif input_dim == 2:
-        print("Generating Goldstein-Price 2D training data...")
+        train_x, train_y = generate_2d_data(num_samples)
+        return train_x, train_y
+    
+    elif input_dim == 3:
+        train_x, train_y = generate_3d_data(num_samples)
+        return train_x, train_y
     
     else:
         raise ValueError("Input dimension must be either 1 or 2 for this function.")
     
-    return train_x, train_y
+
+def split_agent_data(train_x, train_y, world_size: int=1, rank: int=0, partition: str='random'):
+    """
+    Split the training data among multiple agents.
+    Args:
+        train_x: Input training data.
+        train_y: Output training data.
+        world_size: Total number of processes (for distributed training).
+        rank: Current process rank (for distributed training).
+        partition: Method to partition the data among processes (default: 'random')
+                    random: Randomly partition the data.
+                    sequential: Sequentially partition the data.
+    Returns:
+        local_x: Local input data for the current agent.
+        local_y: Local output data for the current agent.
+    """
+    if world_size <= 0:
+        raise ValueError("World size must be greater than 0.")
+    if rank < 0 or rank >= world_size:
+        raise ValueError("Rank must be between 0 and world_size - 1.")
+    
+    # partition criteria
+    if partition == 'random':
+        # divide dataset into m parts based on world size and rank
+        torch.manual_seed(42) 
+        local_indices = torch.randperm(train_x.size(0))
+        split_indices = torch.chunk(local_indices, world_size)
+        
+        local_indices = split_indices[rank]
+        
+        local_x = train_x[local_indices]
+        local_y = train_y[local_indices]
+
+    elif partition == 'sequential':
+        # divide dataset into m parts based on world size and rank
+        local_size = train_x.size(0) // world_size
+        start_idx = rank * local_size
+        end_idx = start_idx + local_size if rank < world_size - 1 else train_x.size(0)
+        local_x = train_x[start_idx:end_idx]
+        local_y = train_y[start_idx:end_idx]
+
+    else:
+        raise ValueError("Invalid partition method. Use 'random' or 'sequential'.")
+
+    return local_x, local_y
 
 
 

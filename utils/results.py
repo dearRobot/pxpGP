@@ -1,5 +1,34 @@
 from matplotlib import pyplot as plt
 import os
+import json
+
+
+def save_params(model, rank: int, input_dim: int, method: str, filepath: str):
+    """
+    Save the model parameters to a JSON file.
+    Args:
+        model: The Gaussian Process model.
+        rank: Process rank (default: 0).
+        input_dim: Input dimension of the model.
+        method: Method used for training (e.g., 'fullGP', 'cGP', 'pxpGP').
+        filepath: Path to save the parameters.
+    """
+
+    params = {
+        'rank': rank,
+        'input_dim': input_dim,
+        'method': method,
+        'lengthscale': model.covar_module.base_kernel.lengthscale.cpu().detach().numpy().tolist(),
+        'outputscale': model.covar_module.outputscale.item(),
+        'noise': model.likelihood.noise.item()
+    }
+
+    if not os.path.exists(os.path.dirname(filepath)):
+        os.makedirs(os.path.dirname(filepath))
+
+    with open(filepath, 'w') as f:
+        json.dump(params, f, indent=4)
+    
 
 
 def plot_1d_result(train_x, train_y, test_x, mean, lower, upper, rank: int = 0):

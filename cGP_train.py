@@ -4,9 +4,11 @@ from matplotlib import pyplot as plt
 from admm import cadmm
 import torch.distributed as dist
 import os
+from sklearn.model_selection import train_test_split
 
-from utils import load_yaml_config, generate_training_data, generate_test_data
-from utils.results import plot_result
+from utils import load_yaml_config, generate_training_data
+from utils import generate_dataset, split_agent_data
+from utils.results import plot_result, save_params
 
 
 
@@ -94,7 +96,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     return model, likelihood
 
 
-def test_model(model, likelihood, test_x, device):
+def test_model(model, likelihood, test_x, test_y, device):
     """
     Test the model using pxADMM optimizer
     Args:
@@ -109,14 +111,19 @@ def test_model(model, likelihood, test_x, device):
     """
     model.eval()
     likelihood.eval()
+    test_x = test_x.to(device)
+    test_y = test_y.to(device) 
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        test_x = test_x.to(device)
         observed_pred = likelihood(model(test_x))
         mean = observed_pred.mean
         lower, upper = observed_pred.confidence_region()
 
-    return mean, lower, upper
+    # compute RMSE error
+    torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    print(f"RMSE: {torch.sqrt(torch.mean((mean - test_y) ** 2)).item():.4f}")
+    
+    return mean.cpu(), lower.cpu(), upper.cpu()
 
 
 def plot_results(train_x, train_y, test_x, mean, lower, upper):
@@ -136,10 +143,13 @@ if __name__ == "__main__":
 
     # load yaml configuration
     config_path = 'config/cGP.yaml'
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file {config_path} does not exist.")
     config = load_yaml_config(config_path)
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
+    test_split = float(config.get('test_split', 0.2))
 
     admm_params = {}
     admm_params['num_epochs'] = int(config.get('num_epochs', 100))
@@ -150,8 +160,15 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
     
     # generate local training data
-    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
-                                                world_size=world_size, partition='random')
+    x, y = generate_dataset(num_samples, input_dim)    
+    train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
+
+    # split data among agents
+    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
+
+    
+    # local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
+    #                                             world_size=world_size, partition='random')
 
 
     # Create the local model and likelihood   
@@ -165,29 +182,39 @@ if __name__ == "__main__":
 
     # Train the local model
     model, likelihood = train_model(model, likelihood, local_x, local_y, device, admm_params, backend=backend)
+
+    mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
+
+    # print model and likelihood parameters
+    if model.covar_module.base_kernel.lengthscale.numel() > 1:
+        print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
+    else:
+        print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
     
+    print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
+    print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
     
-    # Test the model
-    X1 = torch.linspace(-1, 1, 100)
-    X2 = torch.linspace(-1, 1, 100)
-    X1, X2 = torch.meshgrid(X1, X2, indexing='ij')
-    test_x = torch.stack([X1.reshape(-1), X2.reshape(-1)], dim=-1)
+    # Save model and likelihood parameters  
+    torch.save(model.state_dict(), f'results/cGP_model_{input_dim}_rank_{rank}.pth')
+    
+    save_params(model, rank, input_dim, method='cGP',
+                filepath=f'results/cGP_params_{input_dim}_rank_{rank}.json')
 
-    mean, lower, upper = test_model(model, likelihood, test_x, device)
 
-    mean = mean.reshape(100, 100)
-    lower = lower.reshape(100, 100)
-    upper = upper.reshape(100, 100)
 
-    # Plot the results
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(111, projection='3d')
-    ax.plot_surface(X1.cpu().numpy(), X2.cpu().numpy(), mean.cpu().numpy(), cmap='viridis', edgecolor='k')
-    ax.set_xlabel('X1')
-    ax.set_ylabel('X2')
-    ax.set_zlabel('f(x1, x2)')
-    ax.set_title('GP Prediction with RBF Kernel (ARD)')
-    plt.tight_layout()
-    plt.show()
+    # mean = mean.reshape(100, 100)
+    # lower = lower.reshape(100, 100)
+    # upper = upper.reshape(100, 100)
+
+    # # Plot the results
+    # fig = plt.figure(figsize=(10, 7))
+    # ax = fig.add_subplot(111, projection='3d')
+    # ax.plot_surface(X1.cpu().numpy(), X2.cpu().numpy(), mean.cpu().numpy(), cmap='viridis', edgecolor='k')
+    # ax.set_xlabel('X1')
+    # ax.set_ylabel('X2')
+    # ax.set_zlabel('f(x1, x2)')
+    # ax.set_title('GP Prediction with RBF Kernel (ARD)')
+    # plt.tight_layout()
+    # plt.show()
 
 

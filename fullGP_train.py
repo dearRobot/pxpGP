@@ -7,7 +7,7 @@ import numpy as np
 
 from utils import generate_dataset
 from utils import load_yaml_config, generate_training_data, generate_test_data
-from utils.results import plot_result
+from utils.results import plot_result, save_params
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -118,7 +118,6 @@ if __name__ == "__main__":
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
     test_split = float(config.get('test_split', 0.2))
-    val_split = float(config.get('val_split', 0.1))
     
     optim_param = {}
     optim_param['num_epochs'] = int(config.get('num_epochs', 100))
@@ -144,33 +143,42 @@ if __name__ == "__main__":
     mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
-    print("Lengthscale:", model.covar_module.base_kernel.lengthscale.item())
+    if model.covar_module.base_kernel.lengthscale.numel() > 1:
+        print("Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
+    else:
+        print("Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
+    
     print("Outputscale:", model.covar_module.outputscale.item())
     print("Noise:", model.likelihood.noise.item())
 
     # save model and likelihood parameters
-    torch.save(model.state_dict(), f'results/fullGP_model_{input_dim}.pth')
+    # torch.save(model.state_dict(), f'results/fullGP_model_{input_dim}.pth')
+    save_params(model, rank=0, input_dim=input_dim, method='fullGP', 
+                filepath=f'results/fullGP_model_{input_dim}.json')
     
-    plt.figure(figsize=(10, 6))
-    train_x, train_y = train_x.cpu().numpy(), train_y.cpu().numpy()    
-    test_x, test_y, mean = test_x.cpu().numpy(), test_y.cpu().numpy() ,mean.numpy()
-    lower, upper = lower.numpy(), upper.numpy()
+    
+    
+    
+    # plt.figure(figsize=(10, 6))
+    # train_x, train_y = train_x.cpu().numpy(), train_y.cpu().numpy()    
+    # test_x, test_y, mean = test_x.cpu().numpy(), test_y.cpu().numpy() ,mean.numpy()
+    # lower, upper = lower.numpy(), upper.numpy()
 
-    sort_idx = np.argsort(test_x.flatten())
-    test_x_ = test_x[sort_idx]
-    mean = mean[sort_idx]
-    lower = lower[sort_idx]
-    upper = upper[sort_idx]
+    # sort_idx = np.argsort(test_x.flatten())
+    # test_x_ = test_x[sort_idx]
+    # mean = mean[sort_idx]
+    # lower = lower[sort_idx]
+    # upper = upper[sort_idx]
 
-    plt.plot(train_x, train_y, 'k*', label='Training Data')
-    plt.plot(test_x, test_y, 'r*', label='Test Data')
-    plt.plot(test_x_, mean, 'b-', label='Predicted Mean')
-    plt.fill_between(test_x_.flatten(), lower, upper, alpha=0.3, label='Confidence Interval')
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('GP Regression')
-    plt.legend()
-    plt.show()
+    # plt.plot(train_x, train_y, 'k*', label='Training Data')
+    # plt.plot(test_x, test_y, 'r*', label='Test Data')
+    # plt.plot(test_x_, mean, 'b-', label='Predicted Mean')
+    # plt.fill_between(test_x_.flatten(), lower, upper, alpha=0.3, label='Confidence Interval')
+    # plt.xlabel('x')
+    # plt.ylabel('y')
+    # plt.title('GP Regression')
+    # plt.legend()
+    # plt.show()
 
     
     # plot the results

@@ -1,7 +1,10 @@
-# training configuration for cGP
-
 num_samples: 1000
-input_dim: 2
+input_dim: 1
+
+# must be total 1.0
+train_split: 0.95
+test_split: 0.05
+
 num_epochs: 100 # admm epochs
 rho: 0.75
 lr: 0.0023 # learning rate for x update step 
