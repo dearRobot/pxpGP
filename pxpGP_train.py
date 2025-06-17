@@ -4,21 +4,23 @@ from admm import pxadmm
 import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
+from sklearn.model_selection import train_test_split
+from linear_operator.settings import max_cg_iterations, cg_tolerance
+import time
 
-from utils import generate_training_data, generate_test_data, load_yaml_config
-from utils.results import plot_pxpGP_result, plot_result
+from utils import load_yaml_config
+from utils.results import plot_result
+from utils import generate_dataset, split_agent_data
+from utils.results import save_params
 
 from sklearn.cluster import KMeans
 
-import warnings
-warnings.filterwarnings("ignore", message="Unable to import Axes3D")
-
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
+    def __init__(self, train_x, train_y, likelihood, kernel):
         super().__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+        self.covar_module = gpytorch.kernels.ScaleKernel(kernel)
     
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -28,13 +30,13 @@ class ExactGPModel(gpytorch.models.ExactGP):
 
 # sparse GP Model with inducing or pseudo points/variational distribution
 class SparseGPModel(gpytorch.models.ApproximateGP):
-    def __init__(self, inducing_points):
+    def __init__(self, inducing_points, kernel):
         variational_distribution = gpytorch.variational.CholeskyVariationalDistribution(inducing_points.size(0))
         variational_strategy = gpytorch.variational.VariationalStrategy(self, inducing_points, 
                                     variational_distribution, learn_inducing_locations=True)
         super().__init__(variational_strategy)
         self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+        self.covar_module = gpytorch.kernels.ScaleKernel(kernel)
     
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -44,7 +46,6 @@ class SparseGPModel(gpytorch.models.ApproximateGP):
 
 # distributed enviorment
 def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='12345'):
-    # Intialize distributed training
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     
@@ -60,8 +61,8 @@ def inducing_penalty(inducing_x, x_min: float=0.0, x_max: float=1.0, margin=0.01
     return (below**2 + above**2).sum()
 
 
-
-def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, world_size: int=1, rank: int=0, num_epochs: int=100):
+def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, world_size: int=1, 
+                                rank: int=0, num_epochs: int=100, input_dim: int=1):
     """
     Create local pseudo dataset (D_i) = local dataset (D_i)
     Args:
@@ -77,14 +78,9 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     """
     torch.manual_seed(rank + 42)  
     
-    # local_x = local_x.to(device)
-    # local_y = local_y.to(device)
-    
-    # option to select initial dataset: random , k-means
-    # local_pseudo_x = local_x[::10].unsqueeze(-1).to(device)
 
-    if local_x.size(0) < dataset_size:
-        raise ValueError(f"Local dataset size {local_x.size(0)} is smaller than dataset_size {dataset_size}.")
+    # if local_x.size(0) < dataset_size:
+    #     raise ValueError(f"Local dataset size {local_x.size(0)} is smaller than dataset_size {dataset_size}.")
     
     x_min = local_x.min().item()
     x_max = local_x.max().item()
@@ -103,7 +99,13 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
 
     # check how noramalized the local_x is affectiing the results
     kmeans = KMeans(n_clusters=dataset_size, random_state=rank + 42, n_init=10)
-    kmeans.fit(local_x.cpu().numpy().reshape(-1, 1))  # fit on CPU for KMeans
+    
+    if input_dim == 1:
+        kmeans.fit(local_x.cpu().numpy().reshape(-1, 1))  # fit on CPU for KMeans
+    else:
+        kmeans.fit(local_x.cpu().numpy())
+    
+    
     # kmeans.fit(local_x_normalized.cpu().numpy().reshape(-1, 1))  # fit on CPU for KMeans
 
     local_pseudo_x = torch.tensor(kmeans.cluster_centers_, dtype=torch.float32, device=device)
@@ -114,12 +116,15 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     # print(f"Rank {rank} - Local pseudo dataset size: {local_pseudo_x.size(0)}")
 
 
-
-
-    model_sparse = SparseGPModel(local_pseudo_x).to(device)
+    # print(f"Rank {rank} - Local pseudo dataset shape: {local_pseudo_x.shape}, "
+    #       f"local_x shape: {local_x.shape}, local_y shape: {local_y.shape}")
+    
+    kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim)
+    model_sparse = SparseGPModel(local_pseudo_x, kernel).to(device)
     likelihood_sparse = gpytorch.likelihoods.GaussianLikelihood().to(device)
     mll_sparse = gpytorch.mlls.VariationalELBO(likelihood_sparse, model_sparse, num_data=local_x.size(0))
 
+    # torch.optim.LBFGS
     optimizer_sparse = torch.optim.Adam( [{'params': model_sparse.parameters()},
                                         {'params': likelihood_sparse.parameters()}],
                                         lr=0.015,             
@@ -132,21 +137,27 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     likelihood_sparse.train()
 
     # batch training
-    batch_size= 64
+    # batch_size= 64
+    batch_size = min(int(local_x.size(0) / 10), 50)
     train_dataset = TensorDataset(local_x, local_y)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
-    num_epochs = 200
+    if rank == 0:
+        print(f"\033[92mRank {rank} - Training local sparse GP model with {local_x.size(0)} samples\033[0m")
+
+    num_epochs = 20
     for epoch in range(num_epochs):
         for batch_x, batch_y in train_loader:
             batch_x = batch_x.to(device)  
             batch_y = batch_y.to(device) 
+
+            # print(f"Rank {rank} - batch_x shape: {batch_x.shape}, batch_y shape: {batch_y.shape}")
             
             optimizer_sparse.zero_grad()
             output = model_sparse(batch_x)
             loss = -mll_sparse(output, batch_y)
             penalty = inducing_penalty(model_sparse.variational_strategy.inducing_points, 
-                                        x_min=x_min, x_max=x_max, margin=0.01)
+                                        x_min=x_min, x_max=x_max, margin=0.0)
             loss += 1.0* penalty
             loss.backward()
             optimizer_sparse.step()
@@ -173,55 +184,27 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         local_pseudo_y = likelihood_sparse(model_sparse(local_pseudo_x)).mean
 
+    # need to modify for multi-dimensional input
     # local sparse GP hyperparameters
-    local_hyperparams = torch.tensor([model_sparse.mean_module.constant.item(),
-                                    model_sparse.covar_module.base_kernel.lengthscale.item(),
-                                    model_sparse.covar_module.outputscale.item()], dtype=torch.float32, device=device)
 
-
+    mean_const = model_sparse.mean_module.constant.detach().view(-1)                  # shape [1]
+    lengthscale = model_sparse.covar_module.base_kernel.lengthscale.detach().view(-1) # shape [D]
+    outputscale = model_sparse.covar_module.outputscale.detach().view(-1) 
     
-    print(f"Rank {rank} and World Size {world_size} ")
+    local_hyperparams = torch.cat([mean_const, lengthscale, outputscale]) 
     
-    # test data
-    test_x, _ = generate_test_data(num_samples=200, input_dim=1, rank=rank, world_size=world_size, 
-                                partition='sequential')
-    test_x = test_x.to(device)  
-    torch.linspace(0, 1, 200).to(device)
-
-    with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        observed_pred = likelihood_sparse(model_sparse(test_x))
-        mean = observed_pred.mean
-        lower, upper = observed_pred.confidence_region()
-
-    # plot the results
-    from matplotlib import pyplot as plt
+    # local_hyperparams = torch.tensor([model_sparse.mean_module.constant.item(),
+    #                                 model_sparse.covar_module.base_kernel.lengthscale.item(),
+    #                                 model_sparse.covar_module.outputscale.item()], dtype=torch.float32, device=device)
     
-    plt.figure(figsize=(10, 6))
-    plt.plot(local_x.cpu().numpy(), local_y.cpu().numpy(), 'k*', label='Local Data')
-    plt.plot(test_x.cpu().numpy(), mean.cpu().numpy(), 'b-', label='Mean Prediction')
-    plt.fill_between(test_x.cpu().numpy(), lower.cpu().numpy(), upper.cpu().numpy(), color='blue', alpha=0.2, label='Confidence Interval')
-
-    plt.plot(local_pseudo_x.cpu().numpy(), local_pseudo_y.cpu().numpy(), 'ro', label='Inducing Points')
-    plt.title(f'Rank {rank} - Local Pseudo Dataset')
-    plt.xlabel('Input')
-    plt.ylabel('Output')
-
-    # plt.xlim(-1, 1)
-    # plt.ylim(-1.5, 1.5)
-
-    plt.legend()
-    plt.grid()
-    plt.show()
-    
-
-    print(f"Rank {rank} - Local pseudo dataset size: {local_pseudo_x.size(0)}")
+    print(f"Rank {rank} - local hyperparameters: {local_hyperparams.cpu().numpy()}")
     
     return local_pseudo_x, local_pseudo_y, local_hyperparams
 
 
 
 def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: int=0, dataset_size: int=50, 
-                                num_epochs: int = 100):
+                                num_epochs: int = 100, input_dim: int=1, backend='nccl'):
     """
     Create augmented dataset (D_c+) = local dataset (D_i) + global communication dataset (D_c)
     Args:
@@ -246,12 +229,17 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     # Step 1: create local pseudo dataset    
     local_x = local_x.to(device)
     local_y = local_y.to(device)
+    dataset_size = int(local_x.size(0) / world_size) if dataset_size < 0 else dataset_size
     
     local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
-                            device, dataset_size=dataset_size, rank=rank, num_epochs=num_epochs)
-    
+                            device, dataset_size=dataset_size, rank=rank, num_epochs=num_epochs, 
+                            input_dim=input_dim)
+        
     # Step 2: gather local pseudo dataset from all processes and create global pseudo dataset
-    world_size, rank = init_distributed_mode(backend=backend)
+    master_addr = os.environ.get('MASTER_ADDR', 'localhost')
+    master_port = os.environ.get('MASTER_PORT', '12345')
+    world_size, rank = init_distributed_mode(backend=backend, master_addr=master_addr, 
+                                              master_port=master_port)
 
     sample_x_list = [torch.empty_like(local_pseudo_x) for _ in range(world_size)]
     sample_y_list = [torch.empty_like(local_pseudo_y) for _ in range(world_size)]
@@ -263,21 +251,25 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
         comm_x = torch.cat(sample_x_list, dim=0)
         comm_y = torch.cat(sample_y_list, dim=0)
     else:
-        comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=device)
+        comm_x = torch.zeros((dataset_size * world_size, input_dim), dtype=local_pseudo_x.dtype, device=device)
         comm_y = torch.zeros(dataset_size * world_size, dtype=local_y.dtype, device=device)
 
+    if input_dim == 1:
+        comm_x = comm_x.squeeze(-1)
+        comm_y = comm_y.squeeze(-1)
+    
     # broadcast the communication dataset to all agents from rank 0
     dist.broadcast(comm_x, src=0)
     dist.broadcast(comm_y, src=0)
-    
+
     # create augmented dataset
     pseudo_x = torch.cat([local_x, comm_x], dim=0)
     pseudo_y = torch.cat([local_y, comm_y], dim=0)
 
     # Step 3: Share the local model hyperparameters with the central node (rank 0) to form average
-    local_hyperparams = torch.tensor([model_sparse.mean_module.constant.item(),
-                                    model_sparse.covar_module.base_kernel.lengthscale.item(),
-                                    model_sparse.covar_module.outputscale.item()], dtype=torch.float32, device=device)
+    # local_hyperparams = torch.tensor([model_sparse.mean_module.constant.item(),
+    #                                 model_sparse.covar_module.base_kernel.lengthscale.item(),
+    #                                 model_sparse.covar_module.outputscale.item()], dtype=torch.float32, device=device)
 
     hyperparams_list = [torch.empty_like(local_hyperparams) for _ in range(world_size)] 
     dist.gather(local_hyperparams, gather_list=hyperparams_list if rank == 0 else None, dst=0)
@@ -290,26 +282,21 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
 
     dist.broadcast(avg_hyperparams_, src=0)
 
+    # need to modify for multi-dimensional input
     avg_hyperparams = {'mean_constant': avg_hyperparams_[0].item(),
                         'lengthscale': avg_hyperparams_[1].item(),
                         'outputscale': avg_hyperparams_[2].item()}
     
-    local_hyperpar = {'mean_constant': model_sparse.mean_module.constant.item(),
-                        'lengthscale': model_sparse.covar_module.base_kernel.lengthscale.item(),
-                        'outputscale': model_sparse.covar_module.outputscale.item()}
-    
     torch.cuda.empty_cache()
-    return pseudo_x, pseudo_y, local_hyperpar #avg_hyperparams
+    return pseudo_x, pseudo_y, avg_hyperparams
 
 
 
-def train_model(model, likelihood, train_x, train_y, device, admm_params, backend='nccl'):
+def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backend='nccl'):
                  
     """
     Train the model using pxADMM optimizer
     Args:
-        model: The Gaussian Process model to train.
-        likelihood: The likelihood function for the model.
         train_x: Training input data.
         train_y: Training output data.
         device: Device to run the model on (CPU or GPU).
@@ -334,15 +321,16 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     """
 
     # Stage 1: Train local sparse GP model on local dataset and find optimal inducing points   
-    # world_size, rank = init_distributed_mode(backend=backend)
-
     pseudo_x, pseudo_y, avg_hyperparams = create_augmented_dataset(train_x, train_y, device, world_size=world_size,
-                            rank=rank, dataset_size=50, num_epochs=200)
+                            rank=rank, dataset_size=50, num_epochs=200, input_dim=input_dim, backend=backend)
 
-    
+    if rank == 0:
+        print(f"Rank {rank} - Augmented dataset size: {pseudo_x.size(0)}")
+
     # Stage 2: Train on augmented dataset with warm start
+    kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim)
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = ExactGPModel(pseudo_x, pseudo_y, likelihood)
+    model = ExactGPModel(pseudo_x, pseudo_y, likelihood, kernel)
 
     # warm start
     model.mean_module.constant.data = avg_hyperparams['mean_constant'] * torch.ones_like(model.mean_module.constant.data)
@@ -355,17 +343,13 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     pseudo_y = pseudo_y.to(device)
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    optimizer = pxadmm(
-                        # [{'params': model.parameters()},
-                        # {'params': likelihood.parameters()}],       
-                        model.parameters(), 
-                        rho=admm_params['rho'], lip=admm_params['lip'],
+    optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                             tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-                            rank=rank, world_size=world_size, backend=backend)
+                            rank=rank, world_size=world_size)
     
     def closure():
         optimizer.zero_grad()
-        with gpytorch.settings.min_preconditioning_size(0.005):
+        with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
             output = model(pseudo_x)
             loss = -mll(output, pseudo_y)
             loss.backward()
@@ -376,16 +360,30 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     model.train()
     likelihood.train()
 
-    num_epochs = admm_params['num_epochs']
-    for epoch in range(num_epochs):
+    if rank == 0:
+        print(f"\033[92mRank {rank} - Training global model with pxADMM optimizer\033[0m")
+
+    start_time = time.time()
+    for epoch in range(admm_params['num_epochs']):
         converged = optimizer.step(closure, consensus=True)
         
-        if rank == 0 and (epoch % 10 == 0 or epoch == num_epochs - 1):
-            print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure()[0].item()}")
+        loss_val = closure()[0].item()
+        if rank == 0 and (epoch + 1) % 20 == 0:
+            print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {loss_val}") 
+        
+        if not torch.isfinite(torch.tensor(loss_val)):
+            if rank == 0:
+                print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
+            break
+
         if converged:
             if rank == 0:
                 print("Converged at epoch {}".format(epoch + 1))
             break
+
+    end_time = time.time()
+    if rank == 0:
+        print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
 
     optimizer.zero_grad(set_to_none=True)
     torch.cuda.empty_cache()    
@@ -394,7 +392,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     return model, likelihood, pseudo_x, pseudo_y
 
 
-def test_model(model, likelihood, test_x, device):
+def test_model(model, likelihood, test_x, test_y, device):
     """
     Test the model using pxADMM optimizer
     Args:
@@ -409,15 +407,20 @@ def test_model(model, likelihood, test_x, device):
     """
     model.eval()
     likelihood.eval()
+    test_x = test_x.to(device)
+    test_y = test_y.to(device)
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        test_x = test_x.to(device)
         observed_pred = likelihood(model(test_x))
         mean = observed_pred.mean
         lower, upper = observed_pred.confidence_region()
 
-    return mean, lower, upper
-
+    # compute RMSE error
+    torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    print(f"RMSE: {torch.sqrt(torch.mean((mean - test_y) ** 2)).item():.4f}")
+    
+    return mean.cpu(), lower.cpu(), upper.cpu()
+    
 
 if __name__ == "__main__":    
     world_size = int(os.environ['WORLD_SIZE'])
@@ -426,10 +429,13 @@ if __name__ == "__main__":
 
     # load yaml configuration
     config_path = 'config/pxpGP.yaml'
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file {config_path} does not exist.")
     config = load_yaml_config(config_path)
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
+    test_split = float(config.get('test_split', 0.2))
     
     admm_params = {}
     admm_params['num_epochs'] = int(config.get('num_epochs', 100))
@@ -440,33 +446,35 @@ if __name__ == "__main__":
     
     backend = str(config.get('backend', 'nccl'))
 
-    # OS enviorment variables for distributed training
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12345'
-    
     # generate local training data
-    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
-                                                world_size=world_size, partition='sequential')
+    x, y = generate_dataset(num_samples, input_dim)
+    train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
+    # split data among agents
+    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
 
-    local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
-                            device, dataset_size=50, rank=rank, world_size=world_size, num_epochs=100)
-
-
-
-    # # create the local model and likelihood
-    # likelihood = gpytorch.likelihoods.GaussianLikelihood()  
-    # model = ExactGPModel(local_x, local_y, likelihood)
-
-    # # train the model
-    # model, likelihood, pseudo_x, pseudo_y = train_model(model, likelihood, local_x, local_y, device, 
-    #                                         admm_params=admm_params, backend=backend)
+    # train the model
+    model, likelihood, pseudo_x, pseudo_y = train_model(local_x, local_y, device, 
+                                    admm_params, input_dim=input_dim, backend=backend)
     
     
-    # # test the model
-    # test_x = torch.linspace(0, 1, 1000)
-    # mean, lower, upper = test_model(model, likelihood, test_x, device)
+    # test the model
+    mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
 
+    # print model and likelihood parameters
+    if model.covar_module.base_kernel.lengthscale.numel() > 1:
+        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
+    else:
+        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
+    
+    print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
+    print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
+    
+    # Save model and likelihood parameters     
+    save_params(model, rank, input_dim, method='pxpGP',
+                filepath=f'results/pxpGP_params_{input_dim}_rank_{rank}.json')
+    
+    
     # # plot the results
     # # plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
     # plot_result(pseudo_x, pseudo_y, test_x, mean, lower, upper, rank=rank)

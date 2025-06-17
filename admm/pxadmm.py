@@ -101,7 +101,7 @@ class pxADMM(Optimizer):
 
 
     # TODO: Implement scaled pxADMM and adaptive tolerance
-    def step(self, closure=None, consensus: bool=False):
+    def step(self, closure=None, consensus: bool=True):
         """
         Performs a single optimization step.
         This step includes:

@@ -65,9 +65,9 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     train_y = train_y.to(device)
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    # optimizer = cadmm(model.parameters(), lr=admm_params['lr'], max_iter=admm_params['max_iter'],
-    #                   rho=admm_params['rho'], rank=rank, world_size=world_size)
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+    optimizer = cadmm(model.parameters(), lr=admm_params['lr'], max_iter=admm_params['max_iter'],
+                      rho=admm_params['rho'], rank=rank, world_size=world_size)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
     def closure():
         optimizer.zero_grad()
@@ -79,12 +79,12 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     likelihood.train()
 
     for epoch in range(admm_params['num_epochs']):
-        # optimizer.step(closure)
-        optimizer.zero_grad()
-        output = model(train_x)
-        loss = -mll(output, train_y)
-        loss.backward()
-        optimizer.step()
+        optimizer.step(closure)
+        # optimizer.zero_grad()
+        # output = model(train_x)
+        # loss = -mll(output, train_y)
+        # loss.backward()
+        # optimizer.step()
 
         if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}")  
@@ -166,19 +166,14 @@ if __name__ == "__main__":
     # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
 
-    
-    # local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
-    #                                             world_size=world_size, partition='random')
-
-
     # Create the local model and likelihood   
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model = ExactGPModel(local_x, local_y, likelihood, kernel)
 
     # os environment variables for distributed training
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12345'
+    # os.environ['MASTER_ADDR'] = 'localhost'
+    # os.environ['MASTER_PORT'] = '12345'
 
     # Train the local model
     model, likelihood = train_model(model, likelihood, local_x, local_y, device, admm_params, backend=backend)
@@ -195,7 +190,7 @@ if __name__ == "__main__":
     print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
     
     # Save model and likelihood parameters  
-    torch.save(model.state_dict(), f'results/cGP_model_{input_dim}_rank_{rank}.pth')
+    # torch.save(model.state_dict(), f'results/cGP_model_{input_dim}_rank_{rank}.pth')
     
     save_params(model, rank, input_dim, method='cGP',
                 filepath=f'results/cGP_params_{input_dim}_rank_{rank}.json')

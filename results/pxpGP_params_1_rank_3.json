@@ -1,0 +1,12 @@
+{
+    "rank": 3,
+    "input_dim": 1,
+    "method": "pxpGP",
+    "lengthscale": [
+        [
+            0.14449119567871094
+        ]
+    ],
+    "outputscale": 3.3050544261932373,
+    "noise": 0.03383016213774681
+}

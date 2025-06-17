@@ -2,22 +2,23 @@ import torch
 import gpytorch
 from admm import pxadmm
 import torch.distributed as dist
-from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
+from sklearn.model_selection import train_test_split
+from linear_operator.settings import max_cg_iterations, cg_tolerance
+import time
 
-from utils import generate_training_data, load_yaml_config
+from utils import load_yaml_config
 from utils.results import plot_result
-
-import warnings
-warnings.filterwarnings("ignore", message="Unable to import Axes3D")
+from utils import generate_dataset, split_agent_data
+from utils.results import save_params
 
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
+    def __init__(self, train_x, train_y, likelihood, kernel):
         super().__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+        self.covar_module = gpytorch.kernels.ScaleKernel(kernel)
     
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -36,22 +37,7 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     return world_size, rank
 
 
-def normalize_data(train_x, train_y):
-    """
-    Normalize the data to the range [0, 1]
-    Args:
-        data: Input data.
-    Returns:
-        Normalized data.
-    """
-    min_val = torch.min(data)
-    max_val = torch.max(data)
-    return (data - min_val) / (max_val - min_val)
-
-
-
-def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
-                                 partition_criteria: str='random'):
+def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50):
     """
     Create augmented dataset (D_c+) = local dataset (D_i) + global communication dataset (D_c)
     Args:
@@ -75,9 +61,8 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     
     # Step 1: create local communication dataset
     torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
-    
+        
     dataset_size = int(local_x.size(0) / world_size)
-    # dataset_size = min(dataset_size, local_x.size(0))  
     sample_indices = torch.randperm(local_x.size(0))[:dataset_size]
     local_comm_x = local_x[sample_indices]
     local_comm_y = local_y[sample_indices]
@@ -94,9 +79,9 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
         comm_x = torch.cat(sample_x_list, dim=0)
         comm_y = torch.cat(sample_y_list, dim=0)
     else:
-        comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=local_x.device)
+        comm_x = torch.zeros((dataset_size * world_size, *local_x.shape[1:]), dtype=local_x.dtype, device=local_x.device) 
+        # comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=local_x.device)
         comm_y = torch.zeros(dataset_size * world_size, dtype=local_y.dtype, device=local_y.device)
-
 
     # broadcast the communication dataset to all agents from rank 0
     dist.broadcast(comm_x, src=0)
@@ -111,8 +96,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     return aug_x, aug_y
 
 
-def train_model(model, likelihood, train_x, train_y, device, num_epochs: int=100, rho: float=0.8, 
-                            lip: float=1.0, tol_abs: float=1e-6, tol_rel: float=1e-4, backend='nccl'):
+def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend='nccl'):
     """
     Train the model using pxADMM optimizer
     Args:
@@ -123,64 +107,28 @@ def train_model(model, likelihood, train_x, train_y, device, num_epochs: int=100
         optimizer: The pxADMM optimizer.
         num_epochs: Number of training epochs.
 
-    1. Each agent will train its local model with local dataset.(with or without z consensus update)
-    2. Each agent will create its local sample dataset
-    3. Share the local sample dataset with other agents as communication dataset
-    4. Each agent will crate augmented dataset using local dataset + communication dataset
-    5. Each agent will train its local model with augmented dataset again. (with or without z consensus update)
+    1. Each agent will create its local sample dataset
+    2. Share the local sample dataset with other agents as communication dataset
+    3. Each agent will crate augmented dataset using local dataset + communication dataset
+    4. Each agent will train its local model with augmented dataset again. (with or without z consensus update)
     """
 
     # Stage 1: Train local model on local dataset without consensus    
-    world_size, rank = init_distributed_mode(backend=backend)
+    master_addr = os.environ.get('MASTER_ADDR', 'localhost')
+    master_port = os.environ.get('MASTER_PORT', '12345')
+    world_size, rank = init_distributed_mode(backend=backend, master_addr=master_addr, 
+                                              master_port=master_port)
 
-    # move data to device
-    # model = model.to(device) 
-    # likelihood = likelihood.to(device)
-    # train_x = train_x.to(device)
-    # train_y = train_y.to(device)
-
-    # mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    # optimizer = pxadmm(model.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
-    #                    rank=rank, world_size=world_size)
-
-    # def closure():
-    #     optimizer.zero_grad()
-    #     with gpytorch.settings.min_preconditioning_size(0.005):
-    #         output = model(train_x)
-    #         loss = -mll(output, train_y)
-    #         loss.backward() 
-    #         grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model.parameters()])
-    #     return loss, grad 
-    
-    # model.train()
-    # likelihood.train()
-
-    # for epoch in range(num_epochs):
-    #     converged_ = optimizer.step(closure, consensus=False)
-    #     if rank == 0 and (epoch + 1) % 10 == 0:
-    #         print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure()[0].item()}") 
-        
-    #     if converged_:
-    #         if rank == 0:
-    #             print("Converged at epoch {}".format(epoch + 1))
-    #         break
-
-    # # Clear gradients and optimizer state
-    # optimizer.zero_grad(set_to_none=True)
-    # torch.cuda.empty_cache()
-    
     # generate augmented dataset
     aug_x, aug_y = create_augmented_dataset(train_x, train_y, world_size, rank, dataset_size=50)
    
+    if rank == 0:
+        print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
+    
     # Stage 2: Train on augmented dataset with warm start
+    kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim)
     likelihood_aug = gpytorch.likelihoods.GaussianLikelihood() 
-    model_aug = ExactGPModel(aug_x, aug_y, likelihood_aug)
-
-    # warm start
-    # model_aug.mean_module.constant.data = model.mean_module.constant.data.clone()
-    # model_aug.covar_module.base_kernel.lengthscale.data = model.covar_module.base_kernel.lengthscale.data.clone()
-    # model_aug.covar_module.outputscale.data = model.covar_module.outputscale.data.clone()
-    # likelihood_aug.noise.data = likelihood.noise.data.clone()     
+    model_aug = ExactGPModel(aug_x, aug_y, likelihood_aug, kernel)    
 
     model_aug = model_aug.to(device)
     likelihood_aug = likelihood_aug.to(device)
@@ -188,12 +136,17 @@ def train_model(model, likelihood, train_x, train_y, device, num_epochs: int=100
     aug_y = aug_y.to(device)
 
     mll_aug = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood_aug, model_aug)
-    optimizer_aug = pxadmm(model_aug.parameters(), rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel,
-                           rank=rank, world_size=world_size)
+    optimizer_aug = pxadmm(model_aug.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
+                       tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
+                       rank=rank, world_size=world_size)
+    
+    # model_aug.covar_module.base_kernel.raw_lengthscale.data.clamp_(1e-2, 1e2)
+    # model_aug.covar_module.raw_outputscale.data.clamp_(1e-2, 1e2)
+    # model_aug.likelihood.raw_noise.data.clamp_(1e-4, 0.5)
     
     def closure_aug():
         optimizer_aug.zero_grad()
-        with gpytorch.settings.min_preconditioning_size(0.005):
+        with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
             output_aug = model_aug(aug_x)
             loss_aug = -mll_aug(output_aug, aug_y)
             loss_aug.backward() 
@@ -204,24 +157,36 @@ def train_model(model, likelihood, train_x, train_y, device, num_epochs: int=100
     model_aug.train()
     likelihood_aug.train()
 
-    for epoch in range(num_epochs):
+    start_time = time.time()
+    for epoch in range(admm_params['num_epochs']):
         converged_aug = optimizer_aug.step(closure_aug, consensus=True)
         
+        loss_val = closure_aug()[0].item()
         if rank == 0 and (epoch + 1) % 10 == 0:
-            print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {closure_aug()[0].item()}") 
+            print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {loss_val}") 
+        
+        if not torch.isfinite(torch.tensor(loss_val)):
+            if rank == 0:
+                print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
+            break
         
         if converged_aug:
             if rank == 0:
                 print("Converged at epoch {}".format(epoch + 1))
             break
+
+    end_time = time.time()
+    if rank == 0:
+        print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
     
+    optimizer_aug.zero_grad(set_to_none=True)
     torch.cuda.empty_cache() 
     
     dist.destroy_process_group()
     return model_aug, likelihood_aug, aug_x, aug_y
 
 
-def test_model(model, likelihood, test_x, device):
+def test_model(model, likelihood, test_x, test_y, device):
     """
     Test the model using pxADMM optimizer
     Args:
@@ -236,57 +201,75 @@ def test_model(model, likelihood, test_x, device):
     """
     model.eval()
     likelihood.eval()
+    test_x = test_x.to(device)
+    test_y = test_y.to(device)
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        test_x = test_x.to(device)
         observed_pred = likelihood(model(test_x))
         mean = observed_pred.mean
         lower, upper = observed_pred.confidence_region()
 
-    return mean, lower, upper
-
+    # compute RMSE error
+    torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    print(f"RMSE: {torch.sqrt(torch.mean((mean - test_y) ** 2)).item():.4f}")
+    
+    return mean.cpu(), lower.cpu(), upper.cpu()
 
 
 if __name__ == "__main__":
-      
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/gapxGP.yaml'
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file {config_path} does not exist.")
     config = load_yaml_config(config_path)
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
-    num_epochs = int(config.get('num_epochs', 100))
-    rho = float(config.get('rho', 1.0))
-    lip = float(config.get('lip', 1.0))
-    tol_abs = float(config.get('tol_abs', 1e-6))
-    tol_rel = float(config.get('tol_rel', 1e-4))
+    test_split = float(config.get('test_split', 0.2))
+    
+    admm_params = {}
+    admm_params['num_epochs'] = int(config.get('num_epochs', 100))
+    admm_params['rho'] = float(config.get('rho', 0.8))
+    admm_params['lip'] = float(config.get('lip', 1.0))
+    admm_params['tol_abs'] = float(config.get('tol_abs', 1e-5))
+    admm_params['tol_rel'] = float(config.get('tol_rel', 1e-3))
+
     backend = str(config.get('backend', 'nccl'))
 
     # generate local training data
-    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
-                                                world_size=world_size, partition='sequential')
+    x, y = generate_dataset(num_samples, input_dim)
+    train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
-    # create the local model and likelihood
-    likelihood = gpytorch.likelihoods.GaussianLikelihood()  
-    model = ExactGPModel(local_x, local_y, likelihood)
-
-    # OS enviorment variables for distributed training
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12345'
+    # split data among agents
+    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
 
     # train the model
-    model, likelihood, aug_x, aug_y = train_model(model, likelihood, local_x, local_y, device, 
-                                    num_epochs=num_epochs, rho=rho, lip=lip, tol_abs=tol_abs, 
-                                    tol_rel=tol_rel, backend=backend)
+    start_time = time.time()
+    model, likelihood, aug_x, aug_y = train_model(local_x, local_y, device, 
+                                    admm_params, input_dim=input_dim, backend=backend)
+    end_time = time.time()
+    # print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
     
     # test the model
-    test_x = torch.linspace(0, 1, 1000)
-    mean, lower, upper = test_model(model, likelihood, test_x, device)
+    mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
 
+    # print model and likelihood parameters
+    if model.covar_module.base_kernel.lengthscale.numel() > 1:
+        print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
+    else:
+        print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
+    
+    print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
+    print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
+    
+    # Save model and likelihood parameters     
+    save_params(model, rank, input_dim, method='gapxGP',
+                filepath=f'results/gapxGP_params_{input_dim}_rank_{rank}.json')
+    
     # plot the results
     # plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
-    plot_result(aug_x, aug_y, test_x, mean, lower, upper, rank=rank)
+    # plot_result(aug_x, aug_y, test_x, mean, lower, upper, rank=rank)

@@ -42,6 +42,7 @@ class cADMM(Optimizer):
         if lr <= 0.0:
             raise ValueError("lr must be positive and greater than 0.0")
         
+        print(f"cADMM optimizer initialized with rho: {rho}, max_iter: {max_iter}, lr: {lr}, ")
         defaults = dict(rho=rho, 
                         max_iter=max_iter,
                         lr=lr)
@@ -82,7 +83,8 @@ class cADMM(Optimizer):
                 lambda_ = self.state[param]['lambda']
 
                 # Step 1: update x i.e. the primal variable or model param
-                optimizer_ = torch.optim.SGD([param], lr=lr)
+                # optimizer_ = torch.optim.SGD([param], lr=lr)
+                optimizer_ = torch.optim.Adam([param], lr=lr)
 
                 for _ in range(max_iter):
                     optimizer_.zero_grad()
@@ -105,7 +107,7 @@ class cADMM(Optimizer):
                 z_new /= self.world_size
 
                 # soft thresholding
-                z_new = torch.sign(z_new) * torch.clamp(torch.abs(z_new) - (1 / rho), min=0.0)
+                # z_new = torch.sign(z_new) * torch.clamp(torch.abs(z_new) - (1 / rho), min=0.0)
 
                 # Step 3: update lambda i.e. the dual variable
                 lambda_new = lambda_ + rho * (param.detach() - z_new)

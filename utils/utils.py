@@ -12,13 +12,36 @@ import numpy as np
 # def generate_1d_data(num_samples, rank: int=0, world_size: int=1, partition: str='random'):
 
 def generate_2d_data(num_samples, input_dim: int=2):
-    # Rosenbrock Function f(x) = (100 * (x2 - x1**2)**2 + (1 - x1)**2) + noise
-    train_x_np = np.random.uniform(low=-1.0, high=1.0, size=(num_samples, input_dim))
-    train_y_np = (100 * (train_x_np[:, 1] - train_x_np[:, 0]**2)**2 + (1 - train_x_np[:, 0])**2)
+    # # Rosenbrock Function f(x) = (100 * (x2 - x1**2)**2 + (1 - x1)**2) + noise
+    # train_x_np = np.random.uniform(low=-1.0, high=1.0, size=(num_samples, input_dim))
+    # train_y_np = (100 * (train_x_np[:, 1] - train_x_np[:, 0]**2)**2 + (1 - train_x_np[:, 0])**2)
+
+    # train_x = torch.tensor(train_x_np, dtype=torch.float32)
+    # train_y = torch.tensor(train_y_np, dtype=torch.float32) + torch.randn(train_x.size(0)) * 0.2
+
+    # logarithmic form of the Goldstein-Price function, on [0, 1]
+    # f(x) = log(1 + ((x1 + x2 + 1)**2) * (19 - 14*x1 + 3*x1**2 - 14*x2 + 6*x1*x2 + 3*x2**2)) * log(30 + ((2*x1 - 3*x2)**2) * (18 - 32*x1 + 12*x1**2 + 48*x2 - 36*x1*x2 + 27*x2**2))
+
+    train_x_np = np.random.uniform(low=-2.0, high=2.0, size=(1500, 2))
+
+    x1 = 4.0 * train_x_np[:, 0] - 2.0
+    x2 = 4.0 * train_x_np[:, 1] - 2.0
+
+    fact1a = (x1 + x2 + 1)**2
+    fact1b = 19 - 14*x1 + 3*x1**2 - 14*x2 + 6*x1*x2 + 3*x2**2
+    fact1 = 1 + fact1a * fact1b
+
+    fact2a = (2*x1 - 3*x2)**2
+    fact2b = 18 - 32*x1 + 12*x1**2 + 48*x2 - 36*x1*x2 + 27*x2**2
+    fact2 = 30 + fact2a * fact2b
+
+    prod = fact1 * fact2
+
+    train_y_np = (np.log(prod) - 8.693) / 2.427
 
     train_x = torch.tensor(train_x_np, dtype=torch.float32)
-    train_y = torch.tensor(train_y_np, dtype=torch.float32) + torch.randn(train_x.size(0)) * 0.2
-
+    train_y = torch.tensor(train_y_np, dtype=torch.float32)
+    
     return train_x, train_y
 
 def generate_3d_data(num_samples):
