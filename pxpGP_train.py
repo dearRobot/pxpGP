@@ -107,6 +107,8 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     x_min = local_x.min().item()
     x_max = local_x.max().item()
     
+    
+    print(f"\033[92mRank {rank} - dataset size is: {dataset_size}, local shape: {local_x.shape}, \033[0m")
     kmeans = KMeans(n_clusters=dataset_size, random_state=rank + 42, n_init=10)
     
     if input_dim == 1:
@@ -224,8 +226,10 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     # Step 1: create local pseudo dataset    
     local_x = local_x.to(device)
     local_y = local_y.to(device)
-    dataset_size = int(local_x.size(0) / world_size) if dataset_size < 0 else dataset_size
     
+    dataset_size = int(local_x.size(0) / world_size) #if dataset_size < 0 else dataset_size
+    dataset_size = max(dataset_size, 5)
+
     local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
                             device, dataset_size=dataset_size, rank=rank, num_epochs=num_epochs, 
                             input_dim=input_dim)
@@ -446,7 +450,7 @@ if __name__ == "__main__":
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents
-    local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
+    local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='random')    
     
     # train the model
     model, likelihood, pseudo_x, pseudo_y = train_model(local_x, local_y, device, 
@@ -466,8 +470,8 @@ if __name__ == "__main__":
     print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
     
     # Save model and likelihood parameters     
-    save_params(model, rank, input_dim, method='pxpGP',
-                filepath=f'results/pxpGP_params_{input_dim}_rank_{rank}.json')
+    # save_params(model, rank, input_dim, method='pxpGP',
+    #             filepath=f'results/pxpGP_params_{input_dim}_rank_{rank}.json')
     
     
     # # plot the results
