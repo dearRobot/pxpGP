@@ -3,6 +3,8 @@
 import torch
 import yaml
 import numpy as np
+import math
+
 
 # TODO: make it multi-dimensional
 
@@ -70,8 +72,6 @@ def generate_3d_data(num_samples):
     train_x = torch.tensor(train_x_np, dtype=torch.float32)
     train_y = torch.tensor(train_y_np, dtype=torch.float32) + torch.randn(train_x.size(0)) * 0.2
 
-    print("Generated 3D data with shape:", train_x.shape, train_y.shape)
-
     return train_x, train_y
 
 
@@ -87,7 +87,6 @@ def generate_dataset(num_samples, input_dim: int=1):
         train_x = torch.linspace(0, 1, num_samples)
         train_y = 5 * train_x**2 * torch.sin(12*train_x) + (train_x**3 - 0.5) * torch.sin(3*train_x - 0.5) + 4 * torch.cos(2*train_x) 
         train_y += torch.randn(train_x.size()) * 0.2  # Add noise to the output
-
         return train_x, train_y
 
     elif input_dim == 2:
@@ -100,9 +99,70 @@ def generate_dataset(num_samples, input_dim: int=1):
     
     else:
         raise ValueError("Input dimension must be either 1 or 2 for this function.")
-    
 
-def split_agent_data(train_x, train_y, world_size: int=1, rank: int=0, partition: str='random'):
+
+def _kd_bisect(indices, pts, target_cells):
+    """
+    Recursively split `indices` (a 1-D LongTensor of row indices into `pts`)
+    until we have `target_cells` disjoint index subsets.  Each split is along
+    the longest side of the current bounding box at the median.
+    """
+    cells = [indices]
+    while len(cells) < target_cells:
+        # pick the largest cell so we don't create imbalanced tiny pieces
+        big_idx = max(range(len(cells)), key=lambda i: cells[i].numel())
+        big_cell = cells.pop(big_idx)
+        cell_pts = pts[big_cell]
+
+        # find longest dimension of this cell
+        ranges = cell_pts.max(dim=0).values - cell_pts.min(dim=0).values
+        split_dim = torch.argmax(ranges).item()
+
+        # median along that dimension
+        median_val = cell_pts[:, split_dim].median()
+        left_mask = cell_pts[:, split_dim] <= median_val
+
+        # make sure neither side becomes empty; if so nudge the threshold
+        if left_mask.all() or (~left_mask).all():
+            median_val = cell_pts[:, split_dim].mean()
+            left_mask = cell_pts[:, split_dim] <= median_val
+
+        cells.insert(big_idx, big_cell[left_mask])
+        cells.append(big_cell[~left_mask])
+    return cells
+
+
+def _regular_grid_split(train_x, world_size, rank):
+    """Return boolean mask of rows belonging to this rank."""
+    N, d = train_x.shape
+    # Number of cells per dimension (must be integer)
+    cells_per_dim = round(world_size ** (1 / d))
+    if cells_per_dim ** d != world_size:
+        if rank == 0:
+            print(f"\033[91mWarning: world_size={world_size} is not a perfect {d}-th power. Using regular grid split instead, which may lead to imbalanced partitions.\033[0m")
+        return None, False
+    
+    # Map rank → tuple of cell indices (i0, i1, …, id-1)
+    base   = cells_per_dim
+    digits = []
+    r = rank
+    for _ in range(d):
+        digits.append(r % base)
+        r //= base
+    digits = digits[::-1]          # most-significant first
+
+    mask = torch.ones(N, dtype=torch.bool, device=train_x.device)
+    for j, ij in enumerate(digits):
+        low  = train_x[:, j].min()
+        high = train_x[:, j].max()
+        edges = torch.linspace(low, high, cells_per_dim + 1, device=train_x.device)
+        mask &= (train_x[:, j] >= edges[ij]) & (train_x[:, j] <= edges[ij + 1])
+
+    return mask, True
+
+
+def split_agent_data(train_x, train_y, world_size: int=1, rank: int=0, input_dim: int=1, 
+                     partition: str='random'):
     """
     Split the training data among multiple agents.
     Args:
@@ -134,7 +194,7 @@ def split_agent_data(train_x, train_y, world_size: int=1, rank: int=0, partition
         local_x = train_x[local_indices]
         local_y = train_y[local_indices]
 
-    elif partition == 'sequential':
+    elif partition == 'sequential' and input_dim == 1:
         # divide dataset into m parts based on world size and rank
         local_size = train_x.size(0) // world_size
         start_idx = rank * local_size
@@ -142,6 +202,26 @@ def split_agent_data(train_x, train_y, world_size: int=1, rank: int=0, partition
         local_x = train_x[start_idx:end_idx]
         local_y = train_y[start_idx:end_idx]
 
+    elif partition == 'sequential':
+        # if train_x.dim() != 2 or train_x.size(1) != input_dim:
+        #     raise ValueError('train_x must be (N, input_dim) for spatial split')
+        # all_idx   = torch.arange(train_x.size(0))
+        # cells     = _kd_bisect(all_idx, train_x, world_size)
+        # local_idx = cells[rank]
+        mask, success = _regular_grid_split(train_x, world_size, rank)
+        
+        if success:
+            local_idx = torch.nonzero(mask, as_tuple=False).squeeze()
+        else:
+            if train_x.dim() != 2 or train_x.size(1) != input_dim:
+                raise ValueError('train_x must be (N, input_dim) for spatial split')
+            all_idx   = torch.arange(train_x.size(0))
+            cells     = _kd_bisect(all_idx, train_x, world_size)
+            local_idx = cells[rank]
+        
+        local_x   = train_x[local_idx]
+        local_y   = train_y[local_idx]
+    
     else:
         raise ValueError("Invalid partition method. Use 'random' or 'sequential'.")
 

@@ -15,6 +15,8 @@ from utils.results import save_params
 
 from sklearn.cluster import KMeans
 
+from matplotlib import pyplot as plt
+
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood, kernel):
@@ -55,7 +57,28 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     return world_size, rank
 
 
-def inducing_penalty(inducing_x, x_min: float=0.0, x_max: float=1.0, margin=0.01):
+def replusive_penalty(inducing_x, min_dist: float=0.01, input_dim: int=1):
+    """
+    Compute the repulsive penalty for inducing points.
+    Args:
+        inducing_x: Inducing points tensor.
+        min_dist: Minimum distance between inducing points.
+    Returns:
+        penalty: Repulsive penalty value.
+    """
+    n_points = inducing_x.size(0)
+    if n_points < 2:
+        return torch.tensor(0.0, device=inducing_x.device)
+    
+    distances = torch.cdist(inducing_x, inducing_x)
+    mask = torch.triu(torch.ones(n_points, n_points), diagonal=1).bool()
+    close_distances = distances[mask] - min_dist
+    penalty = torch.relu(-close_distances).pow(2).sum()
+    return penalty
+
+
+
+def boundary_penalty(inducing_x, x_min: float=0.0, x_max: float=1.0, margin=0.01):
     below = torch.relu(x_min - inducing_x + margin)
     above = torch.relu(inducing_x - x_max + margin)
     return (below**2 + above**2).sum()
@@ -78,46 +101,20 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     """
     torch.manual_seed(rank + 42)  
     
-
     # if local_x.size(0) < dataset_size:
     #     raise ValueError(f"Local dataset size {local_x.size(0)} is smaller than dataset_size {dataset_size}.")
     
     x_min = local_x.min().item()
     x_max = local_x.max().item()
     
-    # indices = torch.randperm(local_x.size(0))[:dataset_size]
-    # local_pseudo_x = local_x[indices].unsqueeze(-1).to(device)  # unsqueeze to make it 2D
-
-    # print(f"Rank {rank} - Local pseudo dataset is :{local_pseudo_x}")
-    # print(f"Rank {rank} - Local pseudo dataset size: {local_pseudo_x.size(0)}")
-
-    # normalize local_x before clustering and then denormalize the pseudo dataset
-    # x_mean, x_std = local_x.mean(), local_x.std()
-    # local_x_normalized = (local_x - x_mean) / (x_std + 1e-6)
-    # local_y_normalized = (local_y - local_y.mean()) / (local_y.std() + 1e-6)
-
-
-    # check how noramalized the local_x is affectiing the results
     kmeans = KMeans(n_clusters=dataset_size, random_state=rank + 42, n_init=10)
     
     if input_dim == 1:
-        kmeans.fit(local_x.cpu().numpy().reshape(-1, 1))  # fit on CPU for KMeans
+        kmeans.fit(local_x.cpu().numpy().reshape(-1, 1)) 
     else:
         kmeans.fit(local_x.cpu().numpy())
     
-    
-    # kmeans.fit(local_x_normalized.cpu().numpy().reshape(-1, 1))  # fit on CPU for KMeans
-
     local_pseudo_x = torch.tensor(kmeans.cluster_centers_, dtype=torch.float32, device=device)
-
-    # local_pseudo_x = local_pseudo_x * x_std + x_mean # denormalize the pseudo dataset
-
-    # print(f"Rank {rank} - Local pseudo dataset is :{local_pseudo_x}")
-    # print(f"Rank {rank} - Local pseudo dataset size: {local_pseudo_x.size(0)}")
-
-
-    # print(f"Rank {rank} - Local pseudo dataset shape: {local_pseudo_x.shape}, "
-    #       f"local_x shape: {local_x.shape}, local_y shape: {local_y.shape}")
     
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim)
     model_sparse = SparseGPModel(local_pseudo_x, kernel).to(device)
@@ -145,7 +142,7 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     if rank == 0:
         print(f"\033[92mRank {rank} - Training local sparse GP model with {local_x.size(0)} samples\033[0m")
 
-    num_epochs = 20
+    num_epochs = 200
     for epoch in range(num_epochs):
         for batch_x, batch_y in train_loader:
             batch_x = batch_x.to(device)  
@@ -156,9 +153,11 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
             optimizer_sparse.zero_grad()
             output = model_sparse(batch_x)
             loss = -mll_sparse(output, batch_y)
-            penalty = inducing_penalty(model_sparse.variational_strategy.inducing_points, 
+            b_penalty = boundary_penalty(model_sparse.variational_strategy.inducing_points, 
                                         x_min=x_min, x_max=x_max, margin=0.0)
-            loss += 1.0* penalty
+            r_penalty = replusive_penalty(model_sparse.variational_strategy.inducing_points,
+                                        min_dist=0.02, input_dim=input_dim)
+            loss += 10.0* b_penalty + 1.0 * r_penalty
             loss.backward()
             optimizer_sparse.step()
 
@@ -193,11 +192,7 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     
     local_hyperparams = torch.cat([mean_const, lengthscale, outputscale]) 
     
-    # local_hyperparams = torch.tensor([model_sparse.mean_module.constant.item(),
-    #                                 model_sparse.covar_module.base_kernel.lengthscale.item(),
-    #                                 model_sparse.covar_module.outputscale.item()], dtype=torch.float32, device=device)
-    
-    print(f"Rank {rank} - local hyperparameters: {local_hyperparams.cpu().numpy()}")
+    # print(f"Rank {rank} - local hyperparameters: {local_hyperparams.cpu().numpy()}")
     
     return local_pseudo_x, local_pseudo_y, local_hyperparams
 
@@ -451,8 +446,8 @@ if __name__ == "__main__":
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents
-    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
-
+    local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
+    
     # train the model
     model, likelihood, pseudo_x, pseudo_y = train_model(local_x, local_y, device, 
                                     admm_params, input_dim=input_dim, backend=backend)
