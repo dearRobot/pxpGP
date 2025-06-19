@@ -1,6 +1,7 @@
 import torch
 import gpytorch
 from admm import pxadmm
+from admm import scaled_pxadmm
 import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
@@ -358,9 +359,12 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     pseudo_y = pseudo_y.to(device)
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
-                            tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-                            rank=rank, world_size=world_size)
+    # optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
+    #                         tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
+    #                         rank=rank, world_size=world_size)
+    optimizer = scaled_pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
+                                tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
+                                rank=rank, world_size=world_size)
     
     def closure():
         optimizer.zero_grad()
