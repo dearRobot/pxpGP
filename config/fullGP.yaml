@@ -1,9 +1,9 @@
-num_samples: 500
-input_dim: 3
+num_samples: 10000
+input_dim: 1
 
 # must be total 1.0
-train_split: 0.85
-test_split: 0.15
+train_split: 0.95
+test_split: 0.05
 
-num_epochs: 3000 #1000
+num_epochs: 1000
 lr: 0.015 #0.015

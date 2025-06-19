@@ -4,9 +4,12 @@ from matplotlib import pyplot as plt
 import os
 from sklearn.model_selection import train_test_split
 import numpy as np
+import time
+import json
+from filelock import FileLock
 
 from utils import generate_dataset
-from utils import load_yaml_config, generate_training_data, generate_test_data
+from utils import load_yaml_config
 from utils.results import plot_result, save_params
 
 # local GP Model
@@ -63,7 +66,8 @@ def train_model(model, likelihood, train_x, train_y, optim_param, device):
             rel_change = abs(loss.item() - prev_loss) / (abs(prev_loss)  + 1e-8)
             prev_loss = loss.item()
             
-            print(f'Epoch {epoch + 1}/{optim_param["num_epochs"]}, relative change: {rel_change:.4f}, Loss: {loss.item():.4f}')
+            if epoch % 10 == 0:
+                print(f'Epoch {epoch + 1}/{optim_param["num_epochs"]}, relative change: {rel_change:.4f}, Loss: {loss.item():.4f}')
             
             if rel_change < mll_tol:
                 print(f'Early stopping at epoch {epoch + 1}, relative change: {rel_change:.4f}')
@@ -137,28 +141,48 @@ if __name__ == "__main__":
     model = ExactGPModel(train_x, train_y, likelihood, kernel)
     
     # train the model
+    start_ = time.time()
     model, likelihood = train_model(model, likelihood, train_x, train_y, optim_param, device)
+    train_time = time.time() - start_
 
     # test the model
     mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
     if model.covar_module.base_kernel.lengthscale.numel() > 1:
-        print("Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
+        print("\033[92mLengthscale:\033[0m", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy()) 
     else:
-        print("Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
-    
-    print("Outputscale:", model.covar_module.outputscale.item())
-    print("Noise:", model.likelihood.noise.item())
+        print("\033[92mLengthscale:\033[0m", model.covar_module.base_kernel.lengthscale.item()) 
+        
+    print("\033[92mOutputscale:\033[0m", model.covar_module.outputscale.item())
+    print("\033[92mNoise:\033[0m", model.likelihood.noise.item())
 
     # save model and likelihood parameters
     # torch.save(model.state_dict(), f'results/fullGP_model_{input_dim}.pth')
-    save_params(model, rank=0, input_dim=input_dim, method='fullGP', 
-                filepath=f'results/fullGP_model_{input_dim}.json')
+    # save_params(model, rank=0, input_dim=input_dim, method='fullGP', 
+    #             filepath=f'results/fullGP_model_{input_dim}.json')
     
+    result={
+        'model': 'fullGP',
+        'rank': 0,
+        'world_size': 1,
+        'total_dataset_size': train_x.shape[0],
+        'local_dataset_size': train_x.shape[0],
+        'input_dim': input_dim,
+        'lengthscale': model.covar_module.base_kernel.lengthscale.cpu().detach().numpy().tolist(),
+        'outputscale': model.covar_module.outputscale.item(),
+        'noise': model.likelihood.noise.item(),
+        'test_rmse': torch.sqrt(torch.mean((mean - test_y) ** 2)).item(),
+        'train_time': train_time
+        }
     
-    
-    
+    file_path = f'results/results_dim_{input_dim}.json'
+    lock_path = file_path + '.lock'
+
+    with FileLock(lock_path):
+        with open(file_path, 'a') as f:
+            f.write(json.dumps(result) + '\n')
+
     # plt.figure(figsize=(10, 6))
     # train_x, train_y = train_x.cpu().numpy(), train_y.cpu().numpy()    
     # test_x, test_y, mean = test_x.cpu().numpy(), test_y.cpu().numpy() ,mean.numpy()

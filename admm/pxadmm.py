@@ -37,9 +37,7 @@ class pxADMM(Optimizer):
             raise RuntimeError("Distributed process group is not initialized. Please initialize it before using pxADMM.")
         if not dist.is_available():
             raise RuntimeError("Distributed package is not available. Please install torch with distributed support.")
-        
-        # print(f"pxADMM optimizer initialized with rho: {rho}, lip: {lip}, tol_abs: {tol_abs}, tol_rel: {tol_rel}")
-        
+                
         if rho <= 0.0:
             raise ValueError("rho must be positive and greater than 0.0")
         if lip <= 0.0:
@@ -76,13 +74,6 @@ class pxADMM(Optimizer):
         self.state['flat']['z'] = self.flat_param.clone().detach().requires_grad_(False)
         self.state['flat']['lambda'] = torch.zeros_like(self.flat_param, requires_grad=False)
         
-        # # initialize variables
-        # for group in self.param_groups:
-        #     for param in group['params']:
-        #         # Initialize auxilary variable z and dual variable lambda
-        #         self.state[param]['z'] = param.clone().detach().requires_grad_(False)
-        #         self.state[param]['lambda'] = torch.zeros_like(param, requires_grad=False)
-
     
     def _unflatten_params(self, flat_param: Tensor) -> None:
         """

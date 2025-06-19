@@ -7,6 +7,8 @@ import os
 from sklearn.model_selection import train_test_split
 from linear_operator.settings import max_cg_iterations, cg_tolerance
 import time
+from filelock import FileLock
+import json
 
 from utils import load_yaml_config
 from utils.results import plot_result
@@ -107,8 +109,9 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     x_min = local_x.min().item()
     x_max = local_x.max().item()
     
+    if rank == 0:
+        print(f"\033[92mRank {rank} - sparse dataset size is: {dataset_size}, local dataset: {local_x.shape}, \033[0m")
     
-    print(f"\033[92mRank {rank} - dataset size is: {dataset_size}, local shape: {local_x.shape}, \033[0m")
     kmeans = KMeans(n_clusters=dataset_size, random_state=rank + 42, n_init=10)
     
     if input_dim == 1:
@@ -141,6 +144,9 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     train_dataset = TensorDataset(local_x, local_y)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
+    prev_loss = float('inf')
+    elbo_tol = 1e-4
+
     if rank == 0:
         print(f"\033[92mRank {rank} - Training local sparse GP model with {local_x.size(0)} samples\033[0m")
 
@@ -166,6 +172,16 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         if rank == 0 and (epoch % 10 == 0 or epoch == num_epochs - 1):
             print(f"Epoch {epoch + 1}/{num_epochs} - Loss: {loss.item():.3f}")
 
+        if epoch % 5 == 0:
+            # relative change in loss
+            rel_change = abs(loss.item() - prev_loss) / (abs(prev_loss) + 1e-8)
+            prev_loss = loss.item()
+
+            if rel_change < elbo_tol:
+                if rank == 0:
+                    print(f'Rank {rank} Early stopping at epoch {epoch + 1}, relative change: {rel_change:.4f}')
+                break
+        
         if loss.item() < 1e-6:
             if rank == 0:
                 print(f"Converged at epoch {epoch + 1} with loss {loss.item():.3f}")
@@ -227,7 +243,7 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     local_x = local_x.to(device)
     local_y = local_y.to(device)
     
-    dataset_size = int(local_x.size(0) / world_size) #if dataset_size < 0 else dataset_size
+    dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
     dataset_size = max(dataset_size, 5)
 
     local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
@@ -321,7 +337,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
 
     # Stage 1: Train local sparse GP model on local dataset and find optimal inducing points   
     pseudo_x, pseudo_y, avg_hyperparams = create_augmented_dataset(train_x, train_y, device, world_size=world_size,
-                            rank=rank, dataset_size=50, num_epochs=200, input_dim=input_dim, backend=backend)
+                            rank=rank, dataset_size=50, num_epochs=admm_params['num_epochs'], input_dim=input_dim, backend=backend)
 
     if rank == 0:
         print(f"Rank {rank} - Augmented dataset size: {pseudo_x.size(0)}")
@@ -416,9 +432,10 @@ def test_model(model, likelihood, test_x, test_y, device):
 
     # compute RMSE error
     torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"RMSE: {torch.sqrt(torch.mean((mean - test_y) ** 2)).item():.4f}")
+    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
     
-    return mean.cpu(), lower.cpu(), upper.cpu()
+    return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
     
 
 if __name__ == "__main__":    
@@ -453,12 +470,14 @@ if __name__ == "__main__":
     local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='random')    
     
     # train the model
+    start_time = time.time()
     model, likelihood, pseudo_x, pseudo_y = train_model(local_x, local_y, device, 
                                     admm_params, input_dim=input_dim, backend=backend)
+    train_time = time.time() - start_time
     
     
     # test the model
-    mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
+    mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
     if model.covar_module.base_kernel.lengthscale.numel() > 1:
@@ -468,6 +487,27 @@ if __name__ == "__main__":
     
     print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
     print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
+    
+    result={
+        'model': 'pxpGP',
+        'rank': rank,
+        'world_size': world_size,
+        'total_dataset_size': x.shape[0],
+        'local_dataset_size': local_x.shape[0],
+        'input_dim': input_dim,
+        'lengthscale': model.covar_module.base_kernel.lengthscale.cpu().detach().numpy().tolist(),
+        'outputscale': model.covar_module.outputscale.item(),
+        'noise': model.likelihood.noise.item(),
+        'test_rmse': rmse_error,
+        'train_time': train_time
+    }
+
+    file_path = f'results/results_dim_{input_dim}.json'
+    lock_path = file_path + '.lock'
+
+    with FileLock(lock_path):
+        with open(file_path, 'a') as f:
+            f.write(json.dumps(result) + '\n')
     
     # Save model and likelihood parameters     
     # save_params(model, rank, input_dim, method='pxpGP',
