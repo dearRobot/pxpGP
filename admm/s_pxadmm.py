@@ -2,6 +2,7 @@
 import torch
 from torch import Tensor
 from torch.optim import Optimizer
+import math
 
 import torch.multiprocessing as mp
 import torch.distributed as dist
@@ -74,6 +75,9 @@ class ScaledPxADMM(Optimizer):
         self.state['flat']['z'] = self.flat_param.clone().detach().requires_grad_(False)
         self.state['flat']['u'] = torch.zeros_like(self.flat_param, requires_grad=False)
         self.state['flat']['old_grad'] = torch.zeros_like(self.flat_param, requires_grad=False)
+
+        self.state['flat']['m'] = torch.zeros_like(self.flat_param, requires_grad=False)  # Momentum
+        self.state['flat']['v'] = torch.zeros_like(self.flat_param, requires_grad=False)  # Second moment
         
     
     def _unflatten_params(self, flat_param: Tensor) -> None:
@@ -93,7 +97,7 @@ class ScaledPxADMM(Optimizer):
 
 
     # TODO: Implement scaled pxADMM and adaptive tolerance
-    def step(self, closure=None, consensus: bool=True):
+    def step(self, closure=None, epoch: int=1):
         """
         Performs a single optimization step.
         This step includes:
@@ -105,7 +109,6 @@ class ScaledPxADMM(Optimizer):
 
         Args:
             closure (callable): A closure that reevaluates the model and returns (loss, gradient).
-            consensus (bool): Whether to synchronize consensus variable z across processes.
 
         Returns:
             bool: True if converged based on stopping condition; otherwise, False.
@@ -124,32 +127,55 @@ class ScaledPxADMM(Optimizer):
             tol_abs = group['tol_abs']
             tol_rel = group['tol_rel']
 
-            if self.rank == 0:
-                print("pxADMM iteration {}: rho={}, lip={}, tol_abs={}, tol_rel={}".format(
-                    self.iter, rho, lip, tol_abs, tol_rel))
-
-            # rather than iterating over the each parameter, we compute over the flattened parameters vector
             z_old = self.state['flat']['z']
             u_ = self.state['flat']['u']
             grad_old = self.state['flat']['old_grad']
                         
             # Step 1: update auxiliary variable (z) using consensus same as cADMM // z^{k+1} = 1/M * sum_i (x_i^{k} + u_i^{k})
-            # local update : (x_i^{k} + u_i^{k})
-            z_new = self.flat_param.detach() + self.state['flat']['u'] 
+            z_new = self.flat_param.detach() + u_
 
-            # synchronize z across all processes
-            if consensus:
-                dist.all_reduce(z_new, op=dist.ReduceOp.SUM)
-                z_new /= self.world_size 
+            dist.all_reduce(z_new, op=dist.ReduceOp.SUM) # synchronize z
+            z_new /= self.world_size 
 
+            v_ = z_new - u_  # v = z^{k+1} - u_i^{k}
+            
             # Step 2: update the primal variable (x) using the proximal linearized gradient
             # x_i^{k+1} = z_i^k - (1/rho+ lip) * (\nabla L_i(z^k) + rho * u_i^k)
-            self._unflatten_params(z_new) #  z^{k+1} for gradient evaluation
+            # self._unflatten_params(z_new) #  z^{k+1} for gradient evaluation
+            self._unflatten_params(v_)
             loss, grad = closure()
+            f_old = loss.item()
 
             # compute x_i^{k+1} 
-            x_new = z_new - (1.0 / (rho + lip)) * (grad + rho * u_)
+            # x_new = v_ - (1.0 / (rho + lip)) * (grad )
+            # x_new = z_new - (1.0 / (rho + lip)) * (grad + rho * u_)
+            
+            alpha = 1.0 / (rho + lip)
 
+            x_try = v_ - alpha * (grad)
+            self._unflatten_params(x_try)
+            f_try = closure()[0].item()
+
+            # Armijo constants
+            c, tau   = 1e-4, 0.5
+            iter = 0
+
+            # while f_try > f_old + 0.1 * lip * torch.norm(x_try - v)**2 and iter < 10: # Armijo condition
+            while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
+                lip *= tau
+                alpha = 1.0 / (rho + lip)
+                x_try = v_ - alpha*(grad)
+                self._unflatten_params(x_try)
+                f_try = closure()[0].item()
+                iter += 1
+            
+            x_new = x_try
+
+            # noise addition
+            sigma = 0.02 / math.sqrt(self.iter + 1)
+            noise = torch.randn_like(x_new) * sigma
+            x_new += noise
+            
             # Step 3: u-update // u_i^{k+1} = u_i^k + x_i^{k+1} - z^{k+1}
             primal_residual = x_new - z_new
             u_new = u_ + primal_residual
@@ -166,10 +192,26 @@ class ScaledPxADMM(Optimizer):
             eps_primal = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.max(torch.norm(x_new), torch.norm(z_new))
             eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.norm(rho * u_new)
 
-            # # synchronize the residuals across all processes
-            # dist.all_reduce(primal_residual, op=dist.ReduceOp.MAX)
-            # dist.all_reduce(dual_residual, op=dist.ReduceOp.MAX)
+            # synchronize the residuals across all processes
+            # dist.all_reduce(eps_primal, op=dist.ReduceOp.MAX)
+            # dist.all_reduce(eps_dual, op=dist.ReduceOp.MAX)
+            # dist.all_reduce(r_norm, op=dist.ReduceOp.MAX)
+            # dist.all_reduce(s_norm, op=dist.ReduceOp.MAX)
 
+            dist.all_reduce(eps_primal, op=dist.ReduceOp.SUM)
+            dist.all_reduce(eps_dual, op=dist.ReduceOp.SUM)
+            dist.all_reduce(r_norm, op=dist.ReduceOp.SUM)
+            dist.all_reduce(s_norm, op=dist.ReduceOp.SUM)
+            eps_primal /= self.world_size
+            eps_dual /= self.world_size
+            r_norm /= self.world_size
+            s_norm /= self.world_size
+
+            if self.rank == 0 and self.iter % 10 == 0:
+                print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}, '
+                    f'eps_primal: {eps_primal.item()}, eps_dual: {eps_dual.item()}, '
+                    f'r_norm: {r_norm.item()}, s_norm: {s_norm.item()}')
+            
             if r_norm.item() < eps_primal and s_norm.item() < eps_dual:
                 self.isConverged = True
                 if self.rank == 0:
@@ -179,18 +221,17 @@ class ScaledPxADMM(Optimizer):
             # update rho
             if r_norm.item() > 10 * s_norm.item():
                 rho *= 2.0
-                if self.rank == 0:
-                    print("Increasing rho to {}".format(rho))
             elif s_norm.item() > 10 * r_norm.item():
                 rho /= 2.0
-                if self.rank == 0:
-                    print("Decreasing rho to {}".format(rho))
-            else:
-                rho = rho
+
+            rho = max(1.0e-3, min(100.0, rho))
+
 
             # update lip
-            lip_new = torch.norm(grad_old - grad) / torch.norm(z_new - z_old) 
-            lip_new = lip.clamp(min=1e-6, max=1e6)
+            beta = 0.9
+            diff_norm = torch.norm(grad - grad_old) / (torch.norm(z_new - z_old) + 1e-8)
+            lip_new = beta * lip + (1 - beta) * diff_norm.item()
+            lip_new = max(1.0e-3, min(1000, lip_new))
             
             # Update state
             self.state['flat']['z'] = z_new

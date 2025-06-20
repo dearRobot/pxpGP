@@ -359,12 +359,10 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     pseudo_y = pseudo_y.to(device)
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    # optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
-    #                         tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-    #                         rank=rank, world_size=world_size)
     optimizer = scaled_pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                                 tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
                                 rank=rank, world_size=world_size)
+    
     
     def closure():
         optimizer.zero_grad()
@@ -375,6 +373,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
             grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten()
                               for p in model.parameters()])
         return loss, grad
+        
     
     model.train()
     likelihood.train()
@@ -384,11 +383,16 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
 
     start_time = time.time()
     for epoch in range(admm_params['num_epochs']):
-        converged = optimizer.step(closure, consensus=True)
+        converged = optimizer.step(closure, epoch=epoch)
         
         loss_val = closure()[0].item()
-        if rank == 0 and (epoch + 1) % 20 == 0:
-            print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {loss_val}") 
+
+        if epoch == 1:
+            print(f"Rank {rank} - Initial loss: {loss_val:.4f}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}")
+
+        # if rank == 0 and (epoch + 1) % 20 == 0:
+        #     print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {loss_val}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}") 
+
         
         if not torch.isfinite(torch.tensor(loss_val)):
             if rank == 0:
@@ -403,7 +407,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     end_time = time.time()
     if rank == 0:
         print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
-
+        
     optimizer.zero_grad(set_to_none=True)
     torch.cuda.empty_cache()    
 
@@ -471,7 +475,7 @@ if __name__ == "__main__":
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents
-    local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='random')    
+    local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
     
     # train the model
     start_time = time.time()
