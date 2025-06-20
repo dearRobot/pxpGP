@@ -77,7 +77,6 @@ class ScaledPxADMM(Optimizer):
         self.state['flat']['old_grad'] = torch.zeros_like(self.flat_param, requires_grad=False)
 
         self.state['flat']['m'] = torch.zeros_like(self.flat_param, requires_grad=False)  # Momentum
-        self.state['flat']['v'] = torch.zeros_like(self.flat_param, requires_grad=False)  # Second moment
         
     
     def _unflatten_params(self, flat_param: Tensor) -> None:
@@ -130,6 +129,8 @@ class ScaledPxADMM(Optimizer):
             z_old = self.state['flat']['z']
             u_ = self.state['flat']['u']
             grad_old = self.state['flat']['old_grad']
+
+            m = self.state['flat']['m']  # Momentum buffer
                         
             # Step 1: update auxiliary variable (z) using consensus same as cADMM // z^{k+1} = 1/M * sum_i (x_i^{k} + u_i^{k})
             z_new = self.flat_param.detach() + u_
@@ -149,22 +150,27 @@ class ScaledPxADMM(Optimizer):
             # compute x_i^{k+1} 
             # x_new = v_ - (1.0 / (rho + lip)) * (grad )
             # x_new = z_new - (1.0 / (rho + lip)) * (grad + rho * u_)
+
+            beta1 = 0.80  # Momentum parameter (same as Adam's default)
+            m.mul_(beta1).add_(grad, alpha=1 - beta1)
             
             alpha = 1.0 / (rho + lip)
 
-            x_try = v_ - alpha * (grad)
+            # x_try = v_ - alpha * (grad)
+            x_try = v_ - alpha * m  
             self._unflatten_params(x_try)
             f_try = closure()[0].item()
 
             # Armijo constants
-            c, tau   = 1e-4, 0.5
+            c, tau = 1e-4, 0.5
             iter = 0
 
             # while f_try > f_old + 0.1 * lip * torch.norm(x_try - v)**2 and iter < 10: # Armijo condition
             while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
                 lip *= tau
                 alpha = 1.0 / (rho + lip)
-                x_try = v_ - alpha*(grad)
+                # x_try = v_ - alpha*(grad)
+                x_try = v_ - alpha * m  # Use momentum in Armijo loop
                 self._unflatten_params(x_try)
                 f_try = closure()[0].item()
                 iter += 1
@@ -172,9 +178,16 @@ class ScaledPxADMM(Optimizer):
             x_new = x_try
 
             # noise addition
-            sigma = 0.02 / math.sqrt(self.iter + 1)
+            noise_temp = 0.2  # Initial noise temperature
+            noise_decay = 0.01  # Decay factor for noise temperature
+
+            T = noise_temp / (1.0 + noise_decay * self.iter)
+            sigma = T * 0.05  # Scale noise by temperature
             noise = torch.randn_like(x_new) * sigma
             x_new += noise
+            # sigma = 0.02 / math.sqrt(self.iter + 1)
+            # noise = torch.randn_like(x_new) * sigma
+            # x_new += noise
             
             # Step 3: u-update // u_i^{k+1} = u_i^k + x_i^{k+1} - z^{k+1}
             primal_residual = x_new - z_new
