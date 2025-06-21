@@ -439,7 +439,6 @@ def test_model(model, likelihood, test_x, test_y, device):
         lower, upper = observed_pred.confidence_region()
 
     # compute RMSE error
-    torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
     rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
     print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
     

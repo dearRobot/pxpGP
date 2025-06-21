@@ -6,6 +6,8 @@ import os
 from sklearn.model_selection import train_test_split
 from linear_operator.settings import max_cg_iterations, cg_tolerance
 import time
+import json
+from filelock import FileLock
 
 from utils import load_yaml_config
 from utils.results import plot_result
@@ -210,10 +212,10 @@ def test_model(model, likelihood, test_x, test_y, device):
         lower, upper = observed_pred.confidence_region()
 
     # compute RMSE error
-    torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"RMSE: {torch.sqrt(torch.mean((mean - test_y) ** 2)).item():.4f}")
+    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
     
-    return mean.cpu(), lower.cpu(), upper.cpu()
+    return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
 
 
 if __name__ == "__main__":
@@ -251,11 +253,10 @@ if __name__ == "__main__":
     start_time = time.time()
     model, likelihood, aug_x, aug_y = train_model(local_x, local_y, device, 
                                     admm_params, input_dim=input_dim, backend=backend)
-    end_time = time.time()
-    # print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
+    train_time = time.time() - start_time
     
     # test the model
-    mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
+    mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
     if model.covar_module.base_kernel.lengthscale.numel() > 1:
@@ -266,9 +267,26 @@ if __name__ == "__main__":
     print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
     print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
     
-    # Save model and likelihood parameters     
-    save_params(model, rank, input_dim, method='gapxGP',
-                filepath=f'results/gapxGP_params_{input_dim}_rank_{rank}.json')
+    result={
+        'model': 'gapxGP',
+        'rank': rank,
+        'world_size': world_size,
+        'total_dataset_size': x.shape[0],
+        'local_dataset_size': local_x.shape[0],
+        'input_dim': input_dim,
+        'lengthscale': model.covar_module.base_kernel.lengthscale.cpu().detach().numpy().tolist(),
+        'outputscale': model.covar_module.outputscale.item(),
+        'noise': model.likelihood.noise.item(),
+        'test_rmse': rmse_error,
+        'train_time': train_time
+    }
+
+    file_path = f'results/results_dim_{input_dim}.json'
+    lock_path = file_path + '.lock'
+
+    with FileLock(lock_path):
+        with open(file_path, 'a') as f:
+            f.write(json.dumps(result) + '\n')
     
     # plot the results
     # plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)

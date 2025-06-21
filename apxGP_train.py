@@ -6,6 +6,8 @@ import torch.distributed as dist
 from sklearn.model_selection import train_test_split
 import os
 import time
+import json
+from filelock import FileLock
 
 from utils import load_yaml_config
 from utils import generate_dataset, split_agent_data
@@ -129,20 +131,10 @@ def test_model(model, likelihood, test_x, test_y, device):
         lower, upper = observed_pred.confidence_region()
 
     # compute RMSE error
-    torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"RMSE: {torch.sqrt(torch.mean((mean - test_y) ** 2)).item():.4f}")
+    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
     
-    return mean.cpu(), lower.cpu(), upper.cpu()
-        
-
-def plot_results(train_x, train_y, test_x, mean, lower, upper):
-    plt.figure(figsize=(12, 6))
-    plt.plot(train_x.cpu().numpy(), train_y.cpu().numpy(), 'k*', label='Train Data')
-    plt.plot(test_x.cpu().numpy(), mean.cpu().numpy(), 'b', label='Mean Prediction')
-    plt.fill_between(test_x.cpu().numpy(), lower.cpu().numpy(), upper.cpu().numpy(), alpha=0.5, color='blue', label='Confidence Interval')
-    plt.title('Gaussian Process Regression Rank {}'.format(os.environ['RANK']))
-    plt.legend()
-    plt.show()
+    return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
 
 
 if __name__ == "__main__":
@@ -173,7 +165,6 @@ if __name__ == "__main__":
     x, y = generate_dataset(num_samples, input_dim)
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
-    # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
 
     # create the local model and likelihood
@@ -184,11 +175,10 @@ if __name__ == "__main__":
     # train the model
     start_time = time.time()
     model, likelihood = train_model(model, likelihood, local_x, local_y, device, admm_params, backend=backend)
-    end_time = time.time()
-    # print(f"Rank {rank}: Training completed in {end_time - start_time:.2f} seconds.")
+    train_time = time.time() - start_time
 
     # test the model
-    mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
+    mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
     if model.covar_module.base_kernel.lengthscale.numel() > 1:
@@ -200,5 +190,26 @@ if __name__ == "__main__":
     print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
     
     # Save model and likelihood parameters     
-    save_params(model, rank, input_dim, method='apxGP',
-                filepath=f'results/apxGP_params_{input_dim}_rank_{rank}.json')
+    # save_params(model, rank, input_dim, method='apxGP',
+    #             filepath=f'results/apxGP_params_{input_dim}_rank_{rank}.json')
+
+    result={
+        'model': 'apxGP',
+        'rank': rank,
+        'world_size': world_size,
+        'total_dataset_size': x.shape[0],
+        'local_dataset_size': local_x.shape[0],
+        'input_dim': input_dim,
+        'lengthscale': model.covar_module.base_kernel.lengthscale.cpu().detach().numpy().tolist(),
+        'outputscale': model.covar_module.outputscale.item(),
+        'noise': model.likelihood.noise.item(),
+        'test_rmse': rmse_error,
+        'train_time': train_time
+    }
+
+    file_path = f'results/results_dim_{input_dim}.json'
+    lock_path = file_path + '.lock'
+
+    with FileLock(lock_path):
+        with open(file_path, 'a') as f:
+            f.write(json.dumps(result) + '\n')
