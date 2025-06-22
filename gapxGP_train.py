@@ -66,7 +66,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
         
     # dataset_size = int(local_x.size(0) / world_size)
     dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
-    dataset_size = max(dataset_size, 5)
+    dataset_size = max(dataset_size, 8)
 
     sample_indices = torch.randperm(local_x.size(0))[:dataset_size]
     local_comm_x = local_x[sample_indices]
@@ -228,7 +228,11 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/gapxGP.yaml'

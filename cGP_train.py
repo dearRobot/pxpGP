@@ -136,7 +136,11 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")        
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")       
 
     # load yaml configuration
     config_path = 'config/cGP.yaml'

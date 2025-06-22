@@ -246,7 +246,7 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     
     dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
     # dataset_size = int(local_x.size(0) / 10)
-    dataset_size = max(dataset_size, 5)
+    dataset_size = max(dataset_size, 8)
 
     local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
                             device, dataset_size=dataset_size, rank=rank, num_epochs=num_epochs, 
@@ -354,6 +354,9 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     model.covar_module.base_kernel.lengthscale.data = avg_hyperparams['lengthscale'] * torch.ones_like(model.covar_module.base_kernel.lengthscale.data)
     model.covar_module.outputscale.data = avg_hyperparams['outputscale'] * torch.ones_like(model.covar_module.outputscale.data)
     
+    # constraing hyperparameters
+
+    
     model = model.to(device)
     likelihood = likelihood.to(device)
     pseudo_x = pseudo_x.to(device)
@@ -447,8 +450,11 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":    
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    device = 'cpu'
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/pxpGP.yaml'
