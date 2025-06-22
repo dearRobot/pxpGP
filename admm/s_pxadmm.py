@@ -231,6 +231,16 @@ class ScaledPxADMM(Optimizer):
                     print("scaled pxADMM converged at iteration {}".format(self.iter))
                 return True
 
+            # Why?????????????????????????
+            
+            # constraint_norm = torch.norm(primal_residual, p=2)
+            
+            # dist.all_reduce(constraint_norm, op=dist.ReduceOp.MAX)
+
+            # if constraint_norm.item() < eps_primal:
+            #     self.isConverged = True
+            #     return True
+
             # update rho
             if r_norm.item() > 10 * s_norm.item():
                 rho *= 2.0
@@ -238,7 +248,6 @@ class ScaledPxADMM(Optimizer):
                 rho /= 2.0
 
             rho = max(1.0e-3, min(100.0, rho))
-
 
             # update lip
             beta = 0.9
