@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 NUM_RUN=10
-NUM_AGENTS=4
+NUM_AGENTS=16
 
 for i in $(seq 1 $NUM_RUN); do
     echo "Run $i"

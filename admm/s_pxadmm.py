@@ -11,7 +11,7 @@ __all__ = ["ScaledPxADMM", "scaled_pxadmm", "scaled_px_admm"]
 
 class ScaledPxADMM(Optimizer):
     def __init__(self, params, rho: float=1.0, lip: float=1.0, rank: int=0,
-                        world_size: int=1, tol_abs: float=1e-6, tol_rel: float=1e-4):
+                        world_size: int=1, tol_abs: float=1e-4, tol_rel: float=1e-2):
         """
         scaled pxADMM optimizer
         Here we distribute dataset, parallelize computation and co-ordinate z-update among agents
@@ -221,10 +221,8 @@ class ScaledPxADMM(Optimizer):
             s_norm /= self.world_size
 
             if self.rank == 0 and self.iter % 10 == 0:
-                print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}, '
-                    f'eps_primal: {eps_primal.item()}, eps_dual: {eps_dual.item()}, '
-                    f'r_norm: {r_norm.item()}, s_norm: {s_norm.item()}')
-            
+                print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}')
+
             if r_norm.item() < eps_primal and s_norm.item() < eps_dual:
                 self.isConverged = True
                 if self.rank == 0:

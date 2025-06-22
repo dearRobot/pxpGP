@@ -245,6 +245,7 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     local_y = local_y.to(device)
     
     dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
+    # dataset_size = int(local_x.size(0) / 10)
     dataset_size = max(dataset_size, 5)
 
     local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
@@ -446,7 +447,8 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":    
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = 'cpu'
 
     # load yaml configuration
     config_path = 'config/pxpGP.yaml'
