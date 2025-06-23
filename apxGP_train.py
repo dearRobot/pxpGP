@@ -49,23 +49,19 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
         optimizer: The pxADMM optimizer.
         num_epochs: Number of training epochs.
     """
-
     # intialize distributed training
     master_addr = os.environ.get('MASTER_ADDR', 'localhost')
     master_port = os.environ.get('MASTER_PORT', '12345')
     world_size, rank = init_distributed_mode(backend=backend, master_addr=master_addr, 
                                               master_port=master_port)
 
-    if rank == 0:
-        print(f"Rank {rank} dataset size: {train_x.shape[0]}, input dimension: {train_x.shape[1]}")
-    
     # move data to device
     model = model.to(device) 
     likelihood = likelihood.to(device)
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
-    print("Rank {}: model parameters are {}".format(rank, [p.shape for p in model.parameters()]))
+    # if rank == 0:
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
@@ -92,11 +88,10 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
         
         if converged_:
             if rank == 0:
-                print("Converged at epoch {}".format(epoch + 1))
+                print(f"Rank {rank}: Convergence achieved at epoch {epoch + 1} with loss: {closure()[0].item()}")
             break
 
     end_time = time.time()
-    
     if rank == 0:
         print(f"Rank {rank}: Training completed in {end_time - start_time:.2f} seconds.")
     
@@ -140,7 +135,11 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/apxGP.yaml'
@@ -167,6 +166,16 @@ if __name__ == "__main__":
 
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
 
+    if rank == 0:
+        print(f"\033[92mTotal dataset size: {x.shape[0]} and local dataset size: {local_x.shape[0]}\033[0m")
+        
+        file_path = f'results/results_dim_{input_dim}.json'
+        lock_path = file_path + '.lock'
+
+        with FileLock(lock_path):
+            with open(file_path, 'a') as f:
+                f.write('\n')
+    
     # create the local model and likelihood
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()  
@@ -189,10 +198,6 @@ if __name__ == "__main__":
     print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
     print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
     
-    # Save model and likelihood parameters     
-    # save_params(model, rank, input_dim, method='apxGP',
-    #             filepath=f'results/apxGP_params_{input_dim}_rank_{rank}.json')
-
     result={
         'model': 'apxGP',
         'rank': rank,

@@ -9,7 +9,7 @@ import time
 from filelock import FileLock
 import json
 
-from utils import load_yaml_config, generate_training_data
+from utils import load_yaml_config
 from utils import generate_dataset, split_agent_data
 from utils.results import plot_result, save_params
 
@@ -82,7 +82,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     likelihood.train()
 
     for epoch in range(admm_params['num_epochs']):
-        optimizer.step(closure)
+        conerged = optimizer.step(closure)
         # optimizer.zero_grad()
         # output = model(train_x)
         # loss = -mll(output, train_y)
@@ -90,7 +90,11 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
         # optimizer.step()
 
         if rank == 0 and (epoch + 1) % 10 == 0:
-            print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}")  
+            print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}") 
+            
+        if conerged:
+            print(f"Rank {rank} - Training converged at epoch {epoch + 1} with loss: {closure()[0].item()}")
+            break
 
     optimizer.zero_grad(set_to_none=True)
     torch.cuda.empty_cache() 
@@ -132,7 +136,11 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")       
 
     # load yaml configuration
     config_path = 'config/cGP.yaml'
@@ -158,6 +166,16 @@ if __name__ == "__main__":
 
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
 
+    if rank == 0:
+        print(f"\033[92mTotal dataset size: {x.shape[0]} and local dataset size: {local_x.shape[0]}\033[0m")
+        
+        file_path = f'results/results_dim_{input_dim}.json'
+        lock_path = file_path + '.lock'
+
+        with FileLock(lock_path):
+            with open(file_path, 'a') as f:
+                f.write('\n')
+    
     # Create the local model and likelihood   
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
@@ -200,19 +218,6 @@ if __name__ == "__main__":
         with open(file_path, 'a') as f:
             f.write(json.dumps(result) + '\n')
 
-    # mean = mean.reshape(100, 100)
-    # lower = lower.reshape(100, 100)
-    # upper = upper.reshape(100, 100)
 
-    # # Plot the results
-    # fig = plt.figure(figsize=(10, 7))
-    # ax = fig.add_subplot(111, projection='3d')
-    # ax.plot_surface(X1.cpu().numpy(), X2.cpu().numpy(), mean.cpu().numpy(), cmap='viridis', edgecolor='k')
-    # ax.set_xlabel('X1')
-    # ax.set_ylabel('X2')
-    # ax.set_zlabel('f(x1, x2)')
-    # ax.set_title('GP Prediction with RBF Kernel (ARD)')
-    # plt.tight_layout()
-    # plt.show()
 
 

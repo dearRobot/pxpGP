@@ -126,7 +126,7 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     # torch.optim.LBFGS
     optimizer_sparse = torch.optim.Adam( [{'params': model_sparse.parameters()},
                                         {'params': likelihood_sparse.parameters()}],
-                                        lr=0.015,             
+                                        lr=0.020,             
                                         betas=(0.9, 0.999),   # Default, but explicit for clarity
                                         eps=1e-8,             # Default
                                         weight_decay=1e-4,    # Add regularization
@@ -239,7 +239,8 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     local_y = local_y.to(device)
     
     dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
-    dataset_size = max(dataset_size, 5)
+    # dataset_size = int(local_x.size(0) / 10)
+    dataset_size = max(dataset_size, 8)
 
     local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
                             device, dataset_size=dataset_size, rank=rank, num_epochs=num_epochs, 
@@ -347,6 +348,9 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     model.covar_module.base_kernel.lengthscale.data = avg_hyperparams['lengthscale'] * torch.ones_like(model.covar_module.base_kernel.lengthscale.data)
     model.covar_module.outputscale.data = avg_hyperparams['outputscale'] * torch.ones_like(model.covar_module.outputscale.data)
     
+    # constraing hyperparameters
+
+    
     model = model.to(device)
     likelihood = likelihood.to(device)
     pseudo_x = pseudo_x.to(device)
@@ -380,13 +384,12 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
         converged = optimizer.step(closure, epoch=epoch)
         loss_val = closure()[0].item()
 
-        if epoch == 1:
+        if rank == 0 and epoch == 1:
             print(f"Rank {rank} - Initial loss: {loss_val:.4f}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}")
 
         # if rank == 0 and (epoch + 1) % 20 == 0:
         #     print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {loss_val}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}") 
 
-        
         if not torch.isfinite(torch.tensor(loss_val)):
             if rank == 0:
                 print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
@@ -394,7 +397,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
 
         if converged:
             if rank == 0:
-                print("Converged at epoch {}".format(epoch + 1))
+                print(f"\033[92mpxpGP Converged at epoch {epoch + 1}, with loss {loss_val:.4f}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}\033[0m")
             break
 
     end_time = time.time()
@@ -441,7 +444,11 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":    
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/pxpGP.yaml'
@@ -468,6 +475,16 @@ if __name__ == "__main__":
 
     # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
+    
+    if rank == 0:
+        print(f"\033[92mTotal dataset size: {x.shape[0]} and local dataset size: {local_x.shape[0]}\033[0m")
+        
+        file_path = f'results/results_dim_{input_dim}.json'
+        lock_path = file_path + '.lock'
+
+        with FileLock(lock_path):
+            with open(file_path, 'a') as f:
+                f.write('\n')
     
     # train the model
     start_time = time.time()

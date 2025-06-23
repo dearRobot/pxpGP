@@ -1,12 +1,12 @@
-num_samples: 500
+num_samples: 10000
 input_dim: 1
 
 # must be total 1.0
 train_split: 0.95
 test_split: 0.05
 
-num_epochs: 100 # admm epochs
-rho: 1.2 # 0.80
-lr: 0.002 # learning rate for x update step 
+num_epochs: 1000 # admm epochs
+rho: 0.85 # 0.80
+lr: 0.005 # learning rate for x update step 
 max_iter: 5 # internal x update iterations
 backend: 'gloo'

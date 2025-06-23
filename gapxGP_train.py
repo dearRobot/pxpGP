@@ -64,10 +64,16 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     # Step 1: create local communication dataset
     torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
         
-    dataset_size = int(local_x.size(0) / world_size)
+    # dataset_size = int(local_x.size(0) / world_size)
+    dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
+    dataset_size = max(dataset_size, 8)
+
     sample_indices = torch.randperm(local_x.size(0))[:dataset_size]
     local_comm_x = local_x[sample_indices]
     local_comm_y = local_y[sample_indices]
+
+    if rank == 0:
+        print(f"\033[92mRank {rank} - sparse dataset size is: {dataset_size}, local dataset: {local_x.shape}, \033[0m")
     
     # Step 2: communicate local communication dataset to central node rank 0
     sample_x_list = [torch.empty_like(local_comm_x) for _ in range(world_size)]
@@ -93,8 +99,9 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     aug_x = torch.cat([local_x, comm_x], dim=0)
     aug_y = torch.cat([local_y, comm_y], dim=0)
 
-    # print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
-    
+    if rank == 0:
+        print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
+        
     return aug_x, aug_y
 
 
@@ -159,7 +166,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
     model_aug.train()
     likelihood_aug.train()
 
-    start_time = time.time()
+    # start_time = time.time()
     for epoch in range(admm_params['num_epochs']):
         converged_aug = optimizer_aug.step(closure_aug, consensus=True)
         
@@ -177,9 +184,9 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
                 print("Converged at epoch {}".format(epoch + 1))
             break
 
-    end_time = time.time()
-    if rank == 0:
-        print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
+    # end_time = time.time()
+    # if rank == 0:
+    #     print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
     
     optimizer_aug.zero_grad(set_to_none=True)
     torch.cuda.empty_cache() 
@@ -221,7 +228,11 @@ def test_model(model, likelihood, test_x, test_y, device):
 if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/gapxGP.yaml'
@@ -248,6 +259,16 @@ if __name__ == "__main__":
 
     # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
+
+    if rank == 0:
+        print(f"\033[92mTotal dataset size: {x.shape[0]} and local dataset size: {local_x.shape[0]}\033[0m")
+        
+        file_path = f'results/results_dim_{input_dim}.json'
+        lock_path = file_path + '.lock'
+
+        with FileLock(lock_path):
+            with open(file_path, 'a') as f:
+                f.write('\n')
 
     # train the model
     start_time = time.time()
@@ -288,6 +309,3 @@ if __name__ == "__main__":
         with open(file_path, 'a') as f:
             f.write(json.dumps(result) + '\n')
     
-    # plot the results
-    # plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
-    # plot_result(aug_x, aug_y, test_x, mean, lower, upper, rank=rank)

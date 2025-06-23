@@ -10,7 +10,7 @@ all__ = ["pxADMM", "pxadmm", "px_admm"]
 
 class pxADMM(Optimizer):
     def __init__(self, params, rho: float=1.0, lip: float=1.0, rank: int=0,
-                        world_size: int=1, tol_abs: float=1e-6, tol_rel: float=1e-4):
+                        world_size: int=1, tol_abs: float=1e-4, tol_rel: float=1e-2):
         """
         pxADMM optimizer
         Here we distribute dataset, parallelize computation and co-ordinate z-update among agents
@@ -49,6 +49,10 @@ class pxADMM(Optimizer):
         
         defaults = dict(rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel)
         super(pxADMM, self).__init__(params, defaults)
+
+        if rank == 0:
+            print("pxADMM optimizer initialized with rho: {}, lip: {}, tol_abs: {}, tol_rel: {}" \
+            "".format(rho, lip, tol_abs, tol_rel))
 
         self.rank = rank
         self.world_size = world_size
@@ -91,7 +95,6 @@ class pxADMM(Optimizer):
                 i += 1
 
 
-    # TODO: Implement scaled pxADMM and adaptive tolerance
     def step(self, closure=None, consensus: bool=True):
         """
         Performs a single optimization step.
@@ -123,7 +126,6 @@ class pxADMM(Optimizer):
             tol_rel = group['tol_rel']
 
             # rather than iterating over the each parameter, we compute over the flattened parameters vector
-            # Get state
             z_old = self.state['flat']['z']
             lambda_ = self.state['flat']['lambda']
 
@@ -159,38 +161,37 @@ class pxADMM(Optimizer):
             self._unflatten_params(x_new)
 
             # check convergence
-            primal_residual = torch.norm(x_new - z_new, p=2)
-            dual_residual = torch.norm(rho * (z_new - z_old), p=2)
+            r_norm = torch.norm(x_new - z_new, p=2)
+            s_norm = torch.norm(rho * (z_new - z_old), p=2)
 
-                        
-            # adaptive tolerance 
-            # will work in scaled version of pxADMM not for normal version
-            # p = self.total_params
-            # eps_primal = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.max(torch.norm(x_new), torch.norm(z_new))
-            # eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.norm(lambda_new)
+            p = self.total_params
+            eps_primal = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.max(torch.norm(x_new), torch.norm(z_new))
+            eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.norm(lambda_new)
 
-            # # synchronize the residuals across all processes
-            # dist.all_reduce(primal_residual, op=dist.ReduceOp.MAX)
-            # dist.all_reduce(dual_residual, op=dist.ReduceOp.MAX)
+            dist.all_reduce(eps_primal, op=dist.ReduceOp.SUM)
+            dist.all_reduce(eps_dual, op=dist.ReduceOp.SUM)
+            dist.all_reduce(r_norm, op=dist.ReduceOp.SUM)
+            dist.all_reduce(s_norm, op=dist.ReduceOp.SUM)
+            eps_primal /= self.world_size
+            eps_dual /= self.world_size
+            r_norm /= self.world_size
+            s_norm /= self.world_size
 
-            # # if primal_residual.item() < eps_primal and dual_residual.item() < eps_dual:
-            # if primal_residual.item() < tol_abs and dual_residual.item() < tol_abs:
-            #     self.isConverged = True
-            #     if self.rank == 0:
-            #         print("pxADMM converged at iteration {}".format(self.iter))
-            #     return True
-
-
-            constraint_norm = torch.norm(x_new - z_new, p=2)
-            
-            if consensus:
-                dist.all_reduce(constraint_norm, op=dist.ReduceOp.MAX)
-
-            if constraint_norm.item() < tol_abs:
+            if r_norm.item() < eps_primal and s_norm.item() < eps_dual:
                 self.isConverged = True
                 if self.rank == 0:
                     print("pxADMM converged at iteration {}".format(self.iter))
                 return True
+
+            # constraint_norm = torch.norm(x_new - z_new, p=2)
+            
+            # dist.all_reduce(constraint_norm, op=dist.ReduceOp.MAX)
+
+            # if constraint_norm.item() < eps_primal:
+            #     self.isConverged = True
+            #     if self.rank == 0:
+            #         print("pxADMM converged at iteration {}".format(self.iter))
+            #     return True
             
         return False    
     

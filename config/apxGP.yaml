@@ -1,13 +1,13 @@
-num_samples: 500
-input_dim: 2
+num_samples: 10000
+input_dim: 1
 
 # must be total 1.0
 train_split: 0.95
 test_split: 0.05
 
-num_epochs: 100 # admm epochs
-rho: 0.8
+num_epochs: 1000 # admm epochs
+rho: 0.85
 lip: 1.0 # Lipschitz constant
-tol_abs: 1e-5
-tol_rel: 1e-3
+tol_abs: 1e-4
+tol_rel: 1e-2
 backend: 'gloo'
