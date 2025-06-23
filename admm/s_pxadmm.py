@@ -239,7 +239,6 @@ class ScaledPxADMM(Optimizer):
 
             rho = max(1.0e-3, min(100.0, rho))
 
-
             # update lip
             beta = 0.9
             diff_norm = torch.norm(grad - grad_old) / (torch.norm(z_new - z_old) + 1e-8)

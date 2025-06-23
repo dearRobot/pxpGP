@@ -75,6 +75,7 @@ class decpxADMM(Optimizer):
         # Initialize alpha, x_prev as a single vector
         self.state['flat']['alpha'] = torch.zeros_like(self.flat_param, requires_grad=False)
         self.state['flat']['x_prev'] = self.flat_param.clone().detach().requires_grad_(False)
+        self.state['flat']['neighbors_sum'] = torch.zeros_like(self.flat_param, requires_grad=False)
 
 
     def _unflatten_params(self, flat_param: Tensor) -> None:
@@ -133,7 +134,7 @@ class decpxADMM(Optimizer):
         return neighbor_sum
 
 
-    def step(self, closure=None):
+    def step(self, closure=None, epoch: int = 0):
         """
         Performs one decpxADMM iteration.
         
@@ -161,6 +162,7 @@ class decpxADMM(Optimizer):
             # rather than iterating over each parameter, we will use the flattened parameters
             alpha = self.state['flat']['alpha']
             x_prev = self.state['flat']['x_prev']
+            # neighbor_sum_prev = self.state['flat']['neighbors_sum']
 
             # steps are in reverse order to avoid double communication and memory efficiency
             # Step 1: update alpha_i^k+1 (dual variable)
@@ -187,7 +189,47 @@ class decpxADMM(Optimizer):
             self._unflatten_params(x_new)
 
             # Check convergence criteria
+            r_norm = torch.norm(self.degree*x_new - neighbor_sum, p=2)
+            dual_residual = rho*(self.degree*(x_new - x_prev) - (neighbor_sum))
+            s_norm = torch.norm(dual_residual, p=2)
 
+            primal_tol = tol_abs + tol_rel * max(self.degree*torch.norm(x_new, p=2), torch.norm(neighbor_sum, p=2)) 
+            dual_tol = tol_abs + tol_rel * torch.norm(alpha_new, p=2)
+
+            if r_norm < primal_tol and s_norm < dual_tol:
+                self.isConverged = True
+                if self.rank == 0:
+                    print(f"decpxADMM converged at iteration {self.iter} with r_norm: {r_norm:.6f}, s_norm: {s_norm:.6f}")
+                return True
+            
+            if self.rank == 0 and self.iter % 10 == 0:
+                print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}')
+            
+            # update rho
+            if r_norm.item() > 10 * s_norm.item():
+                rho *= 2.0
+            elif s_norm.item() > 10 * r_norm.item():
+                rho /= 2.0
+
+            rho = max(1.0e-3, min(100.0, rho))
+
+            # #TODO: need to make this better
+            new_loss, new_grad = closure()
+            
+            # update lip
+            beta = 0.9
+            diff_norm = torch.norm(new_grad - grad) / (torch.norm(x_new - x_prev) + 1e-8)
+            lip_new = beta * lip + (1 - beta) * diff_norm.item()
+            lip_new = max(1.0e-3, min(1000, lip_new))
+
+            # update state
+            # self.state['flat']['neighbors_sum'] = neighbor_sum
+
+            group['rho'] = rho
+            group['lip'] = lip_new
+            
+        return False
+    
 
 def dec_pxadmm(params, **kwargs):
     """

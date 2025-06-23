@@ -6,8 +6,11 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
 from datetime import timedelta
+from sklearn.model_selection import train_test_split
+import time
+import json
 
-from utils import load_yaml_config, generate_training_data
+from utils import load_yaml_config, generate_dataset, split_agent_data
 from utils.graph import DecentralizedNetwork
 from utils.results import plot_result
 
@@ -163,6 +166,7 @@ def train_model(train_x, train_y, device, admm_params, neighbors, backend='nccl'
     dist.destroy_process_group()
     return model, likelihood
 
+
 def test_model(model, likelihood, test_x, device):
     """
     Test the Gaussian Process model on test data.
@@ -210,9 +214,13 @@ if __name__ == "__main__":
     graph_viz = bool(config.get('graph_viz', False))
     aug_dataset_size = int(config.get('aug_dataset_size', 50))
 
-    # Generate training data
-    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank,  
-                                              world_size=world_size, partition='random')
+    # generate local training data
+    x, y = generate_dataset(num_samples, input_dim)
+    train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
+
+    # split data among agents
+    local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
+   
         
     # get information about neighbors
     dec_graph = DecentralizedNetwork(num_nodes=world_size, graph_type='degree', dim=input_dim, degree=2, seed=42)
