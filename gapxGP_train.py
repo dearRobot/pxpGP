@@ -8,6 +8,7 @@ from linear_operator.settings import max_cg_iterations, cg_tolerance
 import time
 import json
 from filelock import FileLock
+from datetime import timedelta
 
 from utils import load_yaml_config
 from utils.results import plot_result
@@ -34,7 +35,7 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     rank = int(os.environ['RANK'])
     
     dist.init_process_group(backend=backend, init_method='tcp://{}:{}'.format(master_addr, master_port), 
-                            world_size=world_size, rank=rank)
+                            world_size=world_size, rank=rank, timeout=timedelta(seconds=600))
 
     return world_size, rank
 
@@ -166,7 +167,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
     model_aug.train()
     likelihood_aug.train()
 
-    # start_time = time.time()
+    start_time = time.time()
     for epoch in range(admm_params['num_epochs']):
         converged_aug = optimizer_aug.step(closure_aug, consensus=True)
         
@@ -184,9 +185,9 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
                 print("Converged at epoch {}".format(epoch + 1))
             break
 
-    # end_time = time.time()
-    # if rank == 0:
-    #     print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
+    end_time = time.time()
+    if rank == 0:
+        print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
     
     optimizer_aug.zero_grad(set_to_none=True)
     torch.cuda.empty_cache() 
