@@ -165,16 +165,6 @@ if __name__ == "__main__":
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
-
-    if rank == 0:
-        print(f"\033[92mTotal dataset size: {x.shape[0]} and local dataset size: {local_x.shape[0]}\033[0m")
-        
-        file_path = f'results/results_dim_{input_dim}.json'
-        lock_path = file_path + '.lock'
-
-        with FileLock(lock_path):
-            with open(file_path, 'a') as f:
-                f.write('\n')
     
     # create the local model and likelihood
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
@@ -212,7 +202,7 @@ if __name__ == "__main__":
         'train_time': train_time
     }
 
-    file_path = f'results/results_dim_{input_dim}.json'
+    file_path = f'results/dim_{input_dim}/result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
     lock_path = file_path + '.lock'
 
     with FileLock(lock_path):

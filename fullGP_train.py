@@ -176,34 +176,10 @@ if __name__ == "__main__":
         'train_time': train_time
         }
     
-    file_path = f'results/results_dim_{input_dim}.json'
+    file_path = f'results/dim_{input_dim}/result_dim{input_dim}_datasize_{x.shape[0]}.json'
     lock_path = file_path + '.lock'
 
     with FileLock(lock_path):
         with open(file_path, 'a') as f:
             f.write(json.dumps(result) + '\n')
 
-    # plt.figure(figsize=(10, 6))
-    # train_x, train_y = train_x.cpu().numpy(), train_y.cpu().numpy()    
-    # test_x, test_y, mean = test_x.cpu().numpy(), test_y.cpu().numpy() ,mean.numpy()
-    # lower, upper = lower.numpy(), upper.numpy()
-
-    # sort_idx = np.argsort(test_x.flatten())
-    # test_x_ = test_x[sort_idx]
-    # mean = mean[sort_idx]
-    # lower = lower[sort_idx]
-    # upper = upper[sort_idx]
-
-    # plt.plot(train_x, train_y, 'k*', label='Training Data')
-    # plt.plot(test_x, test_y, 'r*', label='Test Data')
-    # plt.plot(test_x_, mean, 'b-', label='Predicted Mean')
-    # plt.fill_between(test_x_.flatten(), lower, upper, alpha=0.3, label='Confidence Interval')
-    # plt.xlabel('x')
-    # plt.ylabel('y')
-    # plt.title('GP Regression')
-    # plt.legend()
-    # plt.show()
-
-    
-    # plot the results
-    # plot_result(train_x, train_y, test_x, mean, lower, upper, input_dim=input_dim, rank=0)
