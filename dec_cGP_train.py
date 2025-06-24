@@ -173,6 +173,5 @@ if __name__ == "__main__":
     test_x = torch.linspace(0, 1, 1000)
     mean, lower, upper = test_model(model, likelihood, test_x, device)
 
-    # plot the results
-    plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
+
 

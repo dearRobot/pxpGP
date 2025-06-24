@@ -505,7 +505,7 @@ if __name__ == "__main__":
     print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
     
     result={
-        'model': 'pxpGP',
+        'model': 'decpxpGP',
         'rank': rank,
         'world_size': world_size,
         'total_dataset_size': x.shape[0],
@@ -518,9 +518,9 @@ if __name__ == "__main__":
         'train_time': train_time
     }
 
-    # file_path = f'results/results_dec_dim_{input_dim}.json'
-    # lock_path = file_path + '.lock'
-
-    # with FileLock(lock_path):
-    #     with open(file_path, 'a') as f:
-    #         f.write(json.dumps(result) + '\n')
+    file_path = f'results/dim_{input_dim}/dec_result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
+    lock_path = file_path + '.lock'
+    
+    with FileLock(lock_path):
+        with open(file_path, 'a') as f:
+            f.write(json.dumps(result) + '\n')

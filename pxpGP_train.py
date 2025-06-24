@@ -246,7 +246,7 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     # make sure dataset size is same for all ranks
     if rank == 0:
         dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
-        dataset_size = max(dataset_size, 8)
+        dataset_size = max(dataset_size, 2)
     else:
         dataset_size = 0
     
@@ -483,16 +483,6 @@ if __name__ == "__main__":
     # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
     
-    if rank == 0:
-        print(f"\033[92mTotal dataset size: {x.shape[0]} and local dataset size: {local_x.shape[0]}\033[0m")
-        
-        file_path = f'results/results_dim_{input_dim}.json'
-        lock_path = file_path + '.lock'
-
-        with FileLock(lock_path):
-            with open(file_path, 'a') as f:
-                f.write('\n')
-    
     # train the model
     start_time = time.time()
     model, likelihood, pseudo_x, pseudo_y = train_model(local_x, local_y, device, 
@@ -526,19 +516,12 @@ if __name__ == "__main__":
         'train_time': train_time
     }
 
-    file_path = f'results/results_dim_{input_dim}.json'
+    file_path = f'results/dim_{input_dim}/result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
     lock_path = file_path + '.lock'
 
     with FileLock(lock_path):
         with open(file_path, 'a') as f:
             f.write(json.dumps(result) + '\n')
     
-    # Save model and likelihood parameters     
-    # save_params(model, rank, input_dim, method='pxpGP',
-    #             filepath=f'results/pxpGP_params_{input_dim}_rank_{rank}.json')
-    
-    
-    # # plot the results
-    # # plot_result(local_x, local_y, test_x, mean, lower, upper, rank=rank)
-    # plot_result(pseudo_x, pseudo_y, test_x, mean, lower, upper, rank=rank)
+
 
