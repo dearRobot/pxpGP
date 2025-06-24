@@ -179,12 +179,28 @@ NUM_AGENTS=49
 
 NUM_RUN=10
 
+for i in $(seq 1 $NUM_RUN); do
+    echo "Running gapxGP $i with agents: $NUM_AGENTS"
+    
+    # Retry until success
+    while true; do
+        torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 gapxGP_train.py
+        if [ $? -eq 0 ]; then
+            echo "Run $i completed successfully"
+            break
+        else
+            echo "Run $i failed, retrying..."
+            sleep 2  # Optional: brief pause before retrying
+        fi
+    done
+done
+
 # for i in $(seq 1 $NUM_RUN); do
-#     echo "Running gapxGP $i with agents: $NUM_AGENTS"
+#     echo "Running apxGP $i with agents: $NUM_AGENTS"
     
 #     # Retry until success
 #     while true; do
-#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 gapxGP_train.py
+#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 apxGP_train.py
 #         if [ $? -eq 0 ]; then
 #             echo "Run $i completed successfully"
 #             break
@@ -195,37 +211,21 @@ NUM_RUN=10
 #     done
 # done
 
-for i in $(seq 1 $NUM_RUN); do
-    echo "Running apxGP $i with agents: $NUM_AGENTS"
+# for i in $(seq 1 $NUM_RUN); do
+#     echo "Running cGP $i with agents: $NUM_AGENTS"
     
-    # Retry until success
-    while true; do
-        torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 apxGP_train.py
-        if [ $? -eq 0 ]; then
-            echo "Run $i completed successfully"
-            break
-        else
-            echo "Run $i failed, retrying..."
-            sleep 2  # Optional: brief pause before retrying
-        fi
-    done
-done
-
-for i in $(seq 1 $NUM_RUN); do
-    echo "Running cGP $i with agents: $NUM_AGENTS"
-    
-    # Retry until success
-    while true; do
-        torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 cGP_train.py
-        if [ $? -eq 0 ]; then
-            echo "Run $i completed successfully"
-            break
-        else
-            echo "Run $i failed, retrying..."
-            sleep 2  # Optional: brief pause before retrying
-        fi
-    done
-done
+#     # Retry until success
+#     while true; do
+#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 cGP_train.py
+#         if [ $? -eq 0 ]; then
+#             echo "Run $i completed successfully"
+#             break
+#         else
+#             echo "Run $i failed, retrying..."
+#             sleep 2  # Optional: brief pause before retrying
+#         fi
+#     done
+# done
 
 
 ############################# Agents = 64 ############################
@@ -233,31 +233,12 @@ done
 NUM_RUN=20
 NUM_AGENTS=64
 
-for i in $(seq 1 $NUM_RUN); do
-    echo "Running pxpGP $i with agents: $NUM_AGENTS"
-    
-    # Retry until success
-    while true; do
-        torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 pxpGP_train.py
-        if [ $? -eq 0 ]; then
-            echo "Run $i completed successfully"
-            break
-        else
-            echo "Run $i failed, retrying..."
-            sleep 2  # Optional: brief pause before retrying
-        fi
-    done
-done
-
-
-NUM_RUN=10
-
 # for i in $(seq 1 $NUM_RUN); do
-#     echo "Running gapxGP $i with agents: $NUM_AGENTS"
+#     echo "Running pxpGP $i with agents: $NUM_AGENTS"
     
 #     # Retry until success
 #     while true; do
-#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 gapxGP_train.py
+#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 pxpGP_train.py
 #         if [ $? -eq 0 ]; then
 #             echo "Run $i completed successfully"
 #             break
@@ -268,12 +249,15 @@ NUM_RUN=10
 #     done
 # done
 
+
+NUM_RUN=10
+
 for i in $(seq 1 $NUM_RUN); do
-    echo "Running apxGP $i with agents: $NUM_AGENTS"
+    echo "Running gapxGP $i with agents: $NUM_AGENTS"
     
     # Retry until success
     while true; do
-        torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 apxGP_train.py
+        torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 gapxGP_train.py
         if [ $? -eq 0 ]; then
             echo "Run $i completed successfully"
             break
@@ -284,22 +268,38 @@ for i in $(seq 1 $NUM_RUN); do
     done
 done
 
-
-for i in $(seq 1 $NUM_RUN); do
-    echo "Running cGP $i with agents: $NUM_AGENTS"
+# for i in $(seq 1 $NUM_RUN); do
+#     echo "Running apxGP $i with agents: $NUM_AGENTS"
     
-    # Retry until success
-    while true; do
-        torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 cGP_train.py
-        if [ $? -eq 0 ]; then
-            echo "Run $i completed successfully"
-            break
-        else
-            echo "Run $i failed, retrying..."
-            sleep 2  # Optional: brief pause before retrying
-        fi
-    done
-done
+#     # Retry until success
+#     while true; do
+#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 apxGP_train.py
+#         if [ $? -eq 0 ]; then
+#             echo "Run $i completed successfully"
+#             break
+#         else
+#             echo "Run $i failed, retrying..."
+#             sleep 2  # Optional: brief pause before retrying
+#         fi
+#     done
+# done
+
+
+# for i in $(seq 1 $NUM_RUN); do
+#     echo "Running cGP $i with agents: $NUM_AGENTS"
+    
+#     # Retry until success
+#     while true; do
+#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 cGP_train.py
+#         if [ $? -eq 0 ]; then
+#             echo "Run $i completed successfully"
+#             break
+#         else
+#             echo "Run $i failed, retrying..."
+#             sleep 2  # Optional: brief pause before retrying
+#         fi
+#     done
+# done
 
 
 
