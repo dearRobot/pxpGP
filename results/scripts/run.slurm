@@ -8,5 +8,5 @@
 #SBATCH -e error.%j  # standard print error  labeled with SLURM job id %j
 
 echo "FullGP Job has started!"
-srun python3 fullGP_train.py
+srun ./results/scripts/run_fullgp_expt.bash
 echo "FullGP Job Job done"
