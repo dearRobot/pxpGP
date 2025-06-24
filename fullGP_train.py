@@ -132,7 +132,7 @@ if __name__ == "__main__":
 
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
-    print(f"Training data shape: {train_x.shape}, {train_y.shape}")
+    print(f"Training data shape: {x.shape}, {y.shape}")
     print(f"Test data shape: {test_x.shape}, {test_y.shape}")
 
     # model and likelihood

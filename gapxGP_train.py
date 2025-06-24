@@ -65,9 +65,16 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     # Step 1: create local communication dataset
     torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
         
-    # dataset_size = int(local_x.size(0) / world_size)
-    dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
-    dataset_size = max(dataset_size, 8)
+    # make sure dataset size is same for all ranks
+    if rank == 0:
+        dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
+        dataset_size = max(dataset_size, 8)
+    else:
+        dataset_size = 0
+
+    dataset_size_tensor = torch.tensor(dataset_size, device=device)
+    dist.broadcast(dataset_size_tensor, src=0)
+    dataset_size = dataset_size_tensor.item()
 
     sample_indices = torch.randperm(local_x.size(0))[:dataset_size]
     local_comm_x = local_x[sample_indices]
@@ -89,7 +96,6 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
         comm_y = torch.cat(sample_y_list, dim=0)
     else:
         comm_x = torch.zeros((dataset_size * world_size, *local_x.shape[1:]), dtype=local_x.dtype, device=local_x.device) 
-        # comm_x = torch.zeros(dataset_size * world_size, dtype=local_x.dtype, device=local_x.device)
         comm_y = torch.zeros(dataset_size * world_size, dtype=local_y.dtype, device=local_y.device)
 
     # broadcast the communication dataset to all agents from rank 0
