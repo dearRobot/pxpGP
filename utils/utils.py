@@ -24,7 +24,7 @@ def generate_2d_data(num_samples, input_dim: int=2):
     # logarithmic form of the Goldstein-Price function, on [0, 1]
     # f(x) = log(1 + ((x1 + x2 + 1)**2) * (19 - 14*x1 + 3*x1**2 - 14*x2 + 6*x1*x2 + 3*x2**2)) * log(30 + ((2*x1 - 3*x2)**2) * (18 - 32*x1 + 12*x1**2 + 48*x2 - 36*x1*x2 + 27*x2**2))
 
-    train_x_np = np.random.uniform(low=-2.0, high=2.0, size=(1500, 2))
+    train_x_np = np.random.uniform(low=-2.0, high=2.0, size=(num_samples, 2))
 
     x1 = 4.0 * train_x_np[:, 0] - 2.0
     x2 = 4.0 * train_x_np[:, 1] - 2.0

@@ -234,24 +234,31 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     if world_size <= 0:
         raise ValueError("World size must be greater than 0.")
     
+    master_addr = os.environ.get('MASTER_ADDR', 'localhost')
+    master_port = os.environ.get('MASTER_PORT', '12345')
+    world_size, rank = init_distributed_mode(backend=backend, master_addr=master_addr, 
+                                              master_port=master_port)
+    
     # Step 1: create local pseudo dataset    
     local_x = local_x.to(device)
     local_y = local_y.to(device)
     
-    dataset_size = min(int(local_x.size(0) / world_size),  int(local_x.size(0) / 10))
-    # dataset_size = int(local_x.size(0) / 10)
-    dataset_size = max(dataset_size, 8)
-
+    # make sure dataset size is same for all ranks
+    if rank == 0:
+        dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
+        dataset_size = max(dataset_size, 8)
+    else:
+        dataset_size = 0
+    
+    dataset_size_tensor = torch.tensor(dataset_size, device=device)
+    dist.broadcast(dataset_size_tensor, src=0)
+    dataset_size = dataset_size_tensor.item()
+    
     local_pseudo_x, local_pseudo_y, local_hyperparams = create_local_pseudo_dataset(local_x, local_y,
                             device, dataset_size=dataset_size, rank=rank, num_epochs=num_epochs, 
                             input_dim=input_dim)
         
     # Step 2: gather local pseudo dataset from all processes and create global pseudo dataset
-    master_addr = os.environ.get('MASTER_ADDR', 'localhost')
-    master_port = os.environ.get('MASTER_PORT', '12345')
-    world_size, rank = init_distributed_mode(backend=backend, master_addr=master_addr, 
-                                              master_port=master_port)
-
     sample_x_list = [torch.empty_like(local_pseudo_x) for _ in range(world_size)]
     sample_y_list = [torch.empty_like(local_pseudo_y) for _ in range(world_size)]
 
