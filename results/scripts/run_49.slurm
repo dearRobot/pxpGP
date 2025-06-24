@@ -7,6 +7,6 @@
 #SBATCH -o output.%j # standard print output labeled with SLURM job id %j
 #SBATCH -e error.%j  # standard print error  labeled with SLURM job id %j
 
-echo "FullGP Job has started!"
+echo "Agent 49 Job has started!"
 srun run_49_expt.bash
-echo "FullGP Job Job done"
+echo "Agent 49 Job done"

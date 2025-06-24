@@ -1,0 +1,1 @@
+{"model": "fullGP", "rank": 0, "world_size": 1, "total_dataset_size": 1425, "local_dataset_size": 1425, "input_dim": 1, "lengthscale": [[0.1840479075908661]], "outputscale": 2.0675528049468994, "noise": 0.7183228731155396, "test_rmse": 0.21725395321846008, "train_time": 39.56807851791382}

@@ -2,6 +2,7 @@
 
 NUM_RUN=10
 NUM_AGENTS=49
+MAX_ATTEMPTS=3
 
 for i in $(seq 1 $NUM_RUN); do
     echo "Running pxpGP $i with agents: $NUM_AGENTS"
