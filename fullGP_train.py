@@ -156,11 +156,6 @@ if __name__ == "__main__":
         
     print("\033[92mOutputscale:\033[0m", model.covar_module.outputscale.item())
     print("\033[92mNoise:\033[0m", model.likelihood.noise.item())
-
-    # save model and likelihood parameters
-    # torch.save(model.state_dict(), f'results/fullGP_model_{input_dim}.pth')
-    # save_params(model, rank=0, input_dim=input_dim, method='fullGP', 
-    #             filepath=f'results/fullGP_model_{input_dim}.json')
     
     result={
         'model': 'fullGP',
