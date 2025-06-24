@@ -1,4 +1,4 @@
-num_samples: 1500
+num_samples: 5000
 input_dim: 1
 
 # must be total 1.0
