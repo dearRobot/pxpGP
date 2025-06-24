@@ -265,7 +265,7 @@ if __name__ == "__main__":
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents
-    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
+    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential', input_dim=input_dim)
 
     # train the model
     start_time = time.time()

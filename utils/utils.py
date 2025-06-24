@@ -208,6 +208,7 @@ def split_agent_data(train_x, train_y, world_size: int=1, rank: int=0, input_dim
         # all_idx   = torch.arange(train_x.size(0))
         # cells     = _kd_bisect(all_idx, train_x, world_size)
         # local_idx = cells[rank]
+
         mask, success = _regular_grid_split(train_x, world_size, rank)
         
         if success:

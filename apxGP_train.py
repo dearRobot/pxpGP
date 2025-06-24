@@ -164,7 +164,7 @@ if __name__ == "__main__":
     x, y = generate_dataset(num_samples, input_dim)
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
-    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential')
+    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential', input_dim=input_dim)
     
     # create the local model and likelihood
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
