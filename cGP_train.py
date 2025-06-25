@@ -92,6 +92,11 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
         if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}") 
             
+        if not torch.isfinite(torch.tensor(closure()[0].item())):
+            if rank == 0:
+                print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
+            break
+        
         if conerged:
             print(f"Rank {rank} - Training converged at epoch {epoch + 1} with loss: {closure()[0].item()}")
             break

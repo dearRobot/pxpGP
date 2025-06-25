@@ -4,6 +4,7 @@ from matplotlib import pyplot as plt
 from admm import pxadmm
 import torch.distributed as dist
 from sklearn.model_selection import train_test_split
+from linear_operator.settings import max_cg_iterations, cg_tolerance
 import os
 import time
 import json
@@ -70,7 +71,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
 
     def closure():
         optimizer.zero_grad()
-        with gpytorch.settings.min_preconditioning_size(0.005):
+        with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
             output = model(train_x)
             loss = -mll(output, train_y)
             loss.backward() 
@@ -85,6 +86,11 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
         converged_ = optimizer.step(closure, consensus=True)
         if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {closure()[0].item()}") 
+        
+        if not torch.isfinite(torch.tensor(closure()[0].item())):
+            if rank == 0:
+                print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
+            break
         
         if converged_:
             if rank == 0:
