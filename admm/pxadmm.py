@@ -176,18 +176,6 @@ class pxADMM(Optimizer):
             eps_dual /= self.world_size
             r_norm /= self.world_size
             s_norm /= self.world_size
-
-            # Check local convergence
-            # local_converged = torch.tensor(int(r_norm.item() < eps_primal and s_norm.item() < eps_dual), dtype=torch.int32, device=self.flat_param.device)
-            # global_converged = torch.tensor(0, dtype=torch.int32).to(self.flat_param.device)
-            # dist.all_reduce(local_converged, op=dist.ReduceOp.MIN)  # All agents must converge (MIN = 1 only if all are 1)
-            # global_converged.copy_(local_converged)
-
-            # if global_converged.item() == 1:
-            #     self.isConverged = True
-            #     if self.rank == 0:
-            #         print(f"pxADMM converged at iteration {self.iter} with r_norm: {r_norm.item()}, s_norm: {s_norm.item()}")
-            #     return True
         
             # if r_norm.item() < eps_primal and s_norm.item() < eps_dual:
             #     self.isConverged = True

@@ -4,10 +4,12 @@ from matplotlib import pyplot as plt
 from admm import pxadmm
 import torch.distributed as dist
 from sklearn.model_selection import train_test_split
+from linear_operator.settings import max_cg_iterations, cg_tolerance
 import os
 import time
 import json
 from filelock import FileLock
+import numpy as np
 
 from utils import load_yaml_config
 from utils import generate_dataset, split_agent_data
@@ -61,7 +63,15 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
-    # if rank == 0:
+    if rank == 0:
+        print(f"Rank {rank}: Initial model parameters:")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
+        else:
+            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
+        
+        print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
+        print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
@@ -70,7 +80,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
 
     def closure():
         optimizer.zero_grad()
-        with gpytorch.settings.min_preconditioning_size(0.005):
+        with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
             output = model(train_x)
             loss = -mll(output, train_y)
             loss.backward() 
@@ -85,6 +95,11 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
         converged_ = optimizer.step(closure, consensus=True)
         if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {closure()[0].item()}") 
+        
+        if not torch.isfinite(torch.tensor(closure()[0].item())):
+            if rank == 0:
+                print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
+            break
         
         if converged_:
             if rank == 0:
@@ -161,7 +176,17 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
     
     # generate local training data
-    x, y = generate_dataset(num_samples, input_dim)
+    # x, y = generate_dataset(num_samples, input_dim)
+    # load dataset
+    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+
+    if not os.path.exists(datax_path) or not os.path.exists(datay_path):
+        raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
+    
+    x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
+    y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
+
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential', input_dim=input_dim)

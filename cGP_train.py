@@ -8,6 +8,7 @@ from sklearn.model_selection import train_test_split
 import time
 from filelock import FileLock
 import json
+import numpy as np
 
 from utils import load_yaml_config
 from utils import generate_dataset, split_agent_data
@@ -92,6 +93,11 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
         if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}") 
             
+        if not torch.isfinite(torch.tensor(closure()[0].item())):
+            if rank == 0:
+                print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
+            break
+        
         if conerged:
             print(f"Rank {rank} - Training converged at epoch {epoch + 1} with loss: {closure()[0].item()}")
             break
@@ -161,7 +167,17 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
     
     # generate local training data
-    x, y = generate_dataset(num_samples, input_dim)    
+    # x, y = generate_dataset(num_samples, input_dim)  
+    # # load dataset
+    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+
+    if not os.path.exists(datax_path) or not os.path.exists(datay_path):
+        raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
+    
+    x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
+    y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
+  
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential', input_dim=input_dim)

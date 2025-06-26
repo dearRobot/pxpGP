@@ -9,6 +9,7 @@ import time
 import json
 from filelock import FileLock
 from datetime import timedelta
+import numpy as np
 
 from utils import load_yaml_config
 from utils.results import plot_result
@@ -155,11 +156,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
     optimizer_aug = pxadmm(model_aug.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                        tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
                        rank=rank, world_size=world_size)
-    
-    # model_aug.covar_module.base_kernel.raw_lengthscale.data.clamp_(1e-2, 1e2)
-    # model_aug.covar_module.raw_outputscale.data.clamp_(1e-2, 1e2)
-    # model_aug.likelihood.raw_noise.data.clamp_(1e-4, 0.5)
-    
+        
     def closure_aug():
         optimizer_aug.zero_grad()
         with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
@@ -261,7 +258,17 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
 
     # generate local training data
-    x, y = generate_dataset(num_samples, input_dim)
+    # x, y = generate_dataset(num_samples, input_dim)
+    # load dataset
+    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+
+    if not os.path.exists(datax_path) or not os.path.exists(datay_path):
+        raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
+    
+    x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
+    y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
+
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents
