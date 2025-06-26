@@ -62,7 +62,15 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     train_x = train_x.to(device)
     train_y = train_y.to(device)
 
-    # if rank == 0:
+    if rank == 0:
+        print(f"Rank {rank}: Initial model parameters:")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
+        else:
+            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
+        
+        print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
+        print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],

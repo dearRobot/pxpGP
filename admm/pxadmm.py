@@ -189,21 +189,21 @@ class pxADMM(Optimizer):
             #         print(f"pxADMM converged at iteration {self.iter} with r_norm: {r_norm.item()}, s_norm: {s_norm.item()}")
             #     return True
         
-            # if r_norm.item() < eps_primal and s_norm.item() < eps_dual:
-            #     self.isConverged = True
-            #     if self.rank == 0:
-            #         print("pxADMM converged at iteration {}".format(self.iter))
-            #     return True
-
-            constraint_norm = torch.norm(x_new - z_new, p=2)
-            
-            dist.all_reduce(constraint_norm, op=dist.ReduceOp.MAX)
-
-            if constraint_norm.item() < eps_primal:
+            if r_norm.item() < eps_primal and s_norm.item() < eps_dual:
                 self.isConverged = True
                 if self.rank == 0:
                     print("pxADMM converged at iteration {}".format(self.iter))
                 return True
+
+            # constraint_norm = torch.norm(x_new - z_new, p=2)
+            
+            # dist.all_reduce(constraint_norm, op=dist.ReduceOp.MAX)
+
+            # if constraint_norm.item() < eps_primal:
+            #     self.isConverged = True
+            #     if self.rank == 0:
+            #         print("pxADMM converged at iteration {}".format(self.iter))
+            #     return True
             
         dist.barrier()
         return False    
