@@ -8,17 +8,8 @@
 #SBATCH -o output.%j
 #SBATCH -e error.%j
 
-echo "Job started on: $(hostname)"
-echo "SLURM_JOB_ID: $SLURM_JOB_ID"
-
-# Activate env and set vars
+echo "FullGP Job has started!"
 source /home/m10937683/gp_ws/gpenv/bin/activate
-export OMP_NUM_THREADS=1
-export MKL_NUM_THREADS=1
-export OPENBLAS_NUM_THREADS=1
-
-srun ./results/scripts/run_49_expt.bash
-
-srun -A 
-
-echo "Job complete"
+export PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True
+srun python3 fullGP_train.py
+echo "FullGP Job Job done"

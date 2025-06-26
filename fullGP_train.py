@@ -153,6 +153,9 @@ if __name__ == "__main__":
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim, lengthscale_constraint=gpytorch.constraints.Interval(0.01, 10.0))
     likelihood = gpytorch.likelihoods.GaussianLikelihood(noise_constraint=gpytorch.constraints.Interval(1e-4, 1.0))
     model = ExactGPModel(train_x, train_y, likelihood, kernel)
+
+    # model.double(False)
+    # likelihood.double(False)
     
     model = model.float()
     likelihood = likelihood.float()
