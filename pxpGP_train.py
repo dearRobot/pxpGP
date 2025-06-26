@@ -451,12 +451,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = scaled_pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                                 tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-                                rank=rank, world_size=world_size)
-    
-    # optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
-    #                             tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-    #                             rank=rank, world_size=world_size)
-    
+                                rank=rank, world_size=world_size)   
     
     def closure():
         optimizer.zero_grad()
@@ -468,7 +463,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
                               for p in model.parameters()])
         return loss, grad
         
-    
     model.train()
     likelihood.train()
 
@@ -482,9 +476,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
 
         if rank == 0 and epoch == 1:
             print(f"Rank {rank} - Initial loss: {loss_val:.4f}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}")
-
-        # if rank == 0 and (epoch + 1) % 20 == 0:
-        #     print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {loss_val}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}") 
 
         if not torch.isfinite(torch.tensor(loss_val)):
             if rank == 0:
@@ -541,7 +532,7 @@ if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     
-    if world_size >= 65:
+    if world_size >= 36:
         device = 'cpu'
     else:    
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -565,8 +556,6 @@ if __name__ == "__main__":
     
     backend = str(config.get('backend', 'nccl'))
 
-    # generate local training data
-    # x, y = generate_dataset(num_samples, input_dim)
     # load dataset
     datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
     datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'

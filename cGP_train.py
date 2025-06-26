@@ -71,7 +71,6 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = cadmm(model.parameters(), lr=admm_params['lr'], max_iter=admm_params['max_iter'],
                       rho=admm_params['rho'], rank=rank, world_size=world_size)
-    # optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
     def closure():
         optimizer.zero_grad()
@@ -84,11 +83,6 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
 
     for epoch in range(admm_params['num_epochs']):
         conerged = optimizer.step(closure)
-        # optimizer.zero_grad()
-        # output = model(train_x)
-        # loss = -mll(output, train_y)
-        # loss.backward()
-        # optimizer.step()
 
         if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}") 
@@ -143,7 +137,7 @@ if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     
-    if world_size >= 65:
+    if world_size >= 36:
         device = 'cpu'
     else:    
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")       
@@ -166,9 +160,7 @@ if __name__ == "__main__":
 
     backend = str(config.get('backend', 'nccl'))
     
-    # generate local training data
-    # x, y = generate_dataset(num_samples, input_dim)  
-    # # load dataset
+    # load dataset
     datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
     datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
 

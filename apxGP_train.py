@@ -40,7 +40,7 @@ def init_distributed_mode(backend='nccl', master_addr='localhost', master_port='
     return world_size, rank
 
 
-def train_model(model, likelihood, train_x, train_y, device, admm_params, backend='nccl'):
+def train_model(train_x, train_y, device, admm_params, backend='nccl'):
     """
     Train the model using pxADMM optimizer
     Args:
@@ -57,21 +57,16 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
     world_size, rank = init_distributed_mode(backend=backend, master_addr=master_addr, 
                                               master_port=master_port)
 
+    # create the local model and likelihood
+    kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
+    likelihood = gpytorch.likelihoods.GaussianLikelihood()  
+    model = ExactGPModel(train_x, train_y, likelihood, kernel)
+
     # move data to device
     model = model.to(device) 
     likelihood = likelihood.to(device)
     train_x = train_x.to(device)
     train_y = train_y.to(device)
-
-    if rank == 0:
-        print(f"Rank {rank}: Initial model parameters:")
-        if model.covar_module.base_kernel.lengthscale.numel() > 1:
-            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
-        else:
-            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
-        
-        print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
-        print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
@@ -151,7 +146,7 @@ if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     
-    if world_size >= 65:
+    if world_size >= 36:
         device = 'cpu'
     else:    
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -191,14 +186,9 @@ if __name__ == "__main__":
 
     local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential', input_dim=input_dim)
     
-    # create the local model and likelihood
-    kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
-    likelihood = gpytorch.likelihoods.GaussianLikelihood()  
-    model = ExactGPModel(local_x, local_y, likelihood, kernel)
-
     # train the model
     start_time = time.time()
-    model, likelihood = train_model(model, likelihood, local_x, local_y, device, admm_params, backend=backend)
+    model, likelihood = train_model(local_x, local_y, device, admm_params, backend=backend)
     train_time = time.time() - start_time
 
     # test the model
