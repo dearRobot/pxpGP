@@ -465,9 +465,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     
     # warm start  
     model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32)#.to(device)
-    # model.covar_module.base_kernel.raw_lengthscale.data = torch.log(torch.tensor(avg_hyperparams['lengthscale'], dtype=torch.float32).unsqueeze(0))
-    # model.covar_module.raw_outputscale.data = torch.log(torch.tensor(avg_hyperparams['outputscale'], dtype=torch.float32))#.to(device)
-    
+
     lengthscale_ = torch.tensor(avg_hyperparams['lengthscale'], dtype=torch.float32).unsqueeze(0)
     raw_lengthscale = torch.log(torch.exp(lengthscale_) - torch.ones_like(lengthscale_) * 1e-6)  # Avoid log(0)
     model.covar_module.base_kernel.raw_lengthscale.data = raw_lengthscale
@@ -489,15 +487,15 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     pseudo_x = pseudo_x.to(device)
     pseudo_y = pseudo_y.to(device)
 
-    # if rank == 0:
-    #     print(f"Rank {rank}: After warm start model parameters:")
-    #     if model.covar_module.base_kernel.lengthscale.numel() > 1:
-    #         print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
-    #     else:
-    #         print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
+    if rank == 0:
+        print(f"Rank {rank}: After warm start model parameters:")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
+        else:
+            print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
         
-    #     print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
-    #     print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
+        print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
+        print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
 
 
 
