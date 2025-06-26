@@ -131,7 +131,18 @@ if __name__ == "__main__":
     optim_param['lr'] = float(config.get('lr', 0.01))
 
     # generate training data (train, validation, test)
-    x, y = generate_dataset(num_samples, input_dim)
+    # x, y = generate_dataset(num_samples, input_dim)
+    # print(f"Generated dataset shape: {x.shape}, {y.shape}")
+
+    # load dataset
+    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+
+    if not os.path.exists(datax_path) or not os.path.exists(datay_path):
+        raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
+    
+    x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
+    y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
 
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
