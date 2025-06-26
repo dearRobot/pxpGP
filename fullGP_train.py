@@ -12,6 +12,8 @@ from utils import generate_dataset
 from utils import load_yaml_config
 from utils.results import plot_result, save_params
 
+torch.cuda.empty_cache()
+
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood, kernel):
@@ -139,6 +141,9 @@ if __name__ == "__main__":
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim, lengthscale_constraint=gpytorch.constraints.Interval(0.01, 10.0))
     likelihood = gpytorch.likelihoods.GaussianLikelihood(noise_constraint=gpytorch.constraints.Interval(1e-4, 1.0))
     model = ExactGPModel(train_x, train_y, likelihood, kernel)
+
+    # model.double(False)
+    # likelihood.double(False)
     
     # train the model
     start_ = time.time()
