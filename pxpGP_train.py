@@ -11,6 +11,7 @@ import time
 from filelock import FileLock
 import json
 from gpytorch.constraints import Interval
+import numpy as np
 
 from utils import load_yaml_config
 from utils.results import plot_result
@@ -20,6 +21,7 @@ from utils.results import save_params
 from sklearn.cluster import KMeans
 
 from matplotlib import pyplot as plt
+torch.cuda.empty_cache()
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -128,16 +130,15 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     optimizer_sparse = torch.optim.Adam( [{'params': model_sparse.parameters()},
                                         {'params': likelihood_sparse.parameters()}],
                                         lr=0.020,             
-                                        betas=(0.9, 0.999),   # Default, but explicit for clarity
-                                        eps=1e-8,             # Default
-                                        weight_decay=1e-4,    # Add regularization
-                                        amsgrad=True)         # Enable AMSGrad
+                                        betas=(0.9, 0.999),   
+                                        eps=1e-8,             
+                                        weight_decay=1e-4,    
+                                        amsgrad=True)        
 
     model_sparse.train()
     likelihood_sparse.train()
 
     # batch training
-    # batch_size= 64
     batch_size = min(int(local_x.size(0) / 10), 50)
     train_dataset = TensorDataset(local_x, local_y)
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -153,7 +154,6 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         for batch_x, batch_y in train_loader:
             batch_x = batch_x.to(device)  
             batch_y = batch_y.to(device) 
-
             # print(f"Rank {rank} - batch_x shape: {batch_x.shape}, batch_y shape: {batch_y.shape}")
             
             optimizer_sparse.zero_grad()
@@ -199,9 +199,6 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         local_pseudo_y = likelihood_sparse(model_sparse(local_pseudo_x)).mean
 
-    # need to modify for multi-dimensional input
-    # local sparse GP hyperparameters
-
     if rank == 0:
         if model_sparse.covar_module.base_kernel.lengthscale.numel() > 1:
             print(f"\033[92mRank {rank} - Lengthscale:", model_sparse.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
@@ -210,12 +207,6 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         print(f"\033[92mRank {rank} - Outputscale:", model_sparse.covar_module.outputscale.item(), "\033[0m")
         print(f"\033[92mRank {rank} - Noise:", likelihood_sparse.noise.item(), "\033[0m")
 
-    # mean_const = model_sparse.mean_module.constant.detach().view(-1)                  # shape [1]
-    # lengthscale = model_sparse.covar_module.base_kernel.lengthscale.detach().view(-1) # shape [D]
-    # outputscale = model_sparse.covar_module.outputscale.detach().view(-1) 
-    # noise = likelihood_sparse.noise.detach().view(-1) # shape [1]
-    
-    # local_hyperparams = torch.cat([mean_const, lengthscale, outputscale]) 
     local_hyperparams = {
         'mean_constant': model_sparse.mean_module.constant.detach().cpu().numpy().item(),
         'lengthscale': model_sparse.covar_module.base_kernel.lengthscale.detach().cpu().numpy(),
@@ -301,22 +292,6 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     pseudo_y = torch.cat([local_y, comm_y], dim=0)
 
     # Step 3: Share the local model hyperparameters with the central node (rank 0) to form averag
-    # hyperparams_list = [torch.empty_like(local_hyperparams) for _ in range(world_size)] 
-    # dist.gather(local_hyperparams, gather_list=hyperparams_list if rank == 0 else None, dst=0)
-
-    # if rank == 0:   
-    #     hyperparam_stack = torch.stack(hyperparams_list)
-    #     avg_hyperparams_ = hyperparam_stack.mean(dim=0)
-    # else:
-    #     avg_hyperparams_ = torch.zeros_like(local_hyperparams, dtype=torch.float32, device=device)
-
-    # dist.broadcast(avg_hyperparams_, src=0)
-
-    # # need to modify for multi-dimensional input
-    # avg_hyperparams = {'mean_constant': avg_hyperparams_[0].item(),
-    #                     'lengthscale': avg_hyperparams_[1].item(),
-    #                     'outputscale': avg_hyperparams_[2].item()}
-
     hyperparams_list = [{} for _ in range(world_size)]
     
     if rank == 0:
@@ -444,25 +419,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
     model = ExactGPModel(pseudo_x, pseudo_y, likelihood, kernel)
 
-    # before warm start
-    # if rank == 0:
-    #     print(f"Rank {rank}: Before warm start model parameters:")
-    #     if model.covar_module.base_kernel.lengthscale.numel() > 1:
-    #         print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
-    #     else:
-    #         print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
-        
-    #     print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
-    #     print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
-
-    # if rank == 0:
-    #     print(f"\033[92mRank {rank} - likelihood noise before warm start: {likelihood.noise}\033[0m")
-    
-    # # print avg hyperparameters
-    # if rank == 0:
-    #     print(f"Rank {rank} - Average hyperparameters from local models:")
-    #     print(f"Mean constant: {avg_hyperparams['mean_constant']}, Lengthscale: {avg_hyperparams['lengthscale']}, Outputscale: {avg_hyperparams['outputscale']}")
-    
     # warm start  
     model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32)#.to(device)
 
@@ -475,12 +431,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     model.covar_module.raw_outputscale.data = raw_outputscale
     
     likelihood.noise = torch.tensor(avg_hyperparams['noise'], dtype=torch.float32).to(device)
-    
-    # if rank == 0:
-    #     print(f"\033[92mRank {rank} - raw lengthscale {raw_lengthscale} and raw outputscale {raw_outputscale}\033[0m")
-    #     print(f"\033[92mRank {rank} - likelihood noise after warm start: {likelihood.noise}\033[0m")
-    #     print(f"Rank 0 - Raw noise after warm start: {likelihood.raw_noise.data}")
-    
     
     model = model.to(device)
     likelihood = likelihood.to(device)
@@ -496,7 +446,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
         
         print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
         print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
-
 
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
@@ -617,7 +566,17 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
 
     # generate local training data
-    x, y = generate_dataset(num_samples, input_dim)
+    # x, y = generate_dataset(num_samples, input_dim)
+    # load dataset
+    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+
+    if not os.path.exists(datax_path) or not os.path.exists(datay_path):
+        raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
+    
+    x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
+    y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
+
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents

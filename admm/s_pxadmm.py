@@ -11,7 +11,7 @@ __all__ = ["ScaledPxADMM", "scaled_pxadmm", "scaled_px_admm"]
 
 class ScaledPxADMM(Optimizer):
     def __init__(self, params, rho: float=1.0, lip: float=1.0, rank: int=0,
-                        world_size: int=1, tol_abs: float=1e-5, tol_rel: float=1e-3):
+                        world_size: int=1, tol_abs: float=1e-4, tol_rel: float=1e-2):
         """
         scaled pxADMM optimizer
         Here we distribute dataset, parallelize computation and co-ordinate z-update among agents
@@ -142,112 +142,50 @@ class ScaledPxADMM(Optimizer):
             
             # Step 2: update the primal variable (x) using the proximal linearized gradient
             # x_i^{k+1} = z_i^k - (1/rho+ lip) * (\nabla L_i(z^k) + rho * u_i^k)
-            # self._unflatten_params(z_new) #  z^{k+1} for gradient evaluation
             self._unflatten_params(v_)
             loss, grad = closure()
             f_old = loss.item()
 
-            # beta1 = 0.85  # Momentum parameter (same as Adam's default)
-            # m.mul_(beta1).add_(grad, alpha=1 - beta1)
+            # adaptive momentum from Adam optimizer
+            beta1 = 0.85 
+            m.mul_(beta1).add_(grad, alpha=1 - beta1)
             
-            # compute x_i^{k+1} 
-            x_try = v_ - (1.0 / (rho + lip)) * (grad) # Momentum
-            # x_new = z_new - (1.0 / (rho + lip)) * (grad + rho * u_)
-            # x_new = z_new - (1.0 / (rho + lip)) * (m + rho * u_)
+            alpha = 1.0 / (rho + lip)
 
-            self._unflatten_params(x_try)  
-            loss, grad = closure()
-            f_try = loss.item()
+            x_try = v_ - alpha * m  
+            self._unflatten_params(x_try)
+            f_try = closure()[0].item()
 
-            # adaptive lip
             # Armijo constants
             c, tau = 1e-4, 0.5
             iter = 0
-            alpha = 1.0 / (rho + lip)
 
-            # # also # perform multiple steps of x and u update
+            # while f_try > f_old + 0.1 * lip * torch.norm(x_try - v)**2 and iter < 10: # Armijo condition
             while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
                 lip *= tau
                 alpha = 1.0 / (rho + lip)
-                x_try = v_ - alpha * grad  
-                
-                # primal_residual = x_new - z_new
-                # u_new = u_ + primal_residual
-
+                x_try = v_ - alpha * m 
                 self._unflatten_params(x_try)
-                loss, grad = closure()
-                f_try = loss.item()
+                f_try = closure()[0].item()
                 iter += 1
-
+            
             x_new = x_try
 
-            # if self.rank == 0:
-            #     print("overrelaxing the parameters")
-            
-            # overrelax the parameters
-            # alpha = 1.2
-            # x_new = alpha * x_new + (1 - alpha) * z_new
+            # noise addition
+            noise_temp = 0.2  # Initial noise temperature
+            noise_decay = 0.01  # Decay factor for noise temperature
 
+            T = noise_temp / (1.0 + noise_decay * self.iter)
+            sigma = T * 0.05  # Scale noise by temperature
+            noise = torch.randn_like(x_new) * sigma
+            x_new += noise
+            sigma = 0.02 / math.sqrt(self.iter + 1)
+            noise = torch.randn_like(x_new) * sigma
+            x_new += noise
+            
             # Step 3: u-update // u_i^{k+1} = u_i^k + x_i^{k+1} - z^{k+1}
             primal_residual = x_new - z_new
             u_new = u_ + primal_residual
-
-            # perform multiple steps of x and u update 
-            # for i in range(10):
-            #     x_new = z_new - (1.0 / (rho + lip)) * (grad + rho * u_)
-
-            #     primal_residual = x_new - z_new
-            #     u_new = u_ + primal_residual
-
-            #     self._unflatten_params(x_new)
-            #     loss, grad = closure()
-
-
-
-            
-            
-            
-            
-            
-            
-            # alpha = 1.0 / (rho + lip)
-
-            # # x_try = v_ - alpha * (grad)
-            # x_try = v_ - alpha * m  
-            # self._unflatten_params(x_try)
-            # f_try = closure()[0].item()
-
-            # # Armijo constants
-            # c, tau = 1e-4, 0.5
-            # iter = 0
-
-            # # while f_try > f_old + 0.1 * lip * torch.norm(x_try - v)**2 and iter < 10: # Armijo condition
-            # while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
-            #     lip *= tau
-            #     alpha = 1.0 / (rho + lip)
-            #     # x_try = v_ - alpha*(grad)
-            #     x_try = v_ - alpha * m  # Use momentum in Armijo loop
-            #     self._unflatten_params(x_try)
-            #     f_try = closure()[0].item()
-            #     iter += 1
-            
-            # x_new = x_try
-
-            # # noise addition
-            # noise_temp = 0.2  # Initial noise temperature
-            # noise_decay = 0.01  # Decay factor for noise temperature
-
-            # T = noise_temp / (1.0 + noise_decay * self.iter)
-            # sigma = T * 0.05  # Scale noise by temperature
-            # noise = torch.randn_like(x_new) * sigma
-            # x_new += noise
-            # sigma = 0.02 / math.sqrt(self.iter + 1)
-            # noise = torch.randn_like(x_new) * sigma
-            # x_new += noise
-            
-            # # Step 3: u-update // u_i^{k+1} = u_i^k + x_i^{k+1} - z^{k+1}
-            # primal_residual = x_new - z_new
-            # u_new = u_ + primal_residual
             
             self.flat_param.copy_(x_new)
             self._unflatten_params(x_new)
@@ -300,7 +238,6 @@ class ScaledPxADMM(Optimizer):
 
             group['rho'] = rho
             group['lip'] = lip_new
-            # group['lip'] = lip
  
         return False    
     
