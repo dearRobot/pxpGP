@@ -19,9 +19,8 @@ export MKL_NUM_THREADS=1
 export OPENBLAS_NUM_THREADS=1
 
 NUM_RUN=10
-NUM_AGENTS=64
+NUM_AGENTS=100
 MAX_ATTEMPTS=3
-
 
 for i in $(seq 1 $NUM_RUN); do
     echo "Running fulGP $i"
