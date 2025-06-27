@@ -193,10 +193,14 @@ class decpxADMM(Optimizer):
             dual_residual = rho*(self.degree*(x_new - x_prev) - (neighbor_sum))
             s_norm = torch.norm(dual_residual, p=2)
 
-            primal_tol = tol_abs + tol_rel * max(self.degree*torch.norm(x_new, p=2), torch.norm(neighbor_sum, p=2)) 
-            dual_tol = tol_abs + tol_rel * torch.norm(alpha_new, p=2)
+            p = len(self.neighbors) if self.neighbors is not None else 1
+            eps_primal = torch.sqrt(torch.tensor(p, dtype=torch.float))* tol_abs + tol_rel*torch.max(self.degree*torch.norm(x_new, p=2), torch.norm(neighbor_sum, p=2))
+            eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float))* tol_abs + tol_rel*torch.norm(alpha_new, p=2)
+            
+            eps_primal = (eps_primal + self.get_neighbors_sum(eps_primal))/p
+            eps_dual = (eps_dual + self.get_neighbors_sum(eps_dual))/p
 
-            if r_norm < primal_tol and s_norm < dual_tol:
+            if r_norm < eps_primal and s_norm < eps_dual:
                 self.isConverged = True
                 if self.rank == 0:
                     print(f"decpxADMM converged at iteration {self.iter} with r_norm: {r_norm:.6f}, s_norm: {s_norm:.6f}")
@@ -214,19 +218,16 @@ class decpxADMM(Optimizer):
             rho = max(1.0e-3, min(100.0, rho))
 
             # #TODO: need to make this better
-            new_loss, new_grad = closure()
+            # new_loss, new_grad = closure()
             
-            # update lip
-            beta = 0.9
-            diff_norm = torch.norm(new_grad - grad) / (torch.norm(x_new - x_prev) + 1e-8)
-            lip_new = beta * lip + (1 - beta) * diff_norm.item()
-            lip_new = max(1.0e-3, min(1000, lip_new))
-
-            # update state
-            # self.state['flat']['neighbors_sum'] = neighbor_sum
+            # # update lip
+            # beta = 0.9
+            # diff_norm = torch.norm(new_grad - grad) / (torch.norm(x_new - x_prev) + 1e-8)
+            # lip_new = beta * lip + (1 - beta) * diff_norm.item()
+            # lip_new = max(1.0e-3, min(1000, lip_new))
 
             group['rho'] = rho
-            group['lip'] = lip_new
+            # group['lip'] = lip_new
             
         return False
     

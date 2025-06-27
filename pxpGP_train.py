@@ -154,7 +154,6 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         for batch_x, batch_y in train_loader:
             batch_x = batch_x.to(device)  
             batch_y = batch_y.to(device) 
-            # print(f"Rank {rank} - batch_x shape: {batch_x.shape}, batch_y shape: {batch_y.shape}")
             
             optimizer_sparse.zero_grad()
             output = model_sparse(batch_x)
@@ -450,7 +449,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
         print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
         print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
 
-
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = scaled_pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                                 tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
@@ -476,9 +474,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     for epoch in range(admm_params['num_epochs']):
         converged = optimizer.step(closure, epoch=epoch)
         loss_val = closure()[0].item()
-
-        if rank == 0 and epoch == 1:
-            print(f"Rank {rank} - Initial loss: {loss_val:.4f}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}")
 
         if not torch.isfinite(torch.tensor(loss_val)):
             if rank == 0:
@@ -578,7 +573,6 @@ if __name__ == "__main__":
     model, likelihood, pseudo_x, pseudo_y = train_model(local_x, local_y, device, 
                                     admm_params, input_dim=input_dim, backend=backend)
     train_time = time.time() - start_time
-    
     
     # test the model
     mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
