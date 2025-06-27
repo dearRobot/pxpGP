@@ -81,9 +81,6 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     local_comm_x = local_x[sample_indices]
     local_comm_y = local_y[sample_indices]
 
-    if rank == 0:
-        print(f"\033[92mRank {rank} - sparse dataset size is: {dataset_size}, local dataset: {local_x.shape}, \033[0m")
-    
     # Step 2: communicate local communication dataset to central node rank 0
     sample_x_list = [torch.empty_like(local_comm_x) for _ in range(world_size)]
     sample_y_list = [torch.empty_like(local_comm_y) for _ in range(world_size)]

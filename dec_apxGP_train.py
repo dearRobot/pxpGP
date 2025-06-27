@@ -119,7 +119,11 @@ def test_model(model, likelihood, test_x, device):
 if __name__ == "__main__":
     world_size = int(os.environ.get('WORLD_SIZE', 1))
     rank = int(os.environ.get('RANK', 0))
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Load configuration
     config_path = 'config/dec_apxGP.yaml'

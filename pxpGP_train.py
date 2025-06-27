@@ -154,7 +154,6 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         for batch_x, batch_y in train_loader:
             batch_x = batch_x.to(device)  
             batch_y = batch_y.to(device) 
-            # print(f"Rank {rank} - batch_x shape: {batch_x.shape}, batch_y shape: {batch_y.shape}")
             
             optimizer_sparse.zero_grad()
             output = model_sparse(batch_x)
@@ -334,13 +333,6 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     if rank == 0:
         print(f"\033[92mRank {rank} - Average hyperparameters from local models:")
         print(f"Mean constant: {avg_hyperparams['mean_constant']}, Lengthscale: {avg_hyperparams['lengthscale']}, Outputscale: {avg_hyperparams['outputscale']}, Noise: {avg_hyperparams['noise']}\033[0m")
-    
-    # Broadcast the averaged hyperparameters
-    # avg_hyperparams_tensor = torch.tensor([
-    #     avg_hyperparams['mean_constant'],
-    #     *avg_hyperparams['lengthscale'],
-    #     avg_hyperparams['outputscale']
-    # ], device=device) if rank == 0 else torch.zeros(2 + input_dim, device=device)
 
     if rank == 0:
         avg_hyperparams_tensor = torch.cat([
@@ -352,11 +344,7 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     else:
         avg_hyperparams_tensor = torch.zeros(3 + input_dim, device=device)
 
-    # print (f"Rank {rank} - avg_hyperparams_tensor: {avg_hyperparams_tensor}")
-
     dist.broadcast(avg_hyperparams_tensor, src=0)
-
-    # print (f"Rank {rank} - avg_hyperparams_tensor: {avg_hyperparams_tensor}")
     
     # Reconstruct avg_hyperparams on all ranks
     if rank != 0:
@@ -447,7 +435,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
         print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
         print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
 
-
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = scaled_pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                                 tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
@@ -473,9 +460,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     for epoch in range(admm_params['num_epochs']):
         converged = optimizer.step(closure, epoch=epoch)
         loss_val = closure()[0].item()
-
-        if rank == 0 and epoch == 1:
-            print(f"Rank {rank} - Initial loss: {loss_val:.4f}, rho: {optimizer.param_groups[0]['rho']:.4f}, lip: {optimizer.param_groups[0]['lip']:.4f}")
 
         if not torch.isfinite(torch.tensor(loss_val)):
             if rank == 0:
@@ -576,7 +560,6 @@ if __name__ == "__main__":
     model, likelihood, pseudo_x, pseudo_y = train_model(local_x, local_y, device, 
                                     admm_params, input_dim=input_dim, backend=backend)
     train_time = time.time() - start_time
-    
     
     # test the model
     mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
