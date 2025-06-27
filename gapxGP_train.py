@@ -4,7 +4,8 @@ from admm import pxadmm
 import torch.distributed as dist
 import os
 from sklearn.model_selection import train_test_split
-from linear_operator.settings import max_cg_iterations, cg_tolerance
+from linear_operator.settings import max_cg_iterations, cg_tolerance, cholesky_jitter
+
 import time
 import json
 from filelock import FileLock
@@ -81,9 +82,6 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     local_comm_x = local_x[sample_indices]
     local_comm_y = local_y[sample_indices]
 
-    if rank == 0:
-        print(f"\033[92mRank {rank} - sparse dataset size is: {dataset_size}, local dataset: {local_x.shape}, \033[0m")
-    
     # Step 2: communicate local communication dataset to central node rank 0
     sample_x_list = [torch.empty_like(local_comm_x) for _ in range(world_size)]
     sample_y_list = [torch.empty_like(local_comm_y) for _ in range(world_size)]
@@ -107,9 +105,16 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     aug_x = torch.cat([local_x, comm_x], dim=0)
     aug_y = torch.cat([local_y, comm_y], dim=0)
 
-    if rank == 0:
-        print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
-        
+    # remove duplicate entries in the augmented dataset
+    aug_x_np = aug_x.cpu().numpy()           # shape (N, d)
+    aug_y_np = aug_y.cpu().numpy()  
+
+    unique_rows, unique_idx = np.unique(aug_x_np, axis=0, return_index=True)
+    unique_idx = np.sort(unique_idx)
+
+    aug_x = torch.from_numpy(aug_x_np[unique_idx]).to(local_x.dtype).to(local_x.device)
+    aug_y = torch.from_numpy(aug_y_np[unique_idx]).to(local_y.dtype).to(local_y.device)
+       
     return aug_x, aug_y
 
 
@@ -141,6 +146,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
    
     if rank == 0:
         print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
+        print(f"Rank {rank} - Local dataset size: {train_x.size(0)}")
     
     # Stage 2: Train on augmented dataset with warm start
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim)
@@ -155,17 +161,21 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
     mll_aug = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood_aug, model_aug)
     optimizer_aug = pxadmm(model_aug.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                        tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-                       rank=rank, world_size=world_size, dual=False)
+                       rank=rank, world_size=world_size, dual=True)
         
     def closure_aug():
         optimizer_aug.zero_grad()
-        with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
+        # with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
+        with gpytorch.settings.cholesky_jitter(1e-2), \
+            gpytorch.settings.min_preconditioning_size(0), \
+            gpytorch.settings.max_cholesky_size(2000), \
+            max_cg_iterations(5000), \
+            cg_tolerance(1e-1):
             output_aug = model_aug(aug_x)
             loss_aug = -mll_aug(output_aug, aug_y)
             loss_aug.backward() 
-            grad_aug = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() 
-                                  for p in model_aug.parameters()])
-        return loss_aug, grad_aug
+            grad = torch.cat([p.grad.flatten() if p.grad is not None else torch.zeros_like(p).flatten() for p in model_aug.parameters()])
+        return loss_aug, grad 
     
     model_aug.train()
     likelihood_aug.train()
@@ -178,7 +188,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
         if rank == 0 and (epoch + 1) % 10 == 0:
             print(f"Epoch {epoch + 1}/{admm_params['num_epochs']} - Loss: {loss_val}") 
         
-        if not torch.isfinite(torch.tensor(loss_val)):
+        if not torch.isfinite(torch.tensor(closure_aug()[0].item())):
             if rank == 0:
                 print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
             break
@@ -224,7 +234,6 @@ def test_model(model, likelihood, test_x, test_y, device):
 
     # compute RMSE error
     rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
     
     return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
 
@@ -269,6 +278,15 @@ if __name__ == "__main__":
     x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
     y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
 
+    # # normalize data
+    # x_mean = x.mean(dim=0, keepdim=True)
+    # y_mean = y.mean()
+    # x_std  = x.std(dim=0, keepdim=True).clamp(min=1e-6)
+    # y_std  = y.std().clamp(min=1e-6)
+
+    # x = (x - x_mean) / x_std 
+    # y = (y - y_mean) / y_std   
+    
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents
@@ -284,13 +302,15 @@ if __name__ == "__main__":
     mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
-    if model.covar_module.base_kernel.lengthscale.numel() > 1:
-        print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy())  # Print all lengthscale values
-    else:
-        print(f"Rank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item())  # Print single lengthscale value
-    
-    print(f"Rank: {rank}, Outputscale:", model.covar_module.outputscale.item())
-    print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
+    if rank == 0:
+        print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
+        else:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
+        
+        print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
+        print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
     
     result={
         'model': 'gapxGP',

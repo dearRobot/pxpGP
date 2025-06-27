@@ -148,12 +148,13 @@ class ScaledPxADMM(Optimizer):
             f_old = loss.item()
 
             # adaptive momentum from Adam optimizer
-            beta1 = 0.85 
-            m.mul_(beta1).add_(grad, alpha=1 - beta1)
+            # beta1 = 0.9 
+            # m.mul_(beta1).add_(grad, alpha=1 - beta1)
             
             alpha = 1.0 / (rho + lip)
 
-            x_try = v_ - alpha * m  
+            # x_try = v_ - alpha * m  
+            x_try = v_ - alpha * grad
             self._unflatten_params(x_try)
             f_try = closure()[0].item()
 
@@ -165,7 +166,8 @@ class ScaledPxADMM(Optimizer):
             while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
                 lip *= tau
                 alpha = 1.0 / (rho + lip)
-                x_try = v_ - alpha * m 
+                # x_try = v_ - alpha * m 
+                x_try = v_ - alpha * grad
                 self._unflatten_params(x_try)
                 f_try = closure()[0].item()
                 iter += 1
@@ -173,16 +175,16 @@ class ScaledPxADMM(Optimizer):
             x_new = x_try
 
             # noise addition
-            noise_temp = 0.2  # Initial noise temperature
-            noise_decay = 0.01  # Decay factor for noise temperature
+            # noise_temp = 0.01  # Initial noise temperature
+            # noise_decay = 0.01  # Decay factor for noise temperature
 
-            T = noise_temp / (1.0 + noise_decay * self.iter)
-            sigma = T * 0.05  # Scale noise by temperature
-            noise = torch.randn_like(x_new) * sigma
-            x_new += noise
-            sigma = 0.02 / math.sqrt(self.iter + 1)
-            noise = torch.randn_like(x_new) * sigma
-            x_new += noise
+            # T = noise_temp / (1.0 + noise_decay * self.iter)
+            # sigma = T * 0.05  # Scale noise by temperature
+            # noise = torch.randn_like(x_new) * sigma
+            # x_new += noise
+            # sigma = 0.02 / math.sqrt(self.iter + 1)
+            # noise = torch.randn_like(x_new) * sigma
+            # x_new += noise
             
             # Step 3: u-update // u_i^{k+1} = u_i^k + x_i^{k+1} - z^{k+1}
             primal_residual = x_new - z_new
@@ -230,7 +232,6 @@ class ScaledPxADMM(Optimizer):
                 rho *= 2.0
             elif s_norm.item() > 10 * r_norm.item():
                 rho /= 2.0
-
             rho = max(1.0e-3, min(100.0, rho))
 
             # update lip

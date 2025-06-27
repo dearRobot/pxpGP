@@ -130,10 +130,6 @@ if __name__ == "__main__":
     optim_param['num_epochs'] = int(config.get('num_epochs', 100))
     optim_param['lr'] = float(config.get('lr', 0.01))
 
-    # generate training data (train, validation, test)
-    # x, y = generate_dataset(num_samples, input_dim)
-    # print(f"Generated dataset shape: {x.shape}, {y.shape}")
-
     # load dataset
     datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
     datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
@@ -153,9 +149,6 @@ if __name__ == "__main__":
     kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim, lengthscale_constraint=gpytorch.constraints.Interval(0.01, 10.0))
     likelihood = gpytorch.likelihoods.GaussianLikelihood(noise_constraint=gpytorch.constraints.Interval(1e-4, 1.0))
     model = ExactGPModel(train_x, train_y, likelihood, kernel)
-
-    # model.double(False)
-    # likelihood.double(False)
     
     model = model.float()
     likelihood = likelihood.float()

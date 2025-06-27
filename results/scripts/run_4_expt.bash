@@ -20,7 +20,6 @@ for i in $(seq 1 $NUM_RUN); do
     done
 done
 
-
 for i in $(seq 1 $NUM_RUN); do
     echo "Running pxpGP $i with agents: $NUM_AGENTS"
     
