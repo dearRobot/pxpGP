@@ -526,8 +526,7 @@ def test_model(model, likelihood, test_x, test_y, device):
 
     # compute RMSE error
     rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
-    
+        
     return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
     
 
@@ -535,7 +534,7 @@ if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     
-    if world_size >= 65:
+    if world_size >= 36:
         device = 'cpu'
     else:    
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -585,13 +584,15 @@ if __name__ == "__main__":
     mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
-    if model.covar_module.base_kernel.lengthscale.numel() > 1:
-        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
-    else:
-        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
-    
-    print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
-    print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
+    if rank == 0:
+        print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
+        else:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
+        
+        print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
+        print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
     
     result={
         'model': 'pxpGP',
