@@ -71,7 +71,7 @@ def train_model(train_x, train_y, device, admm_params, backend='nccl'):
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
     optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                        tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-                       rank=rank, world_size=world_size, dual=True)
+                       rank=rank, world_size=world_size, dual=False)
 
     def closure():
         optimizer.zero_grad()

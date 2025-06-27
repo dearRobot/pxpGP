@@ -161,7 +161,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
     mll_aug = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood_aug, model_aug)
     optimizer_aug = pxadmm(model_aug.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
                        tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
-                       rank=rank, world_size=world_size, dual=True)
+                       rank=rank, world_size=world_size, dual=False)
         
     def closure_aug():
         optimizer_aug.zero_grad()
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     
-    if world_size >= 65:
+    if world_size >= 36:
         device = 'cpu'
     else:    
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -266,8 +266,6 @@ if __name__ == "__main__":
 
     backend = str(config.get('backend', 'nccl'))
 
-    # generate local training data
-    # x, y = generate_dataset(num_samples, input_dim)
     # load dataset
     datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
     datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
