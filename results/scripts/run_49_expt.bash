@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 NUM_RUN=10
-NUM_AGENTS=16
+NUM_AGENTS=49
 MAX_ATTEMPTS=3
 
 for i in $(seq 1 $NUM_RUN); do
