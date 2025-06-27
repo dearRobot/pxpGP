@@ -285,12 +285,12 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     # broadcast the communication dataset to all agents from rank 0
     dist.broadcast(comm_x, src=0)
     dist.broadcast(comm_y, src=0)
-
+    
     # create augmented dataset
     pseudo_x = torch.cat([local_x, comm_x], dim=0)
     pseudo_y = torch.cat([local_y, comm_y], dim=0)
 
-    # Step 3: Share the local model hyperparameters with the central node (rank 0) to form averag
+    # # Step 3: Share the local model hyperparameters with the central node (rank 0) to form averag
     # hyperparams_list = [{} for _ in range(world_size)]
     
     # if rank == 0:
@@ -456,7 +456,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     
     def closure():
         optimizer.zero_grad()
-        with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
+        with gpytorch.settings.min_preconditioning_size(0.001), max_cg_iterations(5000), cg_tolerance(1e-1):
             output = model(pseudo_x)
             loss = -mll(output, pseudo_y)
             loss.backward()

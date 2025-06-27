@@ -232,7 +232,6 @@ class ScaledPxADMM(Optimizer):
                 rho *= 2.0
             elif s_norm.item() > 10 * r_norm.item():
                 rho /= 2.0
-
             rho = max(1.0e-3, min(100.0, rho))
 
             # update lip

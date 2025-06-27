@@ -190,6 +190,14 @@ class pxADMM(Optimizer):
                     if self.rank == 0:
                         print("pxADMM converged at iteration {}".format(self.iter))
                     return True
+                
+            # if r_norm.item() > 10 * s_norm.item():
+            #     rho *= 2.0
+            # elif s_norm.item() > 10 * r_norm.item():
+            #     rho /= 2.0
+            # rho = max(1.0e-3, min(100.0, rho))
+
+            # group['rho'] = rho
             
         dist.barrier()
         return False    
