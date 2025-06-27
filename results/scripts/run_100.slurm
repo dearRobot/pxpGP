@@ -1,9 +1,9 @@
 #!/bin/bash
 #SBATCH -A 2506240925
-#SBATCH --job-name="full_gp_64"
+#SBATCH --job-name="full_gp_100"
 #SBATCH -p gpu 
-#SBATCH --gres=gpu:v100:3
-#SBATCH --cpus-per-task=7
+#SBATCH --gres=gpu:v100:1
+#SBATCH --cpus-per-task=15
 #SBATCH --time=12:00:00
 #SBATCH -o output.%j
 #SBATCH -e error.%j
@@ -22,54 +22,54 @@ NUM_RUN=10
 NUM_AGENTS=100
 MAX_ATTEMPTS=3
 
-for i in $(seq 1 $NUM_RUN); do
-    echo "Running fulGP $i"
+# for i in $(seq 1 $NUM_RUN); do
+#     echo "Running fulGP $i"
     
-    # Retry until success
-    for j in ${MAX_ATTEMPTS}; do
-        srun python3 fullGP_train.py 
-        # sbatch ./results/scripts/run_fullgp.slurm
-        if [ $? -eq 0 ]; then
-            echo "Run $i completed successfully"
-            break
-        else
-            echo "Run $i failed, retrying..."
-            sleep 2  # Optional: brief pause before retrying
-        fi
-    done
-done
+#     # Retry until success
+#     for j in ${MAX_ATTEMPTS}; do
+#         srun python3 fullGP_train.py 
+#         # sbatch ./results/scripts/run_fullgp.slurm
+#         if [ $? -eq 0 ]; then
+#             echo "Run $i completed successfully"
+#             break
+#         else
+#             echo "Run $i failed, retrying..."
+#             sleep 2  # Optional: brief pause before retrying
+#         fi
+#     done
+# done
 
-for i in $(seq 1 $NUM_RUN); do
-    echo "Running pxpgp $i"
+# for i in $(seq 1 $NUM_RUN); do
+#     echo "Running pxpgp $i"
     
-    # Retry until success
-    for j in ${MAX_ATTEMPTS}; do
-        srun torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 pxpGP_train.py
-        if [ $? -eq 0 ]; then
-            echo "Run $i completed successfully"
-            break
-        else
-            echo "Run $i failed, retrying..."
-            sleep 2  # Optional: brief pause before retrying
-        fi
-    done
-done
+#     # Retry until success
+#     for j in ${MAX_ATTEMPTS}; do
+#         srun torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 pxpGP_train.py
+#         if [ $? -eq 0 ]; then
+#             echo "Run $i completed successfully"
+#             break
+#         else
+#             echo "Run $i failed, retrying..."
+#             sleep 2  # Optional: brief pause before retrying
+#         fi
+#     done
+# done
 
-for i in $(seq 1 $NUM_RUN); do
-    echo "Running gapxgp $i"
+# for i in $(seq 1 $NUM_RUN); do
+#     echo "Running gapxgp $i"
     
-    # Retry until success
-    for j in ${MAX_ATTEMPTS}; do
-        srun torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 gapxGP_train.py
-        if [ $? -eq 0 ]; then
-            echo "Run $i completed successfully"
-            break
-        else
-            echo "Run $i failed, retrying..."
-            sleep 2  # Optional: brief pause before retrying
-        fi
-    done
-done
+#     # Retry until success
+#     for j in ${MAX_ATTEMPTS}; do
+#         srun torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 gapxGP_train.py
+#         if [ $? -eq 0 ]; then
+#             echo "Run $i completed successfully"
+#             break
+#         else
+#             echo "Run $i failed, retrying..."
+#             sleep 2  # Optional: brief pause before retrying
+#         fi
+#     done
+# done
 
 for i in $(seq 1 $NUM_RUN); do
     echo "Running apxgp $i"
