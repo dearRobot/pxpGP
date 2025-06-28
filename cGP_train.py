@@ -92,7 +92,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
                 print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
             break
         
-        if conerged:
+        if conerged and rank == 0:
             print(f"Rank {rank} - Training converged at epoch {epoch + 1} with loss: {closure()[0].item()}")
             break
 
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
     
-    if world_size >= 65:
+    if world_size >= 36:
         device = 'cpu'
     else:    
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")       
