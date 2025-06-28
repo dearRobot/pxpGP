@@ -542,6 +542,7 @@ if __name__ == "__main__":
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
+    dataset = int(config.get('dataset', 1))
     test_split = float(config.get('test_split', 0.2))
     
     admm_params = {}
@@ -554,8 +555,8 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
 
     # load dataset
-    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
-    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+    datax_path = f'dataset/dataset{dataset}/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset{dataset}/dataset1y_{input_dim}d_{num_samples}.csv'
 
     if not os.path.exists(datax_path) or not os.path.exists(datay_path):
         raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
@@ -579,7 +580,7 @@ if __name__ == "__main__":
 
     # print model and likelihood parameters
     if rank == 0:
-        print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
+        print(f"\033[92mRank {rank} - Testing RMSE: {rmse_error:.4f}\033[0m")
         if model.covar_module.base_kernel.lengthscale.numel() > 1:
             print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
         else:
@@ -599,10 +600,11 @@ if __name__ == "__main__":
         'outputscale': model.covar_module.outputscale.item(),
         'noise': model.likelihood.noise.item(),
         'test_rmse': rmse_error,
-        'train_time': train_time
+        'train_time': train_time,
+        'dataset': dataset
     }
 
-    file_path = f'results/dim_{input_dim}/result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
+    file_path = f'results/dataset_{dataset}/result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
     lock_path = file_path + '.lock'
 
     with FileLock(lock_path):

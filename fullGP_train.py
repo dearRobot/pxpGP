@@ -106,10 +106,9 @@ def test_model(model, likelihood, test_x, test_y, device):
         lower, upper = observed_pred.confidence_region()
    
     # compute RMSE error
-    torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"RMSE: {torch.sqrt(torch.mean((mean - test_y) ** 2)).item():.4f}")
+    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
     
-    return mean.cpu(), lower.cpu(), upper.cpu()
+    return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
 
 
 if __name__ == "__main__":
@@ -124,6 +123,7 @@ if __name__ == "__main__":
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
+    dataset = int(config.get('dataset', 1))
     test_split = float(config.get('test_split', 0.2))
     
     optim_param = {}
@@ -131,8 +131,8 @@ if __name__ == "__main__":
     optim_param['lr'] = float(config.get('lr', 0.01))
 
     # load dataset
-    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
-    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+    datax_path = f'dataset/dataset{dataset}/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset{dataset}/dataset1y_{input_dim}d_{num_samples}.csv'
 
     if not os.path.exists(datax_path) or not os.path.exists(datay_path):
         raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
@@ -159,9 +159,10 @@ if __name__ == "__main__":
     train_time = time.time() - start_
 
     # test the model
-    mean, lower, upper = test_model(model, likelihood, test_x, test_y, device)
+    mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
+    print(f"\033[92mRank - Testing RMSE: {rmse_error:.4f}\033[0m")
     if model.covar_module.base_kernel.lengthscale.numel() > 1:
         print("\033[92mLengthscale:\033[0m", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy()) 
     else:
@@ -181,10 +182,11 @@ if __name__ == "__main__":
         'outputscale': model.covar_module.outputscale.item(),
         'noise': model.likelihood.noise.item(),
         'test_rmse': torch.sqrt(torch.mean((mean - test_y) ** 2)).item(),
-        'train_time': train_time
+        'train_time': train_time,
+        'dataset': dataset
         }
     
-    file_path = f'results/dim_{input_dim}/result_dim{input_dim}_datasize_{x.shape[0]}.json'
+    file_path = f'results/dataset_{dataset}/result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
     lock_path = file_path + '.lock'
 
     with FileLock(lock_path):
