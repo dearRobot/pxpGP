@@ -14,9 +14,7 @@ from gpytorch.constraints import Interval
 import numpy as np
 
 from utils import load_yaml_config
-from utils.results import plot_result
-from utils import generate_dataset, split_agent_data
-from utils.results import save_params
+from utils import split_agent_data
 
 from sklearn.cluster import KMeans
 
@@ -104,7 +102,8 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         local_pseudo_x : Local pseudo training input data. (D_i)
         local_pseudo_y : Local pseudo training output data. (D_i)
     """
-    torch.manual_seed(rank + 42)  
+    random_int = torch.randint(0, 1000, (1,)).item() 
+    torch.manual_seed(random_int + rank)  
         
     x_min = local_x.min().item()
     x_max = local_x.max().item()
@@ -521,7 +520,6 @@ def test_model(model, likelihood, test_x, test_y, device):
 
     # compute RMSE error
     rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-        
     return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
     
 
@@ -565,8 +563,6 @@ if __name__ == "__main__":
     y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
 
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
-
-    # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
     
     # train the model

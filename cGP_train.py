@@ -10,11 +10,7 @@ from filelock import FileLock
 import json
 import numpy as np
 
-from utils import load_yaml_config
-from utils import generate_dataset, split_agent_data
-from utils.results import plot_result, save_params
-
-
+from utils import load_yaml_config, split_agent_data
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):

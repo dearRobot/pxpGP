@@ -6,9 +6,9 @@ from torch.optim import Optimizer
 import torch.multiprocessing as mp
 import torch.distributed as dist
 
-__all__ = ["decpxADMM", "decpxadmm", "dec_pxadmm"]
+__all__ = ["DecScaledPxAdmm", "dec_scaled_pxadmm", "dec_scaled_px_admm"]
 
-class decpxADMM(Optimizer):
+class DecScaledPxAdmm(Optimizer):
     def __init__(self, params, neighbors: list=None, rho: float=1.0, lip: float=1.0,
                  rank: int=0, world_size: int=1, tol_abs: float=1e-6, tol_rel: float=1e-4):
         """
@@ -50,7 +50,7 @@ class decpxADMM(Optimizer):
             raise ValueError("At least one neighbor must be specified for each parameter.")
         
         defaults = dict(rho=rho, lip=lip, tol_abs=tol_abs, tol_rel=tol_rel)
-        super(decpxADMM, self).__init__(params, defaults)
+        super(DecScaledPxAdmm, self).__init__(params, defaults)
 
         self.rank = rank
         self.world_size = world_size
@@ -130,7 +130,13 @@ class decpxADMM(Optimizer):
             neighbor_sum += recv_x
 
         neighbor_sum = neighbor_sum.to(x_prev.device)
-        dist.barrier()
+        
+        try:
+            dist.barrier()
+        except RuntimeError as e:
+            print(f"[rank {dist.get_rank()}] barrier timed out after 5s, continuing anyway")
+
+        # dist.barrier()
         return neighbor_sum
 
 
@@ -178,10 +184,32 @@ class decpxADMM(Optimizer):
 
             self._unflatten_params(x_prev) # x_prev is used for gradient evaluation
             loss, grad = closure()
+            f_old = loss.item()
 
             x_new = (1.0 / (lip + 2.0*rho*self.degree)) * (rho*neighbor_sum - grad - alpha_new +
                     (rho * self.degree + lip) * x_prev)
 
+            # # Armijo condition for lip
+            # step_size = (1.0 / (lip + 2.0*rho*self.degree))
+            # x_try = step_size * (rho*neighbor_sum - grad - alpha_new + (rho * self.degree + lip) * x_prev)
+                    
+            # self._unflatten_params(x_try)  # unflatten x_try to original shapes
+            # f_try = closure()[0].item()
+
+            # c, tau = 1e-4, 0.5
+            # iter = 0
+
+            # while (f_try > f_old - c*step_size*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
+            #     lip *= tau
+            #     step_size = (1.0 / (lip + 2.0*rho*self.degree))
+            #     x_try = step_size * (rho*neighbor_sum - grad - alpha_new + (rho * self.degree + lip) * x_prev)
+            #     self._unflatten_params(x_try)
+            #     f_try = closure()[0].item()
+            #     iter += 1
+
+            # lip = max(1.0e-3, min(1000, lip))
+            # x_new = x_try
+            
             # update state
             self.state['flat']['alpha'] = alpha_new
             self.state['flat']['x_prev'] = x_new
@@ -200,39 +228,30 @@ class decpxADMM(Optimizer):
             eps_primal = (eps_primal + self.get_neighbors_sum(eps_primal))/p
             eps_dual = (eps_dual + self.get_neighbors_sum(eps_dual))/p
 
-            # if r_norm < eps_primal : #and s_norm < eps_dual:
+            # if r_norm < eps_primal: # and s_norm < eps_dual:
             #     self.isConverged = True
             #     if self.rank == 0:
             #         print(f"decpxADMM converged at iteration {self.iter} with r_norm: {r_norm:.6f}, s_norm: {s_norm:.6f}")
             #     return True
             
-            # if self.rank == 0 and self.iter % 10 == 0:
-            #     print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}')
+            if self.rank == 0 and self.iter % 10 == 0:
+                print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}')
             
             # update rho
-            # if r_norm.item() > 10 * s_norm.item():
-            #     rho *= 2.0
-            # elif s_norm.item() > 10 * r_norm.item():
-            #     rho /= 2.0
+            if r_norm.item() > 10 * s_norm.item():
+                rho *= 2.0
+            elif s_norm.item() > 10 * r_norm.item():
+                rho /= 2.0
 
-            # rho = max(1.0e-3, min(100.0, rho))
+            rho = max(1.0e-3, min(100.0, rho))
 
-            # #TODO: need to make this better
-            # new_loss, new_grad = closure()
-            
-            # # update lip
-            # beta = 0.9
-            # diff_norm = torch.norm(new_grad - grad) / (torch.norm(x_new - x_prev) + 1e-8)
-            # lip_new = beta * lip + (1 - beta) * diff_norm.item()
-            # lip_new = max(1.0e-3, min(1000, lip_new))
-
-            # group['rho'] = rho
-            # group['lip'] = lip_new
+            group['rho'] = rho
+            # group['lip'] = lip
             
         return False
     
 
-def dec_pxadmm(params, **kwargs):
+def dec_scaled_pxadmm(params, **kwargs):
     """
     Create a decpxADMM optimizer instance.
     
@@ -242,12 +261,11 @@ def dec_pxadmm(params, **kwargs):
     Returns:
         decpxADMM: Instance of the decpxADMM optimizer.
     """
-    return decpxADMM(params, **kwargs)
+    return DecScaledPxAdmm(params, **kwargs)
 
-
-def decpxadmm(params, **kwargs):
+def dec_scaled_px_admm(params, **kwargs):
     """
-    Alias for dec_pxadmm.
+    Create a decpxADMM optimizer instance.
     
     Args:
         params: Parameters to optimize.
@@ -255,4 +273,5 @@ def decpxadmm(params, **kwargs):
     Returns:
         decpxADMM: Instance of the decpxADMM optimizer.
     """
-    return decpxADMM(params, **kwargs)
+    return DecScaledPxAdmm(params, **kwargs)
+
