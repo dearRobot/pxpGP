@@ -92,7 +92,7 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, backen
                 print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
             break
         
-        if conerged:
+        if conerged and rank == 0:
             print(f"Rank {rank} - Training converged at epoch {epoch + 1} with loss: {closure()[0].item()}")
             break
 
