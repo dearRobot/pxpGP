@@ -3,7 +3,7 @@ import gpytorch
 from matplotlib import pyplot as plt
 from admm import dec_pxadmm
 import torch.distributed as dist
-from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
+from linear_operator.settings import max_cg_iterations, cg_tolerance, cholesky_jitter
 import os
 from datetime import timedelta
 from sklearn.model_selection import train_test_split
@@ -16,6 +16,7 @@ from filelock import FileLock
 from utils import load_yaml_config, generate_dataset, split_agent_data
 from utils.graph import DecentralizedNetwork
 from utils.results import plot_result
+torch.cuda.empty_cache()
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -62,7 +63,7 @@ def broadcast_data(data, neighbors, rank: int=0, world_size: int=1):
     
     
 def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, dataset_size: int=50, 
-                                neighbors: list=None, partition_criteria: str='random'):
+                                neighbors: list=None):
     """
     Create augmented dataset (D_c+) = local dataset (D_i) + global communication dataset (D_c)
     Args:
@@ -71,7 +72,6 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
         world_size: Number of processes.
         rank: Current process rank.
         dataset_size: Size of the communication dataset to create.
-        partition_criteria: Criteria for partitioning the dataset (default: 'random').
     Returns:
         aug_x : Augmented training input data. (D_c)
         aug_y : Augmented training output data. (D_c)
@@ -85,12 +85,13 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
         raise ValueError("World size must be greater than 0.")
     
     # Step 1: create local communication dataset
-    torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
+    random_int = torch.randint(0, 1000, (1,)).item() 
+    torch.manual_seed(random_int + rank)  # Ensure randomness acreoss different ranks
 
     # make sure dataset size is same for all ranks
     if rank == 0:
         dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
-        dataset_size = max(dataset_size, 2)
+        dataset_size = max(dataset_size, 4)
     else:
         dataset_size = 0
 
@@ -131,9 +132,16 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     aug_x = torch.cat([local_x, comm_x], dim=0)
     aug_y = torch.cat([local_y, comm_y], dim=0)
     
-    if rank == 0:
-        print(f"Rank {rank} - Augmented dataset size: {aug_x.size(0)}")
-    
+    # remove duplicate entries in the augmented dataset
+    aug_x_np = aug_x.cpu().numpy()           # shape (N, d)
+    aug_y_np = aug_y.cpu().numpy()  
+
+    unique_rows, unique_idx = np.unique(aug_x_np, axis=0, return_index=True)
+    unique_idx = np.sort(unique_idx)
+
+    aug_x = torch.from_numpy(aug_x_np[unique_idx]).to(local_x.dtype).to(local_x.device)
+    aug_y = torch.from_numpy(aug_y_np[unique_idx]).to(local_y.dtype).to(local_y.device)
+       
     return aug_x, aug_y
 
 
@@ -208,12 +216,19 @@ def train_model(train_x, train_y, device, admm_params, neighbors, backend='nccl'
             # if rank == 0:
             print(f"Rank {rank} - Converged at epoch {epoch + 1}, loss: {loss_val:.4f}")
             break
+
+        if rank == 0 and epoch== 1:
+            print(f"Rank {rank} - Epoch {epoch+1}/{admm_params['num_epochs']} loss: {closure_aug()[0].item()}")
+        
+        if rank == 0 and (epoch + 1) % 10 == 0:
+            print(f"Rank {rank} - Epoch {epoch+1}/{admm_params['num_epochs']} loss: {closure_aug()[0].item()}")
+
     
     optimizer_aug.zero_grad(set_to_none=True)
     torch.cuda.empty_cache()  
     
     dist.destroy_process_group()
-    return model, likelihood
+    return model_aug, likelihood_aug
 
 
 def test_model(model, likelihood, test_x, test_y, device):
@@ -239,9 +254,7 @@ def test_model(model, likelihood, test_x, test_y, device):
         lower, upper = observed_pred.confidence_region()
 
     # compute RMSE error
-    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
-    
+    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()   
     return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
 
 
@@ -262,22 +275,25 @@ if __name__ == "__main__":
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
+    dataset = int(config.get('dataset', 1))
     test_split = float(config.get('test_split', 0.05))
 
     admm_params = {}
-    admm_params['num_epochs'] = int(config.get('num_epochs', 100))
+    # admm_params['num_epochs'] = int(config.get('num_epochs', 100))
     admm_params['rho'] = float(config.get('rho', 0.8))
     admm_params['lip'] = float(config.get('lip', 1.0))
     admm_params['tol_abs'] = float(config.get('tol_abs', 1e-6))
     admm_params['tol_rel'] = float(config.get('tol_rel', 1e-4))
+
+    admm_params['num_epochs'] = int(min(world_size*2.0, 500))
 
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))
     aug_dataset_size = int(config.get('aug_dataset_size', 50))
 
     # load dataset
-    datax_path = f'dataset/dataset1/dataset1x_{input_dim}d_{num_samples}.csv'
-    datay_path = f'dataset/dataset1/dataset1y_{input_dim}d_{num_samples}.csv'
+    datax_path = f'dataset/dataset{dataset}/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset{dataset}/dataset1y_{input_dim}d_{num_samples}.csv'
 
     if not os.path.exists(datax_path) or not os.path.exists(datay_path):
         raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
@@ -286,14 +302,12 @@ if __name__ == "__main__":
     y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
 
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
-
-    # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
    
     # get information about neighbors
     dec_graph = DecentralizedNetwork(num_nodes=world_size, graph_type='degree', dim=input_dim, degree=2, seed=42)
     neighbors = dec_graph.neighbors[rank]
-    print(f"Rank {rank} neighbors: {neighbors}")
+    # print(f"Rank {rank} neighbors: {neighbors}")
 
     if graph_viz and rank == 0:
         dec_graph.visualize_graph()
@@ -307,16 +321,18 @@ if __name__ == "__main__":
     mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
-    if model.covar_module.base_kernel.lengthscale.numel() > 1:
-        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
-    else:
-        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
-    
-    print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
-    print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
-    
+    if rank == 0:
+        print(f"\033[92mRank {rank} - Testing RMSE: {rmse_error:.4f}\033[0m")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
+        else:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
+        
+        print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
+        print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
+
     result={
-        'model': 'decgapxGP',
+        'model': 'dec_gapxGP',
         'rank': rank,
         'world_size': world_size,
         'total_dataset_size': x.shape[0],
@@ -326,10 +342,11 @@ if __name__ == "__main__":
         'outputscale': model.covar_module.outputscale.item(),
         'noise': model.likelihood.noise.item(),
         'test_rmse': rmse_error,
-        'train_time': train_time
+        'train_time': train_time,
+        'dataset': dataset
     }
 
-    file_path = f'results/dim_{input_dim}/dec_result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
+    file_path = f'results/dataset_{dataset}/decentralized/dec_result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
     lock_path = file_path + '.lock'
     
     with FileLock(lock_path):

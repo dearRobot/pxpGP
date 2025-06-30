@@ -1,7 +1,6 @@
 import torch
 import gpytorch
-from admm import pxadmm, dec_pxadmm
-from admm import scaled_pxadmm
+from admm import dec_scaled_pxadmm
 import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset
 import os
@@ -11,14 +10,14 @@ import time
 from filelock import FileLock
 import json
 import numpy as np
+from datetime import timedelta
 
 from utils import load_yaml_config
-from utils.results import plot_result
-from utils import generate_dataset, split_agent_data
+from utils import split_agent_data
 from utils.graph import DecentralizedNetwork
-from utils.results import save_params
 
 from sklearn.cluster import KMeans
+torch.cuda.empty_cache()
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
@@ -101,7 +100,8 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         local_pseudo_x : Local pseudo training input data. (D_i)
         local_pseudo_y : Local pseudo training output data. (D_i)
     """
-    torch.manual_seed(rank + 42)  
+    random_int = torch.randint(0, 1000, (1,)).item() 
+    torch.manual_seed(random_int + rank) 
         
     x_min = local_x.min().item()
     x_max = local_x.max().item()
@@ -126,11 +126,11 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     # torch.optim.LBFGS
     optimizer_sparse = torch.optim.Adam( [{'params': model_sparse.parameters()},
                                         {'params': likelihood_sparse.parameters()}],
-                                        lr=0.015,             
-                                        betas=(0.9, 0.999),   # Default, but explicit for clarity
-                                        eps=1e-8,             # Default
-                                        weight_decay=1e-4,    # Add regularization
-                                        amsgrad=True)         # Enable AMSGrad
+                                        lr=0.020,             
+                                        betas=(0.9, 0.999),   
+                                        eps=1e-8,             
+                                        weight_decay=1e-4,    
+                                        amsgrad=True)        
 
     model_sparse.train()
     likelihood_sparse.train()
@@ -268,7 +268,7 @@ def create_augmented_dataset(local_x, local_y, device, neighbors, world_size: in
     # make sure dataset size is same for all ranks
     if rank == 0:
         dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
-        dataset_size = max(dataset_size, 2)
+        dataset_size = max(dataset_size, 4)
     else:
         dataset_size = 0
 
@@ -313,78 +313,88 @@ def create_augmented_dataset(local_x, local_y, device, neighbors, world_size: in
     pseudo_x = torch.cat([local_x, comm_x], dim=0)
     pseudo_y = torch.cat([local_y, comm_y], dim=0)
     
-    # Step 3: Share the local model hyperparameters with other agents same as local_pseudo_x using flooding
-# TODO: implement flooding, gossip, etc.
-    hyperparams_list = [{} for _ in range(world_size)]
+#     # Step 3: Share the local model hyperparameters with other agents same as local_pseudo_x using flooding
+# # TODO: implement flooding, gossip, etc.
+#     hyperparams_list = [{} for _ in range(world_size)]
     
-    if rank == 0:
-        # Placeholder for gathering; we'll handle averaging manually
-        for i in range(world_size):
-            hyperparams_list[i] = {
-                'mean_constant': torch.tensor(0.0, device=device),
-                'lengthscale': torch.zeros(input_dim, device=device),
-                'outputscale': torch.tensor(0.0, device=device),
-                'noise': torch.tensor(0.0, device=device)
-            }
-    else:
-        hyperparams_list = None
+#     if rank == 0:
+#         # Placeholder for gathering; we'll handle averaging manually
+#         for i in range(world_size):
+#             hyperparams_list[i] = {
+#                 'mean_constant': torch.tensor(0.0, device=device),
+#                 'lengthscale': torch.zeros(input_dim, device=device),
+#                 'outputscale': torch.tensor(0.0, device=device),
+#                 'noise': torch.tensor(0.0, device=device)
+#             }
+#     else:
+#         hyperparams_list = None
 
-    # Custom gather for dictionary
-    dist.gather_object(local_hyperparams, hyperparams_list if rank == 0 else None, dst=0)
+#     # Custom gather for dictionary
+#     dist.gather_object(local_hyperparams, hyperparams_list if rank == 0 else None, dst=0)
     
-    if rank == 0:
-        # Average hyperparameters
-        mean_constants = torch.tensor([h['mean_constant'] for h in hyperparams_list], device=device)
-        lengthscales = torch.stack([torch.tensor(h['lengthscale'], device=device) for h in hyperparams_list])
-        outputscales = torch.tensor([h['outputscale'] for h in hyperparams_list], device=device)
-        noise = torch.tensor([h['noise'] for h in hyperparams_list], device=device)
+#     if rank == 0:
+#         # Average hyperparameters
+#         mean_constants = torch.tensor([h['mean_constant'] for h in hyperparams_list], device=device)
+#         lengthscales = torch.stack([torch.tensor(h['lengthscale'], device=device) for h in hyperparams_list])
+#         outputscales = torch.tensor([h['outputscale'] for h in hyperparams_list], device=device)
+#         noise = torch.tensor([h['noise'] for h in hyperparams_list], device=device)
 
-        avg_hyperparams = {
-            'mean_constant': mean_constants.mean().item(),
-            'lengthscale': lengthscales.mean(dim=0).cpu().numpy().flatten(),  # Flatten to 1D array
-            'outputscale': outputscales.mean().item(),
-            'noise': noise.mean().item()
-        }
-    else:
-        avg_hyperparams = {
-            'mean_constant': 0.0,
-            'lengthscale': torch.zeros(input_dim),
-            'outputscale': 0.0,
-            'noise': 0.0
-        }
+#         avg_hyperparams = {
+#             'mean_constant': mean_constants.mean().item(),
+#             'lengthscale': lengthscales.mean(dim=0).cpu().numpy().flatten(),  # Flatten to 1D array
+#             'outputscale': outputscales.mean().item(),
+#             'noise': noise.mean().item()
+#         }
+#     else:
+#         avg_hyperparams = {
+#             'mean_constant': 0.0,
+#             'lengthscale': torch.zeros(input_dim),
+#             'outputscale': 0.0,
+#             'noise': 0.0
+#         }
     
-    # print average hyperparameters
-    if rank == 0:
-        print(f"\033[92mRank {rank} - Average hyperparameters from local models:")
-        print(f"Mean constant: {avg_hyperparams['mean_constant']}, Lengthscale: {avg_hyperparams['lengthscale']}, Outputscale: {avg_hyperparams['outputscale']}, Noise: {avg_hyperparams['noise']}\033[0m")
+#     # print average hyperparameters
+#     if rank == 0:
+#         print(f"\033[92mRank {rank} - Average hyperparameters from local models:")
+#         print(f"Mean constant: {avg_hyperparams['mean_constant']}, Lengthscale: {avg_hyperparams['lengthscale']}, Outputscale: {avg_hyperparams['outputscale']}, Noise: {avg_hyperparams['noise']}\033[0m")
 
-    if rank == 0:
-        avg_hyperparams_tensor = torch.cat([
-            torch.tensor([avg_hyperparams['mean_constant']], device=device),
-            torch.tensor(avg_hyperparams['lengthscale'], device=device),
-            torch.tensor([avg_hyperparams['outputscale']], device=device),
-            torch.tensor([avg_hyperparams['noise']], device=device)
-        ])
-    else:
-        avg_hyperparams_tensor = torch.zeros(3 + input_dim, device=device)
+#     if rank == 0:
+#         avg_hyperparams_tensor = torch.cat([
+#             torch.tensor([avg_hyperparams['mean_constant']], device=device),
+#             torch.tensor(avg_hyperparams['lengthscale'], device=device),
+#             torch.tensor([avg_hyperparams['outputscale']], device=device),
+#             torch.tensor([avg_hyperparams['noise']], device=device)
+#         ])
+#     else:
+#         avg_hyperparams_tensor = torch.zeros(3 + input_dim, device=device)
 
-    dist.broadcast(avg_hyperparams_tensor, src=0)
+#     dist.broadcast(avg_hyperparams_tensor, src=0)
 
-    # Reconstruct avg_hyperparams on all ranks
-    if rank != 0:
-        avg_hyperparams = {
-            'mean_constant': avg_hyperparams_tensor[0].item(),
-            'lengthscale': avg_hyperparams_tensor[1:1+input_dim].cpu().numpy(),
-            'outputscale': avg_hyperparams_tensor[-2].item(),
-            'noise': avg_hyperparams_tensor[-1].item()
-        }
-    else:
-        avg_hyperparams = {
-            'mean_constant': avg_hyperparams_tensor[0].item(),
-            'lengthscale': avg_hyperparams['lengthscale'],
-            'outputscale': avg_hyperparams_tensor[-2].item(),
-            'noise': avg_hyperparams_tensor[-1].item()
-        }
+#     # Reconstruct avg_hyperparams on all ranks
+#     if rank != 0:
+#         avg_hyperparams = {
+#             'mean_constant': avg_hyperparams_tensor[0].item(),
+#             'lengthscale': avg_hyperparams_tensor[1:1+input_dim].cpu().numpy(),
+#             'outputscale': avg_hyperparams_tensor[-2].item(),
+#             'noise': avg_hyperparams_tensor[-1].item()
+#         }
+#     else:
+#         avg_hyperparams = {
+#             'mean_constant': avg_hyperparams_tensor[0].item(),
+#             'lengthscale': avg_hyperparams['lengthscale'],
+#             'outputscale': avg_hyperparams_tensor[-2].item(),
+#             'noise': avg_hyperparams_tensor[-1].item()
+#         }
+    
+    # Alternative testig:
+    # Step 3: Use the local sparse GP model hyperparameters without sharing
+    
+    avg_hyperparams = {
+        'mean_constant': local_hyperparams['mean_constant'],
+        'lengthscale': local_hyperparams['lengthscale'].squeeze(0),
+        'outputscale': local_hyperparams['outputscale'],
+        'noise': local_hyperparams['noise']
+    }  
     
     torch.cuda.empty_cache()
     return pseudo_x, pseudo_y, avg_hyperparams
@@ -429,15 +439,19 @@ def train_model(train_x, train_y, device, admm_params, neighbors, input_dim: int
     model = ExactGPModel(pseudo_x, pseudo_y, likelihood, kernel)
 
     # warm start
-    model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32)#.to(device)
+    # model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32)#.to(device)
 
     lengthscale_ = torch.tensor(avg_hyperparams['lengthscale'], dtype=torch.float32).unsqueeze(0)
-    raw_lengthscale = torch.log(torch.exp(lengthscale_) - torch.ones_like(lengthscale_) * 1e-6)  # Avoid log(0)
-    model.covar_module.base_kernel.raw_lengthscale.data = raw_lengthscale
+    # raw_lengthscale = torch.log(torch.exp(lengthscale_) - torch.ones_like(lengthscale_) * 1e-6)  # Avoid log(0)
+    # model.covar_module.base_kernel.raw_lengthscale.data = raw_lengthscale
 
     outputscale_ = torch.tensor(avg_hyperparams['outputscale'], dtype=torch.float32)
-    raw_outputscale = torch.log(torch.exp(outputscale_) - torch.ones_like(outputscale_) * 1e-6)  
-    model.covar_module.raw_outputscale.data = raw_outputscale
+    # raw_outputscale = torch.log(torch.exp(outputscale_) - torch.ones_like(outputscale_) * 1e-6)  
+    # model.covar_module.raw_outputscale.data = raw_outputscale
+    
+    model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32).to(device)
+    model.covar_module.base_kernel.lengthscale = lengthscale_
+    model.covar_module.outputscale = outputscale_
     
     likelihood.noise = torch.tensor(avg_hyperparams['noise'], dtype=torch.float32).to(device)
     
@@ -457,7 +471,7 @@ def train_model(train_x, train_y, device, admm_params, neighbors, input_dim: int
         print(f"Rank: {rank}, Noise:", model.likelihood.noise.item())
 
     mll = gpytorch.mlls.ExactMarginalLogLikelihood(likelihood, model)
-    optimizer = dec_pxadmm(model.parameters(), neighbors=neighbors, rho=admm_params['rho'],
+    optimizer = dec_scaled_pxadmm(model.parameters(), neighbors=neighbors, rho=admm_params['rho'],
                             lip=admm_params['lip'], rank=rank, world_size=world_size, 
                             tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'])
     
@@ -477,6 +491,7 @@ def train_model(train_x, train_y, device, admm_params, neighbors, input_dim: int
     if rank == 0:
         print(f"\033[92mRank {rank} - Training global model with dec-pxADMM optimizer\033[0m")
     
+    start_time = time.time()
     for epoch in range(admm_params['num_epochs']):
         converged = optimizer.step(closure, epoch=epoch)
         loss_val = closure()[0].item()
@@ -493,7 +508,12 @@ def train_model(train_x, train_y, device, admm_params, neighbors, input_dim: int
             # if rank == 0:
             print(f"Rank {rank} - Converged at epoch {epoch + 1}, loss: {loss_val:.4f}")
             break
-
+    
+    end_time = time.time()
+    dist.barrier()  
+    if rank == 0:
+        print(f"Rank {rank} - Training time: {end_time - start_time:.2f} seconds")
+    
     optimizer.zero_grad(set_to_none=True)
     torch.cuda.empty_cache()    
 
@@ -525,9 +545,7 @@ def test_model(model, likelihood, test_x, test_y, device):
         lower, upper = observed_pred.confidence_region()
 
     # compute RMSE error
-    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
-    print(f"Rank {rank} - Testing RMSE: {rmse_error:.4f}")
-    
+    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()    
     return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
 
 
@@ -548,15 +566,18 @@ if __name__ == "__main__":
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
+    dataset = int(config.get('dataset', 1))
     test_split = float(config.get('test_split', 0.2))
 
     admm_params = {}
-    admm_params['num_epochs'] = int(config.get('num_epochs', 100))
+    # admm_params['num_epochs'] = int(config.get('num_epochs', 100))
     admm_params['rho'] = float(config.get('rho', 0.8))
     admm_params['lip'] = float(config.get('lip', 1.0))
     admm_params['tol_abs'] = float(config.get('tol_abs', 1e-6))
     admm_params['tol_rel'] = float(config.get('tol_rel', 1e-4))
 
+    admm_params['num_epochs'] = int(min(world_size*1.5, 500))
+    
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))
     aug_dataset_size = int(config.get('aug_dataset_size', 50))
@@ -572,14 +593,12 @@ if __name__ == "__main__":
     y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
     
     train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
-
-    # split data among agents
     local_x, local_y = split_agent_data(x, y, world_size, rank, input_dim=input_dim, partition='sequential')    
         
     # get information about neighbors
     dec_graph = DecentralizedNetwork(num_nodes=world_size, graph_type='degree', dim=input_dim, degree=2, seed=42)
     neighbors = dec_graph.neighbors[rank]
-    print(f"Rank {rank} neighbors: {neighbors}")
+    # print(f"Rank {rank} neighbors: {neighbors}")
 
     if graph_viz and rank == 0:
         dec_graph.visualize_graph()
@@ -594,16 +613,18 @@ if __name__ == "__main__":
     mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
 
     # print model and likelihood parameters
-    if model.covar_module.base_kernel.lengthscale.numel() > 1:
-        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
-    else:
-        print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
-    
-    print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
-    print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
+    if rank == 0:
+        print(f"\033[92mRank {rank} - Testing RMSE: {rmse_error:.4f}\033[0m")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
+        else:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
+        
+        print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
+        print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
     
     result={
-        'model': 'decpxpGP',
+        'model': 'dec_pxpGP',
         'rank': rank,
         'world_size': world_size,
         'total_dataset_size': x.shape[0],
@@ -613,10 +634,11 @@ if __name__ == "__main__":
         'outputscale': model.covar_module.outputscale.item(),
         'noise': model.likelihood.noise.item(),
         'test_rmse': rmse_error,
-        'train_time': train_time
+        'train_time': train_time,
+        'dataset': dataset
     }
 
-    file_path = f'results/dim_{input_dim}/dec_result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
+    file_path = f'results/dataset_{dataset}/decentralized/dec_result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
     lock_path = file_path + '.lock'
     
     with FileLock(lock_path):

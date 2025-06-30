@@ -6,18 +6,21 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader, TensorDataset, DistributedSampler
 import os
 from datetime import timedelta
+import numpy as np
+import time
+from filelock import FileLock
+import json
+from sklearn.model_selection import train_test_split
 
-from utils import load_yaml_config, generate_training_data
+from utils import load_yaml_config, split_agent_data
 from utils.graph import DecentralizedNetwork
-from utils.results import plot_result
-
 
 # local GP Model
 class ExactGPModel(gpytorch.models.ExactGP):
-    def __init__(self, train_x, train_y, likelihood):
+    def __init__(self, train_x, train_y, likelihood, kernel):
         super().__init__(train_x, train_y, likelihood)
         self.mean_module = gpytorch.means.ConstantMean()
-        self.covar_module = gpytorch.kernels.ScaleKernel(gpytorch.kernels.RBFKernel())
+        self.covar_module = gpytorch.kernels.ScaleKernel(kernel)
     
     def forward(self, x):
         mean_x = self.mean_module(x)
@@ -76,20 +79,21 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, neighb
     
     model.train()
     likelihood.train()
-
-    if rank == 0:
-        print(f"Starting training with {world_size} processes, using backend: {backend}")
     
     for epoch in range(admm_params['num_epochs']):
         optimizer.step(closure)
         
-        if rank == 0:
+        if not torch.isfinite(torch.tensor(closure()[0].item())):
+            if rank == 0:
+                print(f"Epoch {epoch + 1}: Loss is NaN, stopping early.")
+            break
+        
+        if rank == 0 and epoch== 1:
             print(f"Rank {rank} - Epoch {epoch+1}/{admm_params['num_epochs']} loss: {closure()[0].item()}")
         
-        # if rank == 0 and (epoch + 1) % 10 == 0:
-        #     print(f"Epoch {epoch+1}/{admm_params['num_epochs']} Loss: {closure()[0].item()}")  
-      
-    
+        if rank == 0 and (epoch + 1) % 10 == 0:
+            print(f"Rank {rank} - Epoch {epoch+1}/{admm_params['num_epochs']} loss: {closure()[0].item()}")
+        
     if rank == 0:
         print("Training complete.")
     
@@ -97,81 +101,138 @@ def train_model(model, likelihood, train_x, train_y, device, admm_params, neighb
     torch.cuda.empty_cache() 
 
     dist.destroy_process_group()
-    
     return model, likelihood
 
 
-def test_model(model, likelihood, test_x, device):
+def test_model(model, likelihood, test_x, test_y, device):
     """
-    Test the Gaussian Process model on test data.
+    Test the model using pxADMM optimizer
     Args:
-        model: The trained Gaussian Process model.
-        likelihood: The likelihood function for the model.
-        test_x: Test input data.
-        device: Device to run the testing on (CPU or GPU).
+        model: The GP model to test.
+        likelihood: The likelihood function.
+        test_x: Testing input data.
+        device: Device to run the model on (CPU or GPU).
     Returns:
-        Predictions and confidence intervals.
+        mean: Predicted mean of the test data.
+        lower: Lower bound of the confidence interval.
+        upper: Upper bound of the confidence interval.
     """
     model.eval()
     likelihood.eval()
+    test_x = test_x.to(device)
+    test_y = test_y.to(device) 
 
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
-        test_x = test_x.to(device)
-        preds = model(test_x)
-        mean = preds.mean
-        lower, upper = preds.confidence_region()
+        observed_pred = likelihood(model(test_x))
+        mean = observed_pred.mean
+        lower, upper = observed_pred.confidence_region()
 
-    return mean, lower, upper
+    # compute RMSE error
+    rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    
+    return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
 
 
 if __name__ == "__main__":    
     world_size = int(os.environ['WORLD_SIZE'])
     rank = int(os.environ['RANK'])
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if world_size >= 36:
+        device = 'cpu'
+    else:    
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # load yaml configuration
     config_path = 'config/dec_cGP.yaml'
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"Configuration file {config_path} does not exist.")
     config = load_yaml_config(config_path)
 
     num_samples = int(config.get('num_samples', 1000))
     input_dim = int(config.get('input_dim', 1))
+    dataset = int(config.get('dataset', 1))
+    test_split = float(config.get('test_split', 0.2))
 
     admm_params = {}
-    admm_params['num_epochs'] = int(config.get('num_epochs', 100))
+    # admm_params['num_epochs'] = int(config.get('num_epochs', 100))
     admm_params['rho'] = float(config.get('rho', 0.8))
     admm_params['lr'] = float(config.get('lr', 0.01))
     admm_params['max_iter'] = int(config.get('max_iter', 10))
 
+    admm_params['num_epochs'] = int(min(world_size*2.0, 500))
+
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))
 
-    # # OS enviorment variables for distributed training
-    # os.environ['MASTER_ADDR'] = '127.0.0.1'
-    # os.environ['MASTER_PORT'] = '29500'
+    # load dataset
+    datax_path = f'dataset/dataset{dataset}/dataset1x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset{dataset}/dataset1y_{input_dim}d_{num_samples}.csv'
 
-    # generate local training data
-    local_x, local_y = generate_training_data(num_samples=num_samples, input_dim=input_dim, rank=rank, 
-                                                world_size=world_size, partition='random')
+    if not os.path.exists(datax_path) or not os.path.exists(datay_path):
+        raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
+    
+    x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
+    y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
+    
+    train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
+
+    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential', input_dim=input_dim)
     
     # Create the local model and likelihood    
+    kernel = gpytorch.kernels.RBFKernel(ard_num_dims=input_dim) 
     likelihood = gpytorch.likelihoods.GaussianLikelihood()
-    model = ExactGPModel(local_x, local_y, likelihood)
+    model = ExactGPModel(local_x, local_y, likelihood, kernel)
 
     # get information about neighbors
     dec_graph = DecentralizedNetwork(num_nodes=world_size, graph_type='degree', dim=input_dim, degree=2, seed=42)
     neighbors = dec_graph.neighbors[rank]
-    print(f"Rank {rank} neighbors: {neighbors}")
+    # print(f"Rank {rank} neighbors: {neighbors}")
 
     if graph_viz and rank == 0:
         dec_graph.visualize_graph()
 
     # train the model 
+    start_time = time.time()
     model, likelihood = train_model(model, likelihood, local_x, local_y, device, admm_params=admm_params,
                                     neighbors=neighbors, backend=backend)
+    train_time = time.time() - start_time
 
     # test the model
-    test_x = torch.linspace(0, 1, 1000)
-    mean, lower, upper = test_model(model, likelihood, test_x, device)
+    mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
+
+    # print model and likelihood parameters
+    if rank == 0:
+        print(f"\033[92mRank {rank} - Testing RMSE: {rmse_error:.4f}\033[0m")
+        if model.covar_module.base_kernel.lengthscale.numel() > 1:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
+        else:
+            print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.item(), "\033[0m")  # Print single lengthscale value
+        
+        print(f"\033[92mRank: {rank}, Outputscale:", model.covar_module.outputscale.item(), "\033[0m")
+        print(f"\033[92mRank: {rank}, Noise:", model.likelihood.noise.item(), "\033[0m")
+
+    result={
+        'model': 'dec_cGP',
+        'rank': rank,
+        'world_size': world_size,
+        'total_dataset_size': x.shape[0],
+        'local_dataset_size': local_x.shape[0],
+        'input_dim': input_dim,
+        'lengthscale': model.covar_module.base_kernel.lengthscale.cpu().detach().numpy().tolist(),
+        'outputscale': model.covar_module.outputscale.item(),
+        'noise': model.likelihood.noise.item(),
+        'test_rmse': rmse_error,
+        'train_time': train_time,
+        'dataset': dataset
+    }
+
+    file_path = f'results/dataset_{dataset}/decentralized/dec_result_dim{input_dim}_agents_{world_size}_datasize_{x.shape[0]}.json'
+    lock_path = file_path + '.lock'
+
+    with FileLock(lock_path):
+        with open(file_path, 'a') as f:
+            f.write(json.dumps(result) + '\n')
+
 
 
 

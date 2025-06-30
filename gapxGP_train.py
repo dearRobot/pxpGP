@@ -65,7 +65,8 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
         raise ValueError("World size must be greater than 0.")
     
     # Step 1: create local communication dataset
-    torch.manual_seed(rank + 42)  # Ensure randomness acreoss different ranks
+    random_int = torch.randint(0, 1000, (1,)).item() 
+    torch.manual_seed(random_int + rank)  # Ensure randomness acreoss different ranks
         
     # make sure dataset size is same for all ranks
     if rank == 0:

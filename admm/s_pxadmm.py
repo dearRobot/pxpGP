@@ -152,9 +152,7 @@ class ScaledPxADMM(Optimizer):
             # m.mul_(beta1).add_(grad, alpha=1 - beta1)
             
             alpha = 1.0 / (rho + lip)
-
-            # x_try = v_ - alpha * m  
-            x_try = v_ - alpha * grad
+            x_try = v_ - alpha * grad #- alpha * m 
             self._unflatten_params(x_try)
             f_try = closure()[0].item()
 
@@ -166,8 +164,7 @@ class ScaledPxADMM(Optimizer):
             while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
                 lip *= tau
                 alpha = 1.0 / (rho + lip)
-                # x_try = v_ - alpha * m 
-                x_try = v_ - alpha * grad
+                x_try = v_ - alpha * grad #- alpha * m 
                 self._unflatten_params(x_try)
                 f_try = closure()[0].item()
                 iter += 1
