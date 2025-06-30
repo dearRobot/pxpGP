@@ -268,7 +268,7 @@ def create_augmented_dataset(local_x, local_y, device, neighbors, world_size: in
     # make sure dataset size is same for all ranks
     if rank == 0:
         dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
-        dataset_size = max(dataset_size, 2)
+        dataset_size = max(dataset_size, 4)
     else:
         dataset_size = 0
 

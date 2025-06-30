@@ -154,10 +154,12 @@ if __name__ == "__main__":
     test_split = float(config.get('test_split', 0.2))
 
     admm_params = {}
-    admm_params['num_epochs'] = int(config.get('num_epochs', 100))
+    # admm_params['num_epochs'] = int(config.get('num_epochs', 100))
     admm_params['rho'] = float(config.get('rho', 0.8))
     admm_params['lr'] = float(config.get('lr', 0.01))
     admm_params['max_iter'] = int(config.get('max_iter', 10))
+
+    admm_params['num_epochs'] = int(min(world_size*5.0, 500))
 
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))

@@ -91,7 +91,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     # make sure dataset size is same for all ranks
     if rank == 0:
         dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
-        dataset_size = max(dataset_size, 2)
+        dataset_size = max(dataset_size, 4)
     else:
         dataset_size = 0
 
@@ -279,11 +279,13 @@ if __name__ == "__main__":
     test_split = float(config.get('test_split', 0.05))
 
     admm_params = {}
-    admm_params['num_epochs'] = int(config.get('num_epochs', 100))
+    # admm_params['num_epochs'] = int(config.get('num_epochs', 100))
     admm_params['rho'] = float(config.get('rho', 0.8))
     admm_params['lip'] = float(config.get('lip', 1.0))
     admm_params['tol_abs'] = float(config.get('tol_abs', 1e-6))
     admm_params['tol_rel'] = float(config.get('tol_rel', 1e-4))
+
+    admm_params['num_epochs'] = int(min(world_size*3.0, 500))
 
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))
