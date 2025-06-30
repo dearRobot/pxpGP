@@ -91,7 +91,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     # make sure dataset size is same for all ranks
     if rank == 0:
         dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
-        dataset_size = max(dataset_size, 4)
+        dataset_size = max(dataset_size, 5)
     else:
         dataset_size = 0
 
