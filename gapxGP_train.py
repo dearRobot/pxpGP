@@ -71,7 +71,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     # make sure dataset size is same for all ranks
     if rank == 0:
         dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
-        dataset_size = max(dataset_size, 2)
+        dataset_size = max(dataset_size, 3)
     else:
         dataset_size = 0
 
@@ -269,8 +269,8 @@ if __name__ == "__main__":
     backend = str(config.get('backend', 'nccl'))
 
     # load dataset
-    datax_path = f'dataset/dataset{dataset}/dataset1x_{input_dim}d_{num_samples}.csv'
-    datay_path = f'dataset/dataset{dataset}/dataset1y_{input_dim}d_{num_samples}.csv'
+    datax_path = f'dataset/dataset{dataset}/dataset{dataset}x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset{dataset}/dataset{dataset}y_{input_dim}d_{num_samples}.csv'
 
     if not os.path.exists(datax_path) or not os.path.exists(datay_path):
         raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
