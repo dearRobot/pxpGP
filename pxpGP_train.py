@@ -105,6 +105,9 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     random_int = torch.randint(0, 1000, (1,)).item() 
     torch.manual_seed(random_int + rank)  
         
+    # x_min = local_x.min(dim=0).values
+    # x_max = local_x.max(dim=0).values
+
     x_min = local_x.min().item()
     x_max = local_x.max().item()
     
@@ -158,10 +161,10 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
             output = model_sparse(batch_x)
             loss = -mll_sparse(output, batch_y)
             b_penalty = boundary_penalty(model_sparse.variational_strategy.inducing_points, 
-                                        x_min=x_min, x_max=x_max, margin=0.0)
+                                        x_min=x_min, x_max=x_max, margin=0.01)
             r_penalty = replusive_penalty(model_sparse.variational_strategy.inducing_points,
-                                        min_dist=0.02, input_dim=input_dim)
-            loss += 10.0* b_penalty + 1.0 * r_penalty
+                                        min_dist=0.01, input_dim=input_dim)
+            loss += 10.0* b_penalty + 10.0 * r_penalty
             loss.backward()
             optimizer_sparse.step()
 
@@ -250,7 +253,7 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     
     # make sure dataset size is same for all ranks
     if rank == 0:
-        dataset_size = min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
+        dataset_size = int(local_x.size(0) // world_size) #min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
         dataset_size = max(dataset_size, 3)
     else:
         dataset_size = 0
@@ -284,6 +287,9 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     # broadcast the communication dataset to all agents from rank 0
     dist.broadcast(comm_x, src=0)
     dist.broadcast(comm_y, src=0)
+
+    # if rank == 0:
+    #     print(f"\033[92mRank {rank} - Communication dataset is : {comm_x} and {comm_y}\033[0m")
     
     # create augmented dataset
     pseudo_x = torch.cat([local_x, comm_x], dim=0)
@@ -417,21 +423,20 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     model = ExactGPModel(pseudo_x, pseudo_y, likelihood, kernel)
 
     # warm start  
-    # model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32)#.to(device)
-
     lengthscale_ = torch.tensor(avg_hyperparams['lengthscale'], dtype=torch.float32).unsqueeze(0)
+    outputscale_ = torch.tensor(avg_hyperparams['outputscale'], dtype=torch.float32)
+    noise_ = torch.tensor(avg_hyperparams['noise'], dtype=torch.float32).to(device)
+    
     # raw_lengthscale = torch.log(torch.exp(lengthscale_) - torch.ones_like(lengthscale_) * 1e-6)  # Avoid log(0)
     # model.covar_module.base_kernel.raw_lengthscale.data = raw_lengthscale
-
-    outputscale_ = torch.tensor(avg_hyperparams['outputscale'], dtype=torch.float32)
+    
     # raw_outputscale = torch.log(torch.exp(outputscale_) - torch.ones_like(outputscale_) * 1e-6)  
     # model.covar_module.raw_outputscale.data = raw_outputscale
 
     model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32).to(device)
     model.covar_module.base_kernel.lengthscale = lengthscale_
     model.covar_module.outputscale = outputscale_
-    
-    likelihood.noise = torch.tensor(avg_hyperparams['noise'], dtype=torch.float32).to(device)
+    likelihood.noise = noise_
     
     model = model.to(device)
     likelihood = likelihood.to(device)

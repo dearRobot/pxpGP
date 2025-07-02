@@ -1,7 +1,7 @@
 
-num_samples: 16900
+num_samples: 32400 # 16900
 input_dim: 2
-dataset: 2
+dataset: 3
 
 # must be total 1.0
 train_split: 0.95
