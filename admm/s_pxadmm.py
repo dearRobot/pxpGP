@@ -161,7 +161,7 @@ class ScaledPxADMM(Optimizer):
             iter = 0
 
             # while f_try > f_old + 0.1 * lip * torch.norm(x_try - v)**2 and iter < 10: # Armijo condition
-            while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
+            while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 3):
                 lip *= tau
                 alpha = 1.0 / (rho + lip)
                 x_try = v_ - alpha * grad #- alpha * m 
@@ -170,18 +170,9 @@ class ScaledPxADMM(Optimizer):
                 iter += 1
             
             x_new = x_try
+            x_new = torch.nan_to_num(x_new, nan=0.0, posinf=0.0, neginf=0.0)
 
             # noise addition
-            # noise_temp = 0.01  # Initial noise temperature
-            # noise_decay = 0.01  # Decay factor for noise temperature
-
-            # T = noise_temp / (1.0 + noise_decay * self.iter)
-            # sigma = T * 0.05  # Scale noise by temperature
-            # noise = torch.randn_like(x_new) * sigma
-            # x_new += noise
-            # sigma = 0.02 / math.sqrt(self.iter + 1)
-            # noise = torch.randn_like(x_new) * sigma
-            # x_new += noise
             
             # Step 3: u-update // u_i^{k+1} = u_i^k + x_i^{k+1} - z^{k+1}
             primal_residual = x_new - z_new
@@ -208,7 +199,7 @@ class ScaledPxADMM(Optimizer):
             r_norm /= self.world_size
             s_norm /= self.world_size
 
-            if self.rank == 0 and self.iter % 10 == 0:
+            if self.rank == 0:# and self.iter % 10 == 0:
                 print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}')
 
             if self.dual:
@@ -223,7 +214,7 @@ class ScaledPxADMM(Optimizer):
                     if self.rank == 0:
                         print("scaled pxADMM converged at iteration {}".format(self.iter))
                     return True
-
+            
             # update rho
             if r_norm.item() > 10 * s_norm.item():
                 rho *= 2.0
