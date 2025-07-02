@@ -1,0 +1,3531 @@
+Job started on: g005
+SLURM_JOB_ID: 47875538
+Running pxpGP 1 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 15.208
+Epoch 11/200 - Loss: 1.216
+Epoch 21/200 - Loss: 1.104
+Epoch 31/200 - Loss: 1.004
+Epoch 41/200 - Loss: 0.924
+Epoch 51/200 - Loss: 0.840
+Epoch 61/200 - Loss: 0.716
+Epoch 71/200 - Loss: 0.586
+Epoch 81/200 - Loss: 0.445
+Epoch 91/200 - Loss: 0.286
+Epoch 101/200 - Loss: 0.130
+Converged at epoch 109 with loss -0.057
+[92mRank 0 - Lengthscale: [[0.9599486 0.5212147]] [0m
+[92mRank 0 - Outputscale: 2.5487923622131348 [0m
+[92mRank 0 - Noise: 0.11179076880216599 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9599486 0.5212147]]
+Rank: 0, Outputscale: 2.5487923622131348
+Rank: 0, Noise: 0.11179076880216599
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.9679906964302063, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.8865971565246582, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8768853545188904, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8752928972244263, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.8723126649856567, rho: 0.1062, lip: 1.0000
+rank 0, epoch 59, loss: 0.8678455948829651, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.8647092580795288, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.8635943531990051, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.8634970784187317, rho: 0.0266, lip: 1.0000
+Rank 0 - Training time: 47.73 seconds
+[92mRank 0 - Testing RMSE: 0.4124[0m
+[92mRank: 0, Lengthscale: [[0.61908907 0.29481348]] [0m
+[92mRank: 0, Outputscale: 2.996016263961792 [0m
+[92mRank: 0, Noise: 0.20784242451190948 [0m
+Run 1 completed successfully
+Running pxpGP 2 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 16.258
+Epoch 11/200 - Loss: 1.206
+Epoch 21/200 - Loss: 1.071
+Epoch 31/200 - Loss: 1.022
+Epoch 41/200 - Loss: 0.935
+Epoch 51/200 - Loss: 0.831
+Epoch 61/200 - Loss: 0.730
+Epoch 71/200 - Loss: 0.589
+Epoch 81/200 - Loss: 0.435
+Epoch 91/200 - Loss: 0.269
+Epoch 101/200 - Loss: 0.187
+Converged at epoch 107 with loss -0.017
+[92mRank 0 - Lengthscale: [[0.9191102  0.54248273]] [0m
+[92mRank 0 - Outputscale: 2.566387414932251 [0m
+[92mRank 0 - Noise: 0.12308190017938614 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9191102  0.54248273]]
+Rank: 0, Outputscale: 2.566387414932251
+Rank: 0, Noise: 0.12308187037706375
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.8713325262069702, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.8398208022117615, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8775445818901062, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8614299297332764, rho: 0.0531, lip: 1.0000
+rank 0, epoch 49, loss: 0.8585881590843201, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.8603752851486206, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.8508574366569519, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.8412996530532837, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.8376656770706177, rho: 0.0266, lip: 1.0000
+Rank 0 - Training time: 59.06 seconds
+[92mRank 0 - Testing RMSE: 0.6650[0m
+[92mRank: 0, Lengthscale: [[0.2654178  0.12732561]] [0m
+[92mRank: 0, Outputscale: 2.712449312210083 [0m
+[92mRank: 0, Noise: 0.08811752498149872 [0m
+Run 2 completed successfully
+Running pxpGP 3 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 17.347
+Epoch 11/200 - Loss: 1.332
+Epoch 21/200 - Loss: 1.267
+Epoch 31/200 - Loss: 1.124
+Epoch 41/200 - Loss: 0.968
+Epoch 51/200 - Loss: 0.890
+Epoch 61/200 - Loss: 0.776
+Epoch 71/200 - Loss: 0.671
+Epoch 81/200 - Loss: 0.515
+Epoch 91/200 - Loss: 0.392
+Epoch 101/200 - Loss: 0.207
+Epoch 111/200 - Loss: 0.128
+Converged at epoch 114 with loss -0.004
+[92mRank 0 - Lengthscale: [[1.3681566  0.42899978]] [0m
+[92mRank 0 - Outputscale: 2.4940953254699707 [0m
+[92mRank 0 - Noise: 0.11671469360589981 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[1.3681566  0.42899978]]
+Rank: 0, Outputscale: 2.4940953254699707
+Rank: 0, Noise: 0.11671469360589981
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.7190611958503723, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 0.5937640070915222, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.6134943962097168, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.5950954556465149, rho: 0.0531, lip: 1.0000
+rank 0, epoch 49, loss: 0.5968286395072937, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.5983518958091736, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.5938003659248352, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.594133734703064, rho: 0.0266, lip: 1.0000
+[rank 0] barrier timed out after 5s, continuing anyway
+[rank 8] barrier timed out after 5s, continuing anyway
+[rank 12] barrier timed out after 5s, continuing anyway
+[rank 14] barrier timed out after 5s, continuing anyway
+[rank 15] barrier timed out after 5s, continuing anyway
+[rank 19] barrier timed out after 5s, continuing anyway
+[rank 20] barrier timed out after 5s, continuing anyway
+Run 3 failed, retrying...
+Running pxpGP 4 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 16.552
+Epoch 11/200 - Loss: 1.204
+Epoch 21/200 - Loss: 1.115
+Epoch 31/200 - Loss: 1.018
+Epoch 41/200 - Loss: 0.933
+Epoch 51/200 - Loss: 0.844
+Epoch 61/200 - Loss: 0.745
+Epoch 71/200 - Loss: 0.612
+Epoch 81/200 - Loss: 0.467
+Epoch 91/200 - Loss: 0.307
+Epoch 101/200 - Loss: 0.114
+Converged at epoch 108 with loss -0.023
+[92mRank 0 - Lengthscale: [[0.9253204 0.5336101]] [0m
+[92mRank 0 - Outputscale: 2.546295642852783 [0m
+[92mRank 0 - Noise: 0.12102490663528442 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.92532045 0.5336101 ]]
+Rank: 0, Outputscale: 2.546295642852783
+Rank: 0, Noise: 0.12102490663528442
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.8365924954414368, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.7669004201889038, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8010836839675903, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.7863748073577881, rho: 0.0531, lip: 1.0000
+rank 0, epoch 49, loss: 0.7857379913330078, rho: 0.0531, lip: 1.0000
+[rank 18] barrier timed out after 5s, continuing anyway
+[rank 19] barrier timed out after 5s, continuing anyway
+Run 4 failed, retrying...
+Running pxpGP 5 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 15.502
+Epoch 11/200 - Loss: 1.277
+Epoch 21/200 - Loss: 1.096
+Epoch 31/200 - Loss: 1.010
+Epoch 41/200 - Loss: 0.935
+Epoch 51/200 - Loss: 0.849
+Epoch 61/200 - Loss: 0.726
+Epoch 71/200 - Loss: 0.596
+Epoch 81/200 - Loss: 0.455
+Epoch 91/200 - Loss: 0.272
+Epoch 101/200 - Loss: 0.094
+Converged at epoch 106 with loss -0.007
+[92mRank 0 - Lengthscale: [[0.89962995 0.5294603 ]] [0m
+[92mRank 0 - Outputscale: 2.55497407913208 [0m
+[92mRank 0 - Noise: 0.1300596296787262 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.89962995 0.5294603 ]]
+Rank: 0, Outputscale: 2.55497407913208
+Rank: 0, Noise: 0.130059614777565
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.7316391468048096, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 0.6540423035621643, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.6474454402923584, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.6419585943222046, rho: 0.0531, lip: 1.0000
+rank 0, epoch 49, loss: 0.635831356048584, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.6331115961074829, rho: 0.0266, lip: 1.0000
+[rank 6] barrier timed out after 5s, continuing anyway
+Run 5 failed, retrying...
+Running pxpGP 6 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 15.372
+Epoch 11/200 - Loss: 1.198
+Epoch 21/200 - Loss: 1.113
+Epoch 31/200 - Loss: 1.034
+Epoch 41/200 - Loss: 0.932
+Epoch 51/200 - Loss: 0.841
+Epoch 61/200 - Loss: 0.734
+Epoch 71/200 - Loss: 0.607
+Epoch 81/200 - Loss: 0.468
+Epoch 91/200 - Loss: 0.282
+Epoch 101/200 - Loss: 0.085
+Converged at epoch 107 with loss -0.003
+[92mRank 0 - Lengthscale: [[0.92583144 0.5347177 ]] [0m
+[92mRank 0 - Outputscale: 2.5619661808013916 [0m
+[92mRank 0 - Noise: 0.12561927735805511 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.92583144 0.5347177 ]]
+Rank: 0, Outputscale: 2.5619661808013916
+Rank: 0, Noise: 0.12561927735805511
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.7711392045021057, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 0.707297146320343, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.6823101043701172, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.6816580295562744, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.6772567629814148, rho: 0.1062, lip: 1.0000
+rank 0, epoch 59, loss: 0.6706763505935669, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.6660743355751038, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.663580060005188, rho: 0.0531, lip: 1.0000
+rank 0, epoch 89, loss: 0.6650919318199158, rho: 0.0531, lip: 1.0000
+Rank 0 - Training time: 59.65 seconds
+[92mRank 0 - Testing RMSE: 0.3852[0m
+[92mRank: 0, Lengthscale: [[0.63808197 0.21600462]] [0m
+[92mRank: 0, Outputscale: 3.0281877517700195 [0m
+[92mRank: 0, Noise: 0.12061325460672379 [0m
+Run 6 completed successfully
+Running pxpGP 7 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 14.767
+Epoch 11/200 - Loss: 1.178
+Epoch 21/200 - Loss: 1.081
+Epoch 31/200 - Loss: 1.004
+Epoch 41/200 - Loss: 0.929
+Epoch 51/200 - Loss: 0.836
+Epoch 61/200 - Loss: 0.738
+Epoch 71/200 - Loss: 0.585
+Epoch 81/200 - Loss: 0.474
+Epoch 91/200 - Loss: 0.340
+Epoch 101/200 - Loss: 0.105
+Converged at epoch 106 with loss -0.004
+[92mRank 0 - Lengthscale: [[0.922083  0.5278504]] [0m
+[92mRank 0 - Outputscale: 2.5507211685180664 [0m
+[92mRank 0 - Noise: 0.12783685326576233 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.922083  0.5278504]]
+Rank: 0, Outputscale: 2.5507211685180664
+Rank: 0, Noise: 0.12783685326576233
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.717722475528717, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.6611079573631287, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.6871277689933777, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.6689049601554871, rho: 0.0531, lip: 1.0000
+rank 0, epoch 49, loss: 0.6677426695823669, rho: 0.0531, lip: 1.0000
+[rank 3] barrier timed out after 5s, continuing anyway
+[rank 5] barrier timed out after 5s, continuing anyway
+[rank 6] barrier timed out after 5s, continuing anyway
+[rank 10] barrier timed out after 5s, continuing anyway
+[rank 11] barrier timed out after 5s, continuing anyway
+Run 7 failed, retrying...
+Running pxpGP 8 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 19.970
+Epoch 11/200 - Loss: 1.197
+Epoch 21/200 - Loss: 1.092
+Epoch 31/200 - Loss: 1.031
+Epoch 41/200 - Loss: 0.920
+Epoch 51/200 - Loss: 0.839
+Epoch 61/200 - Loss: 0.721
+Epoch 71/200 - Loss: 0.599
+Epoch 81/200 - Loss: 0.459
+Epoch 91/200 - Loss: 0.321
+Epoch 101/200 - Loss: 0.087
+Converged at epoch 108 with loss -0.018
+[92mRank 0 - Lengthscale: [[0.9342523 0.5234925]] [0m
+[92mRank 0 - Outputscale: 2.5547289848327637 [0m
+[92mRank 0 - Noise: 0.12091871351003647 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9342523 0.5234926]]
+Rank: 0, Outputscale: 2.5547289848327637
+Rank: 0, Noise: 0.12091871351003647
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.8916853070259094, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.8440873026847839, rho: 0.4250, lip: 1.0000
+rank 0, epoch 29, loss: 0.8554055690765381, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8393446207046509, rho: 0.0531, lip: 1.0000
+rank 0, epoch 49, loss: 0.8488820791244507, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.8375136256217957, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.8182460069656372, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.7552551627159119, rho: 0.0531, lip: 1.0000
+[rank 5] barrier timed out after 5s, continuing anyway
+[rank 9] barrier timed out after 5s, continuing anyway
+[rank 11] barrier timed out after 5s, continuing anyway
+[rank 12] barrier timed out after 5s, continuing anyway
+[rank 16] barrier timed out after 5s, continuing anyway
+[rank 17] barrier timed out after 5s, continuing anyway
+[rank 19] barrier timed out after 5s, continuing anyway
+Run 8 failed, retrying...
+Running pxpGP 9 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 17.986
+Epoch 11/200 - Loss: 1.321
+Epoch 21/200 - Loss: 1.224
+Epoch 31/200 - Loss: 1.146
+Epoch 41/200 - Loss: 0.975
+Epoch 51/200 - Loss: 0.875
+Epoch 61/200 - Loss: 0.773
+Epoch 71/200 - Loss: 0.648
+Epoch 81/200 - Loss: 0.507
+Epoch 91/200 - Loss: 0.340
+Epoch 101/200 - Loss: 0.197
+Epoch 111/200 - Loss: -0.021
+Converged at epoch 111 with loss -0.021
+[92mRank 0 - Lengthscale: [[1.2569249 0.4347896]] [0m
+[92mRank 0 - Outputscale: 2.4660935401916504 [0m
+[92mRank 0 - Noise: 0.1228971853852272 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[1.2569249 0.4347896]]
+Rank: 0, Outputscale: 2.4660935401916504
+Rank: 0, Noise: 0.1228971853852272
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.7262265682220459, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.6333534717559814, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.6514015793800354, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.6432830095291138, rho: 0.0266, lip: 1.0000
+rank 0, epoch 49, loss: 0.6437185406684875, rho: 0.0133, lip: 1.0000
+Run 9 failed, retrying...
+Running pxpGP 10 with agents: 64
+[92mRank 0 - sparse dataset size is: 4, local dataset: torch.Size([289, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 289 samples[0m
+Epoch 1/200 - Loss: 16.712
+Epoch 11/200 - Loss: 1.228
+Epoch 21/200 - Loss: 1.068
+Epoch 31/200 - Loss: 1.006
+Epoch 41/200 - Loss: 0.933
+Epoch 51/200 - Loss: 0.858
+Epoch 61/200 - Loss: 0.717
+Epoch 71/200 - Loss: 0.600
+Epoch 81/200 - Loss: 0.456
+Epoch 91/200 - Loss: 0.309
+Epoch 101/200 - Loss: 0.099
+Converged at epoch 109 with loss -0.008
+[92mRank 0 - Lengthscale: [[0.9186401  0.53256756]] [0m
+[92mRank 0 - Outputscale: 2.5483367443084717 [0m
+[92mRank 0 - Noise: 0.11443662643432617 [0m
+Rank 0 - Augmented dataset size: 545
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9186401  0.53256756]]
+Rank: 0, Outputscale: 2.5483367443084717
+Rank: 0, Noise: 0.11443665623664856
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.6193810701370239, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.6218525767326355, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.6596397161483765, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.645699143409729, rho: 0.0531, lip: 1.0000
+[rank 6] barrier timed out after 5s, continuing anyway
+[rank 10] barrier timed out after 5s, continuing anyway
+[rank 12] barrier timed out after 5s, continuing anyway
+[rank 13] barrier timed out after 5s, continuing anyway
+[rank 17] barrier timed out after 5s, continuing anyway
+[rank 18] barrier timed out after 5s, continuing anyway
+[rank 20] barrier timed out after 5s, continuing anyway
+Run 10 failed, retrying...
+Running gapxGP 1 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0851675271987915
+Rank 0 - Epoch 10/128 loss: 0.8620954155921936
+Rank 0 - Epoch 20/128 loss: 0.5537955164909363
+Rank 0 - Epoch 30/128 loss: 0.21200691163539886
+Rank 0 - Epoch 40/128 loss: -0.16936928033828735
+Rank 0 - Epoch 50/128 loss: -0.5522360801696777
+Rank 0 - Epoch 60/128 loss: -0.9166297912597656
+Rank 0 - Epoch 70/128 loss: -1.2544220685958862
+Rank 0 - Epoch 80/128 loss: -1.5543068647384644
+Rank 0 - Epoch 90/128 loss: -1.8012828826904297
+Rank 0 - Epoch 100/128 loss: -1.9865343570709229
+Rank 0 - Epoch 110/128 loss: -2.112971782684326
+Rank 0 - Epoch 120/128 loss: -2.1799659729003906
+[92mRank 0 - Testing RMSE: 0.0124[0m
+[92mRank: 0, Lengthscale: [[0.65671057 0.38743615]] [0m
+[92mRank: 0, Outputscale: 2.0119338035583496 [0m
+[92mRank: 0, Noise: 0.00017026872956193984 [0m
+Run 1 completed successfully
+Running gapxGP 2 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0837781429290771
+Rank 0 - Epoch 10/128 loss: 0.8594590425491333
+Rank 0 - Epoch 20/128 loss: 0.5595595836639404
+Rank 0 - Epoch 30/128 loss: 0.21860931813716888
+Rank 0 - Epoch 40/128 loss: -0.16958849132061005
+Rank 0 - Epoch 50/128 loss: -0.5534151196479797
+Rank 0 - Epoch 60/128 loss: -0.9158385992050171
+Rank 0 - Epoch 70/128 loss: -1.2513353824615479
+Rank 0 - Epoch 80/128 loss: -1.5500801801681519
+Rank 0 - Epoch 90/128 loss: -1.7974555492401123
+Rank 0 - Epoch 100/128 loss: -1.9840437173843384
+Rank 0 - Epoch 110/128 loss: -2.1134800910949707
+Rank 0 - Epoch 120/128 loss: -2.0895638465881348
+[92mRank 0 - Testing RMSE: 0.0111[0m
+[92mRank: 0, Lengthscale: [[0.5916852 0.3433888]] [0m
+[92mRank: 0, Outputscale: 2.0207414627075195 [0m
+[92mRank: 0, Noise: 0.000170253319083713 [0m
+Run 2 completed successfully
+Running gapxGP 3 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0612248182296753
+Rank 0 - Epoch 10/128 loss: 0.8308584094047546
+Rank 0 - Epoch 20/128 loss: 0.5269036293029785
+Rank 0 - Epoch 30/128 loss: 0.18653737008571625
+Rank 0 - Epoch 40/128 loss: -0.19316904246807098
+Rank 0 - Epoch 50/128 loss: -0.5723828673362732
+Rank 0 - Epoch 60/128 loss: -0.9265975952148438
+Rank 0 - Epoch 70/128 loss: -1.2570070028305054
+Rank 0 - Epoch 80/128 loss: -1.5537872314453125
+Rank 0 - Epoch 90/128 loss: -1.8033078908920288
+Rank 0 - Epoch 100/128 loss: -1.9929143190383911
+Rank 0 - Epoch 110/128 loss: -2.124617338180542
+Rank 0 - Epoch 120/128 loss: -2.203425168991089
+[92mRank 0 - Testing RMSE: 0.0122[0m
+[92mRank: 0, Lengthscale: [[0.60084873 0.32778084]] [0m
+[92mRank: 0, Outputscale: 2.024620294570923 [0m
+[92mRank: 0, Noise: 0.00016946427058428526 [0m
+Run 3 completed successfully
+Running gapxGP 4 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.084607481956482
+Rank 0 - Epoch 10/128 loss: 0.8593148589134216
+Rank 0 - Epoch 20/128 loss: 0.5511153340339661
+Rank 0 - Epoch 30/128 loss: 0.20788845419883728
+Rank 0 - Epoch 40/128 loss: -0.17556801438331604
+Rank 0 - Epoch 50/128 loss: -0.557905912399292
+Rank 0 - Epoch 60/128 loss: -0.9190700054168701
+Rank 0 - Epoch 70/128 loss: -1.2545619010925293
+Rank 0 - Epoch 80/128 loss: -1.5525751113891602
+Rank 0 - Epoch 90/128 loss: -1.7996679544448853
+Rank 0 - Epoch 100/128 loss: -1.9860774278640747
+Rank 0 - Epoch 110/128 loss: -2.113901376724243
+Rank 0 - Epoch 120/128 loss: -2.1417484283447266
+[92mRank 0 - Testing RMSE: 0.0155[0m
+[92mRank: 0, Lengthscale: [[0.5795971  0.33381343]] [0m
+[92mRank: 0, Outputscale: 2.016167163848877 [0m
+[92mRank: 0, Noise: 0.00017038261285051703 [0m
+Run 4 completed successfully
+Running gapxGP 5 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0710484981536865
+Rank 0 - Epoch 10/128 loss: 0.8422502875328064
+Rank 0 - Epoch 20/128 loss: 0.5296779870986938
+Rank 0 - Epoch 30/128 loss: 0.1894763708114624
+Rank 0 - Epoch 40/128 loss: -0.18772101402282715
+Rank 0 - Epoch 50/128 loss: -0.5662580132484436
+Rank 0 - Epoch 60/128 loss: -0.9273889064788818
+Rank 0 - Epoch 70/128 loss: -1.2617172002792358
+Rank 0 - Epoch 80/128 loss: -1.5583678483963013
+Rank 0 - Epoch 90/128 loss: -1.8041802644729614
+Rank 0 - Epoch 100/128 loss: -1.9884639978408813
+Rank 0 - Epoch 110/128 loss: -2.115664482116699
+Rank 0 - Epoch 120/128 loss: -1.9761091470718384
+[92mRank 0 - Testing RMSE: 0.0168[0m
+[92mRank: 0, Lengthscale: [[0.5441039 0.2881388]] [0m
+[92mRank: 0, Outputscale: 2.039665937423706 [0m
+[92mRank: 0, Noise: 0.00016962710651569068 [0m
+Run 5 completed successfully
+Running gapxGP 6 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0796669721603394
+Rank 0 - Epoch 10/128 loss: 0.848495602607727
+Rank 0 - Epoch 20/128 loss: 0.5321807861328125
+Rank 0 - Epoch 30/128 loss: 0.18620111048221588
+Rank 0 - Epoch 40/128 loss: -0.1879986673593521
+Rank 0 - Epoch 50/128 loss: -0.5617116093635559
+Rank 0 - Epoch 60/128 loss: -0.9172022342681885
+Rank 0 - Epoch 70/128 loss: -1.2478300333023071
+Rank 0 - Epoch 80/128 loss: -1.5414420366287231
+Rank 0 - Epoch 90/128 loss: -1.7851828336715698
+Rank 0 - Epoch 100/128 loss: -1.9690275192260742
+Rank 0 - Epoch 110/128 loss: -2.093472719192505
+Rank 0 - Epoch 120/128 loss: -2.108607530593872
+[92mRank 0 - Testing RMSE: 0.0132[0m
+[92mRank: 0, Lengthscale: [[0.67556894 0.39873818]] [0m
+[92mRank: 0, Outputscale: 1.999613642692566 [0m
+[92mRank: 0, Noise: 0.00017118208052124828 [0m
+Run 6 completed successfully
+Running gapxGP 7 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.074262022972107
+Rank 0 - Epoch 10/128 loss: 0.8542667031288147
+Rank 0 - Epoch 20/128 loss: 0.5547401309013367
+Rank 0 - Epoch 30/128 loss: 0.23099955916404724
+Rank 0 - Epoch 40/128 loss: -0.150322824716568
+Rank 0 - Epoch 50/128 loss: -0.5358191728591919
+Rank 0 - Epoch 60/128 loss: -0.8998588919639587
+Rank 0 - Epoch 70/128 loss: -1.2386280298233032
+Rank 0 - Epoch 80/128 loss: -1.541487693786621
+Rank 0 - Epoch 90/128 loss: -1.7933539152145386
+Rank 0 - Epoch 100/128 loss: -1.9832589626312256
+Rank 0 - Epoch 110/128 loss: -2.113389253616333
+Rank 0 - Epoch 120/128 loss: -2.1842195987701416
+[92mRank 0 - Testing RMSE: 0.0206[0m
+[92mRank: 0, Lengthscale: [[0.6622078  0.38776264]] [0m
+[92mRank: 0, Outputscale: 2.003159999847412 [0m
+[92mRank: 0, Noise: 0.0001719192077871412 [0m
+Run 7 completed successfully
+Running gapxGP 8 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0639140605926514
+Rank 0 - Epoch 10/128 loss: 0.8324544429779053
+Rank 0 - Epoch 20/128 loss: 0.5195660591125488
+Rank 0 - Epoch 30/128 loss: 0.20324115455150604
+Rank 0 - Epoch 40/128 loss: -0.17007260024547577
+Rank 0 - Epoch 50/128 loss: -0.5581571459770203
+Rank 0 - Epoch 60/128 loss: -0.9245349168777466
+Rank 0 - Epoch 70/128 loss: -1.2629669904708862
+Rank 0 - Epoch 80/128 loss: -1.5642160177230835
+Rank 0 - Epoch 90/128 loss: -1.8144813776016235
+Rank 0 - Epoch 100/128 loss: -2.002810478210449
+Rank 0 - Epoch 110/128 loss: -2.1321589946746826
+Rank 0 - Epoch 120/128 loss: -2.199756383895874
+[92mRank 0 - Testing RMSE: 0.0220[0m
+[92mRank: 0, Lengthscale: [[0.6650376  0.37692738]] [0m
+[92mRank: 0, Outputscale: 1.9978559017181396 [0m
+[92mRank: 0, Noise: 0.00017013750039041042 [0m
+Run 8 completed successfully
+Running gapxGP 9 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0851504802703857
+Rank 0 - Epoch 10/128 loss: 0.8539685010910034
+Rank 0 - Epoch 20/128 loss: 0.5371284484863281
+Rank 0 - Epoch 30/128 loss: 0.20005552470684052
+Rank 0 - Epoch 40/128 loss: -0.18107043206691742
+Rank 0 - Epoch 50/128 loss: -0.5648122429847717
+Rank 0 - Epoch 60/128 loss: -0.9287430047988892
+Rank 0 - Epoch 70/128 loss: -1.2659921646118164
+Rank 0 - Epoch 80/128 loss: -1.565572738647461
+Rank 0 - Epoch 90/128 loss: -1.8128697872161865
+Rank 0 - Epoch 100/128 loss: -1.9980392456054688
+Rank 0 - Epoch 110/128 loss: -2.126166582107544
+Rank 0 - Epoch 120/128 loss: -2.187903881072998
+[92mRank 0 - Testing RMSE: 0.0151[0m
+[92mRank: 0, Lengthscale: [[0.6044976 0.3382557]] [0m
+[92mRank: 0, Outputscale: 2.0146851539611816 [0m
+[92mRank: 0, Noise: 0.00016960882931016386 [0m
+Run 9 completed successfully
+Running gapxGP 10 with agents: 64
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 1.0711617469787598
+Rank 0 - Epoch 10/128 loss: 0.8371951580047607
+Rank 0 - Epoch 20/128 loss: 0.5171551704406738
+Rank 0 - Epoch 30/128 loss: 0.17730966210365295
+Rank 0 - Epoch 40/128 loss: -0.19809891283512115
+Rank 0 - Epoch 50/128 loss: -0.5781940221786499
+Rank 0 - Epoch 60/128 loss: -0.9363259077072144
+Rank 0 - Epoch 70/128 loss: -1.268066644668579
+Rank 0 - Epoch 80/128 loss: -1.5636165142059326
+Rank 0 - Epoch 90/128 loss: -1.8095546960830688
+Rank 0 - Epoch 100/128 loss: -1.9948168992996216
+Rank 0 - Epoch 110/128 loss: -2.122960090637207
+Rank 0 - Epoch 120/128 loss: -2.1743173599243164
+[92mRank 0 - Testing RMSE: 0.0142[0m
+[92mRank: 0, Lengthscale: [[0.66462505 0.37736675]] [0m
+[92mRank: 0, Outputscale: 1.997613549232483 [0m
+[92mRank: 0, Noise: 0.00016936828615143895 [0m
+Run 10 completed successfully
+Running apxGP 1 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 1 completed successfully
+Running apxGP 2 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 2 completed successfully
+Running apxGP 3 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 3 completed successfully
+Running apxGP 4 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 4 completed successfully
+Running apxGP 5 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 5 completed successfully
+Running apxGP 6 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 6 completed successfully
+Running apxGP 7 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 7 completed successfully
+Running apxGP 8 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 8 completed successfully
+Running apxGP 9 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 9 completed successfully
+Running apxGP 10 with agents: 64
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8208529353141785
+Rank 0 - Epoch 10/128 loss: 0.5595712065696716
+Rank 0 - Epoch 20/128 loss: 0.14853982627391815
+Rank 0 - Epoch 30/128 loss: -0.3265365958213806
+Rank 0 - Epoch 40/128 loss: -0.8297722339630127
+Rank 0 - Epoch 50/128 loss: -1.3420590162277222
+Rank 0 - Epoch 60/128 loss: -1.829068660736084
+Rank 0 - Epoch 70/128 loss: -2.2699334621429443
+Rank 0 - Epoch 80/128 loss: -2.6427664756774902
+Rank 0 - Epoch 90/128 loss: -2.917433500289917
+Rank 0 - Epoch 100/128 loss: -3.088489532470703
+Rank 0 - Epoch 110/128 loss: -3.187879800796509
+Rank 0 - Epoch 120/128 loss: -3.247074604034424
+Training complete.
+[92mRank 0 - Testing RMSE: 2.9220[0m
+[92mRank: 0, Lengthscale: [[0.5922374  0.36189264]] [0m
+[92mRank: 0, Outputscale: 1.3437227010726929 [0m
+[92mRank: 0, Noise: 0.00013420250616036355 [0m
+Run 10 completed successfully
+Running cGP 1 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 1 completed successfully
+Running cGP 2 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 2 completed successfully
+Running cGP 3 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 3 completed successfully
+Running cGP 4 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 4 completed successfully
+Running cGP 5 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 5 completed successfully
+Running cGP 6 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 6 completed successfully
+Running cGP 7 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 7 completed successfully
+Running cGP 8 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 8 completed successfully
+Running cGP 9 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 9 completed successfully
+Running cGP 10 with agents: 64
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 64
+Rank 0 - Epoch 2/128 loss: 0.8764377236366272
+Rank 0 - Epoch 10/128 loss: 0.8719022870063782
+Rank 0 - Epoch 20/128 loss: 0.8662393689155579
+Rank 0 - Epoch 30/128 loss: 0.8605861663818359
+Rank 0 - Epoch 40/128 loss: 0.8549458980560303
+Rank 0 - Epoch 50/128 loss: 0.8493220806121826
+Rank 0 - Epoch 60/128 loss: 0.8437184691429138
+Rank 0 - Epoch 70/128 loss: 0.8381388783454895
+Rank 0 - Epoch 80/128 loss: 0.8325874209403992
+Rank 0 - Epoch 90/128 loss: 0.827068567276001
+Rank 0 - Epoch 100/128 loss: 0.8215867280960083
+Rank 0 - Epoch 110/128 loss: 0.8161467909812927
+Rank 0 - Epoch 120/128 loss: 0.8107538223266602
+Training complete.
+[92mRank 0 - Testing RMSE: 3.7932[0m
+[92mRank: 0, Lengthscale: [[0.59044725 0.58887345]] [0m
+[92mRank: 0, Outputscale: 0.5925074815750122 [0m
+[92mRank: 0, Noise: 0.5803273320198059 [0m
+Run 10 completed successfully
+Running pxpGP 1 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 17.259
+Epoch 11/200 - Loss: 1.256
+Epoch 21/200 - Loss: 1.087
+Epoch 31/200 - Loss: 1.026
+Epoch 41/200 - Loss: 0.958
+Epoch 51/200 - Loss: 0.882
+Epoch 61/200 - Loss: 0.790
+Epoch 71/200 - Loss: 0.670
+Epoch 81/200 - Loss: 0.551
+Epoch 91/200 - Loss: 0.398
+Epoch 101/200 - Loss: 0.262
+Epoch 111/200 - Loss: 0.083
+Converged at epoch 118 with loss -0.010
+[92mRank 0 - Lengthscale: [[0.93201494 0.46725196]] [0m
+[92mRank 0 - Outputscale: 2.609292507171631 [0m
+[92mRank 0 - Noise: 0.10825622081756592 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.93201494 0.46725196]]
+Rank: 0, Outputscale: 2.609292507171631
+Rank: 0, Noise: 0.10825622081756592
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.083370566368103, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.0309054851531982, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.9460129737854004, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.9869110584259033, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9873427152633667, rho: 0.1062, lip: 1.0000
+rank 0, epoch 59, loss: 1.0422567129135132, rho: 0.1062, lip: 1.0000
+rank 0, epoch 69, loss: 1.1010059118270874, rho: 0.1062, lip: 1.0000
+rank 0, epoch 79, loss: 1.0430221557617188, rho: 0.0531, lip: 1.0000
+rank 0, epoch 89, loss: 1.0315669775009155, rho: 0.0531, lip: 1.0000
+rank 0, epoch 99, loss: 1.046574354171753, rho: 0.0531, lip: 1.0000
+rank 0, epoch 109, loss: 1.1033672094345093, rho: 0.0531, lip: 1.0000
+rank 0, epoch 119, loss: 1.1191798448562622, rho: 0.0531, lip: 1.0000
+rank 0, epoch 129, loss: 0.9865955710411072, rho: 0.0531, lip: 1.0000
+rank 0, epoch 139, loss: 0.9493005871772766, rho: 0.0531, lip: 1.0000
+rank 0, epoch 149, loss: 0.9522186517715454, rho: 0.0266, lip: 1.0000
+Rank 0 - Training time: 104.43 seconds
+[92mRank 0 - Testing RMSE: 0.3244[0m
+[92mRank: 0, Lengthscale: [[0.92230654 0.29194385]] [0m
+[92mRank: 0, Outputscale: 5.600587368011475 [0m
+[92mRank: 0, Noise: 0.2209254801273346 [0m
+Run 1 completed successfully
+Running pxpGP 2 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 17.305
+Epoch 11/200 - Loss: 1.216
+Epoch 21/200 - Loss: 1.090
+Epoch 31/200 - Loss: 1.031
+Epoch 41/200 - Loss: 0.969
+Epoch 51/200 - Loss: 0.886
+Epoch 61/200 - Loss: 0.794
+Epoch 71/200 - Loss: 0.672
+Epoch 81/200 - Loss: 0.525
+Epoch 91/200 - Loss: 0.387
+Epoch 101/200 - Loss: 0.256
+Epoch 111/200 - Loss: 0.068
+Converged at epoch 116 with loss -0.029
+[92mRank 0 - Lengthscale: [[0.96733147 0.44157317]] [0m
+[92mRank 0 - Outputscale: 2.622591733932495 [0m
+[92mRank 0 - Noise: 0.11436019092798233 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.96733147 0.44157317]]
+Rank: 0, Outputscale: 2.622591733932495
+Rank: 0, Noise: 0.11436019092798233
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.049005150794983, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.0145756006240845, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.9390195608139038, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9391630291938782, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9142026305198669, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.9189592599868774, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.9161869883537292, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.9039263725280762, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.8982548713684082, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.8975061178207397, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.8999357223510742, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.902626633644104, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.9041041135787964, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.9043543934822083, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.9037705659866333, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 70.74 seconds
+[92mRank 0 - Testing RMSE: 0.3229[0m
+[92mRank: 0, Lengthscale: [[0.92499113 0.31522784]] [0m
+[92mRank: 0, Outputscale: 4.622644424438477 [0m
+[92mRank: 0, Noise: 0.20870080590248108 [0m
+Run 2 completed successfully
+Running pxpGP 3 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 17.603
+Epoch 11/200 - Loss: 1.244
+Epoch 21/200 - Loss: 1.085
+Epoch 31/200 - Loss: 1.031
+Epoch 41/200 - Loss: 0.964
+Epoch 51/200 - Loss: 0.877
+Epoch 61/200 - Loss: 0.796
+Epoch 71/200 - Loss: 0.670
+Epoch 81/200 - Loss: 0.545
+Epoch 91/200 - Loss: 0.383
+Epoch 101/200 - Loss: 0.245
+Epoch 111/200 - Loss: 0.070
+Converged at epoch 117 with loss -0.014
+[92mRank 0 - Lengthscale: [[0.9652818  0.44112346]] [0m
+[92mRank 0 - Outputscale: 2.632963180541992 [0m
+[92mRank 0 - Noise: 0.11173343658447266 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9652818  0.44112346]]
+Rank: 0, Outputscale: 2.632963180541992
+Rank: 0, Noise: 0.11173343658447266
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0181101560592651, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.9496901035308838, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8807270526885986, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8815882802009583, rho: 0.0531, lip: 1.0000
+rank 0, epoch 49, loss: 0.8766446113586426, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.8839606046676636, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.8866093158721924, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.8823389410972595, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.877998411655426, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.8760289549827576, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.8768263459205627, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.8790387511253357, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.8813359141349792, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.883026659488678, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.8836987614631653, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 84.08 seconds
+[92mRank 0 - Testing RMSE: 0.3211[0m
+[92mRank: 0, Lengthscale: [[0.89244235 0.32789627]] [0m
+[92mRank: 0, Outputscale: 6.705593109130859 [0m
+[92mRank: 0, Noise: 0.21015149354934692 [0m
+Run 3 completed successfully
+Running pxpGP 4 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 16.186
+Epoch 11/200 - Loss: 1.196
+Epoch 21/200 - Loss: 1.086
+Epoch 31/200 - Loss: 1.026
+Epoch 41/200 - Loss: 0.967
+Epoch 51/200 - Loss: 0.876
+Epoch 61/200 - Loss: 0.786
+Epoch 71/200 - Loss: 0.674
+Epoch 81/200 - Loss: 0.528
+Epoch 91/200 - Loss: 0.404
+Epoch 101/200 - Loss: 0.313
+Epoch 111/200 - Loss: 0.079
+Converged at epoch 119 with loss -0.033
+[92mRank 0 - Lengthscale: [[0.9345207  0.44261003]] [0m
+[92mRank 0 - Outputscale: 2.610960006713867 [0m
+[92mRank 0 - Noise: 0.10387741029262543 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9345207  0.44261003]]
+Rank: 0, Outputscale: 2.610960006713867
+Rank: 0, Noise: 0.10387741029262543
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0692317485809326, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 1.0331639051437378, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.9209507703781128, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9290430545806885, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9270048141479492, rho: 0.0133, lip: 1.0000
+rank 0, epoch 59, loss: 0.9313726425170898, rho: 0.0133, lip: 1.0000
+rank 0, epoch 69, loss: 0.9345439076423645, rho: 0.0133, lip: 1.0000
+rank 0, epoch 79, loss: 0.9282482862472534, rho: 0.0133, lip: 1.0000
+rank 0, epoch 89, loss: 0.921760618686676, rho: 0.0133, lip: 1.0000
+rank 0, epoch 99, loss: 0.9197724461555481, rho: 0.0133, lip: 1.0000
+rank 0, epoch 109, loss: 0.9210094213485718, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.9228463768959045, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.9237372875213623, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.923713207244873, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.9230298399925232, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 82.86 seconds
+[92mRank 0 - Testing RMSE: 0.3456[0m
+[92mRank: 0, Lengthscale: [[0.8792884  0.31690186]] [0m
+[92mRank: 0, Outputscale: 3.4895172119140625 [0m
+[92mRank: 0, Noise: 0.2536662518978119 [0m
+Run 4 completed successfully
+Running pxpGP 5 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 16.947
+Epoch 11/200 - Loss: 1.239
+Epoch 21/200 - Loss: 1.088
+Epoch 31/200 - Loss: 1.032
+Epoch 41/200 - Loss: 0.958
+Epoch 51/200 - Loss: 0.883
+Epoch 61/200 - Loss: 0.782
+Epoch 71/200 - Loss: 0.681
+Epoch 81/200 - Loss: 0.546
+Epoch 91/200 - Loss: 0.393
+Epoch 101/200 - Loss: 0.247
+Epoch 111/200 - Loss: 0.109
+Converged at epoch 118 with loss -0.024
+[92mRank 0 - Lengthscale: [[0.9592352  0.44247136]] [0m
+[92mRank 0 - Outputscale: 2.6309893131256104 [0m
+[92mRank 0 - Noise: 0.10735036432743073 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9592352  0.44247136]]
+Rank: 0, Outputscale: 2.6309893131256104
+Rank: 0, Noise: 0.10735036432743073
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0297400951385498, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 1.0242637395858765, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8985500931739807, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8915293216705322, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.884846031665802, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.8876636624336243, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.8896092772483826, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.8848268985748291, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.8803394436836243, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.8797574639320374, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.8826352953910828, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.8860087394714355, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.8875159025192261, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.8868974447250366, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.8855502605438232, rho: 0.0033, lip: 1.0000
+Rank 0 - Training time: 92.47 seconds
+[92mRank 0 - Testing RMSE: 0.3221[0m
+[92mRank: 0, Lengthscale: [[0.8518491  0.35518155]] [0m
+[92mRank: 0, Outputscale: 3.9143013954162598 [0m
+[92mRank: 0, Noise: 0.22615204751491547 [0m
+Run 5 completed successfully
+Running pxpGP 6 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 16.845
+Epoch 11/200 - Loss: 1.187
+Epoch 21/200 - Loss: 1.094
+Epoch 31/200 - Loss: 1.024
+Epoch 41/200 - Loss: 0.959
+Epoch 51/200 - Loss: 0.885
+Epoch 61/200 - Loss: 0.800
+Epoch 71/200 - Loss: 0.674
+Epoch 81/200 - Loss: 0.544
+Epoch 91/200 - Loss: 0.405
+Epoch 101/200 - Loss: 0.248
+Epoch 111/200 - Loss: 0.072
+Converged at epoch 117 with loss -0.021
+[92mRank 0 - Lengthscale: [[0.9622487 0.4475753]] [0m
+[92mRank 0 - Outputscale: 2.6210639476776123 [0m
+[92mRank 0 - Noise: 0.11113187670707703 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9622487  0.44757533]]
+Rank: 0, Outputscale: 2.6210639476776123
+Rank: 0, Noise: 0.11113187670707703
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0418483018875122, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.0727286338806152, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8837138414382935, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8819716572761536, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.8757933378219604, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.8735896348953247, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.8718662261962891, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.8686487674713135, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.866489827632904, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.8666337728500366, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.8686426281929016, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.8712288737297058, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.8734627366065979, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.8743686676025391, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.8741399049758911, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 62.02 seconds
+[92mRank 0 - Testing RMSE: 0.3234[0m
+[92mRank: 0, Lengthscale: [[0.6763716  0.49017382]] [0m
+[92mRank: 0, Outputscale: 4.586460590362549 [0m
+[92mRank: 0, Noise: 0.22587032616138458 [0m
+Run 6 completed successfully
+Running pxpGP 7 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 16.696
+Epoch 11/200 - Loss: 1.222
+Epoch 21/200 - Loss: 1.092
+Epoch 31/200 - Loss: 1.028
+Epoch 41/200 - Loss: 0.955
+Epoch 51/200 - Loss: 0.903
+Epoch 61/200 - Loss: 0.803
+Epoch 71/200 - Loss: 0.678
+Epoch 81/200 - Loss: 0.538
+Epoch 91/200 - Loss: 0.420
+Epoch 101/200 - Loss: 0.258
+Epoch 111/200 - Loss: 0.102
+Converged at epoch 115 with loss -0.003
+[92mRank 0 - Lengthscale: [[0.9454988 0.4435402]] [0m
+[92mRank 0 - Outputscale: 2.650289297103882 [0m
+[92mRank 0 - Noise: 0.11758314818143845 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9454988 0.4435402]]
+Rank: 0, Outputscale: 2.650289297103882
+Rank: 0, Noise: 0.11758314818143845
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0118283033370972, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 0.9785544276237488, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.842793345451355, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8501288294792175, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.8385848999023438, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.8323532342910767, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.8291791677474976, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.8258311748504639, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.8233835101127625, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.8220930099487305, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.8222953081130981, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.8237082362174988, rho: 0.0066, lip: 1.0000
+rank 0, epoch 129, loss: 0.8252972364425659, rho: 0.0066, lip: 1.0000
+rank 0, epoch 139, loss: 0.8263065218925476, rho: 0.0066, lip: 1.0000
+rank 0, epoch 149, loss: 0.8265969753265381, rho: 0.0066, lip: 1.0000
+Rank 0 - Training time: 73.63 seconds
+[92mRank 0 - Testing RMSE: 0.3109[0m
+[92mRank: 0, Lengthscale: [[0.6537619  0.46734852]] [0m
+[92mRank: 0, Outputscale: 4.234602928161621 [0m
+[92mRank: 0, Noise: 0.21353723108768463 [0m
+Run 7 completed successfully
+Running pxpGP 8 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 15.655
+Epoch 11/200 - Loss: 1.217
+Epoch 21/200 - Loss: 1.082
+Epoch 31/200 - Loss: 1.035
+Epoch 41/200 - Loss: 0.965
+Epoch 51/200 - Loss: 0.882
+Epoch 61/200 - Loss: 0.783
+Epoch 71/200 - Loss: 0.683
+Epoch 81/200 - Loss: 0.534
+Epoch 91/200 - Loss: 0.394
+Epoch 101/200 - Loss: 0.240
+Epoch 111/200 - Loss: 0.132
+Converged at epoch 117 with loss -0.019
+[92mRank 0 - Lengthscale: [[0.9503038  0.43856487]] [0m
+[92mRank 0 - Outputscale: 2.624521017074585 [0m
+[92mRank 0 - Noise: 0.11201595515012741 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.9503038  0.43856487]]
+Rank: 0, Outputscale: 2.624521017074585
+Rank: 0, Noise: 0.11201595515012741
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.9572343826293945, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 0.9117159843444824, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.7985501885414124, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.7991501688957214, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.7925481200218201, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.7896460294723511, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.7908475995063782, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.7902942895889282, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.7885779738426208, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.788642406463623, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.7905195355415344, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.7930738925933838, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.7957149147987366, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.798558235168457, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.8022369742393494, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 102.19 seconds
+[92mRank 0 - Testing RMSE: 0.3008[0m
+[92mRank: 0, Lengthscale: [[0.8410292  0.35750735]] [0m
+[92mRank: 0, Outputscale: 4.936501502990723 [0m
+[92mRank: 0, Noise: 0.17589251697063446 [0m
+Run 8 completed successfully
+Running pxpGP 9 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 16.371
+Epoch 11/200 - Loss: 1.215
+Epoch 21/200 - Loss: 1.091
+Epoch 31/200 - Loss: 1.023
+Epoch 41/200 - Loss: 0.963
+Epoch 51/200 - Loss: 0.888
+Epoch 61/200 - Loss: 0.779
+Epoch 71/200 - Loss: 0.673
+Epoch 81/200 - Loss: 0.548
+Epoch 91/200 - Loss: 0.412
+Epoch 101/200 - Loss: 0.212
+Epoch 111/200 - Loss: 0.083
+Converged at epoch 117 with loss -0.019
+[92mRank 0 - Lengthscale: [[0.96894634 0.45097128]] [0m
+[92mRank 0 - Outputscale: 2.620671272277832 [0m
+[92mRank 0 - Noise: 0.11055415123701096 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.96894634 0.45097125]]
+Rank: 0, Outputscale: 2.620671272277832
+Rank: 0, Noise: 0.11055415123701096
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.9973191022872925, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 0.9625686407089233, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8819205164909363, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9240459203720093, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9426456689834595, rho: 0.1062, lip: 1.0000
+rank 0, epoch 59, loss: 0.95652174949646, rho: 0.1062, lip: 1.0000
+rank 0, epoch 69, loss: 0.9681862592697144, rho: 0.0531, lip: 1.0000
+[rank 1] barrier timed out after 5s, continuing anyway
+[rank 5] barrier timed out after 5s, continuing anyway
+[rank 7] barrier timed out after 5s, continuing anyway
+[rank 8] barrier timed out after 5s, continuing anyway
+[rank 12] barrier timed out after 5s, continuing anyway
+[rank 13] barrier timed out after 5s, continuing anyway
+[rank 15] barrier timed out after 5s, continuing anyway
+[rank 19] barrier timed out after 5s, continuing anyway
+[rank 27] barrier timed out after 5s, continuing anyway
+[rank 43] barrier timed out after 5s, continuing anyway
+Run 9 failed, retrying...
+Running pxpGP 10 with agents: 100
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([169, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 169 samples[0m
+Epoch 1/200 - Loss: 15.313
+Epoch 11/200 - Loss: 1.190
+Epoch 21/200 - Loss: 1.088
+Epoch 31/200 - Loss: 1.034
+Epoch 41/200 - Loss: 0.961
+Epoch 51/200 - Loss: 0.885
+Epoch 61/200 - Loss: 0.802
+Epoch 71/200 - Loss: 0.681
+Epoch 81/200 - Loss: 0.539
+Epoch 91/200 - Loss: 0.402
+Epoch 101/200 - Loss: 0.250
+Epoch 111/200 - Loss: 0.132
+Converged at epoch 117 with loss -0.003
+[92mRank 0 - Lengthscale: [[0.95668733 0.45196426]] [0m
+[92mRank 0 - Outputscale: 2.6266021728515625 [0m
+[92mRank 0 - Noise: 0.11191323399543762 [0m
+Rank 0 - Augmented dataset size: 469
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.95668733 0.45196426]]
+Rank: 0, Outputscale: 2.6266021728515625
+Rank: 0, Noise: 0.11191323399543762
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.025984525680542, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.057520866394043, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.8755651712417603, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.8776347637176514, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.8760625720024109, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.8823817372322083, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.8815932273864746, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.8743654489517212, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.8699227571487427, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.8690479397773743, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.8716755509376526, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.8749775290489197, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.8766872882843018, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.8765466809272766, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.8757045865058899, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 81.75 seconds
+[92mRank 0 - Testing RMSE: 0.3288[0m
+[92mRank: 0, Lengthscale: [[0.9165643  0.32855955]] [0m
+[92mRank: 0, Outputscale: 4.224375247955322 [0m
+[92mRank: 0, Noise: 0.21054817736148834 [0m
+Run 10 completed successfully
+Running gapxGP 1 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.1403214931488037
+Rank 0 - Epoch 10/200 loss: 0.9284490942955017
+Rank 0 - Epoch 20/200 loss: 0.6477000713348389
+Rank 0 - Epoch 30/200 loss: 0.32831400632858276
+Rank 0 - Epoch 40/200 loss: -0.020319467410445213
+Rank 0 - Epoch 50/200 loss: -0.3653733432292938
+Rank 0 - Epoch 60/200 loss: -0.6881120800971985
+Rank 0 - Epoch 70/200 loss: -0.9850237369537354
+Rank 0 - Epoch 80/200 loss: -1.253562569618225
+Rank 0 - Epoch 90/200 loss: -1.483209252357483
+Rank 0 - Epoch 100/200 loss: -1.6673319339752197
+Rank 0 - Epoch 110/200 loss: -1.510170578956604
+Rank 0 - Epoch 120/200 loss: -1.8782556056976318
+Run 1 failed, retrying...
+Running gapxGP 2 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.1336536407470703
+Rank 0 - Epoch 10/200 loss: 0.9113762974739075
+Rank 0 - Epoch 20/200 loss: 0.6201848983764648
+Rank 0 - Epoch 30/200 loss: 0.3041703999042511
+Rank 0 - Epoch 40/200 loss: -0.04505521059036255
+Rank 0 - Epoch 50/200 loss: -0.3878125250339508
+Rank 0 - Epoch 60/200 loss: -0.711550235748291
+Rank 0 - Epoch 70/200 loss: -1.0134406089782715
+Rank 0 - Epoch 80/200 loss: -1.28544282913208
+Rank 0 - Epoch 90/200 loss: -1.5171819925308228
+Rank 0 - Epoch 100/200 loss: -1.701195240020752
+Rank 0 - Epoch 110/200 loss: -1.825455904006958
+Rank 0 - Epoch 120/200 loss: -1.8925538063049316
+Rank 0 - Epoch 130/200 loss: -1.9388184547424316
+Run 2 failed, retrying...
+Running gapxGP 3 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.1495013236999512
+Rank 0 - Epoch 10/200 loss: 0.9355320334434509
+Rank 0 - Epoch 20/200 loss: 0.6574547290802002
+Rank 0 - Epoch 30/200 loss: 0.3510025143623352
+Rank 0 - Epoch 40/200 loss: -0.010806169360876083
+Rank 0 - Epoch 50/200 loss: -0.3656430244445801
+Rank 0 - Epoch 60/200 loss: -0.6962661147117615
+Rank 0 - Epoch 70/200 loss: -0.998016893863678
+Rank 0 - Epoch 80/200 loss: -1.2702840566635132
+Rank 0 - Epoch 90/200 loss: -1.503435492515564
+Rank 0 - Epoch 100/200 loss: -1.6898633241653442
+Rank 0 - Epoch 110/200 loss: -1.7877304553985596
+Rank 0 - Epoch 120/200 loss: -1.8068619966506958
+Rank 0 - Epoch 130/200 loss: -1.7526750564575195
+Run 3 failed, retrying...
+Running gapxGP 4 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.1614621877670288
+Rank 0 - Epoch 10/200 loss: 0.9474479556083679
+Rank 0 - Epoch 20/200 loss: 0.6593455076217651
+Rank 0 - Epoch 30/200 loss: 0.32882094383239746
+Rank 0 - Epoch 40/200 loss: -0.030107751488685608
+Rank 0 - Epoch 50/200 loss: -0.3782176971435547
+Rank 0 - Epoch 60/200 loss: -0.7038926482200623
+Rank 0 - Epoch 70/200 loss: -1.0018932819366455
+Rank 0 - Epoch 80/200 loss: -1.2712429761886597
+Rank 0 - Epoch 90/200 loss: -1.5012327432632446
+Rank 0 - Epoch 100/200 loss: -1.6841760873794556
+Rank 0 - Epoch 110/200 loss: -1.4824742078781128
+Rank 0 - Epoch 120/200 loss: -1.8979177474975586
+Run 4 failed, retrying...
+Running gapxGP 5 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.137689232826233
+Rank 0 - Epoch 10/200 loss: 0.9146549105644226
+Rank 0 - Epoch 20/200 loss: 0.6374105215072632
+Rank 0 - Epoch 30/200 loss: 0.3191140592098236
+Rank 0 - Epoch 40/200 loss: -0.043105948716402054
+Rank 0 - Epoch 50/200 loss: -0.3965088725090027
+Rank 0 - Epoch 60/200 loss: -0.7252268195152283
+Rank 0 - Epoch 70/200 loss: -1.0228323936462402
+Rank 0 - Epoch 80/200 loss: -1.2907227277755737
+Rank 0 - Epoch 90/200 loss: -1.5199744701385498
+Rank 0 - Epoch 100/200 loss: -1.703797459602356
+Rank 0 - Epoch 110/200 loss: -1.3395425081253052
+Rank 0 - Epoch 120/200 loss: -1.9096349477767944
+Rank 0 - Epoch 130/200 loss: -1.8614915609359741
+Run 5 failed, retrying...
+Running gapxGP 6 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.1367026567459106
+Rank 0 - Epoch 10/200 loss: 0.9110740423202515
+Rank 0 - Epoch 20/200 loss: 0.6269849538803101
+Rank 0 - Epoch 30/200 loss: 0.3189553916454315
+Rank 0 - Epoch 40/200 loss: -0.03318898007273674
+Rank 0 - Epoch 50/200 loss: -0.37921497225761414
+Rank 0 - Epoch 60/200 loss: -0.706177830696106
+Rank 0 - Epoch 70/200 loss: -1.007822036743164
+Rank 0 - Epoch 80/200 loss: -1.2797236442565918
+Rank 0 - Epoch 90/200 loss: -1.5123649835586548
+Rank 0 - Epoch 100/200 loss: -1.6974610090255737
+Rank 0 - Epoch 110/200 loss: -1.3843300342559814
+Rank 0 - Epoch 120/200 loss: -1.8851042985916138
+Run 6 failed, retrying...
+Running gapxGP 7 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.140274167060852
+Rank 0 - Epoch 10/200 loss: 0.928483784198761
+Rank 0 - Epoch 20/200 loss: 0.6483879685401917
+Rank 0 - Epoch 30/200 loss: 0.33704674243927
+Rank 0 - Epoch 40/200 loss: -0.010030066594481468
+Rank 0 - Epoch 50/200 loss: -0.3524033725261688
+Rank 0 - Epoch 60/200 loss: -0.6743612289428711
+Rank 0 - Epoch 70/200 loss: -0.9723688960075378
+Rank 0 - Epoch 80/200 loss: -1.2415103912353516
+Rank 0 - Epoch 90/200 loss: -1.4722334146499634
+Rank 0 - Epoch 100/200 loss: -1.6569470167160034
+Rank 0 - Epoch 110/200 loss: -1.767256498336792
+Rank 0 - Epoch 120/200 loss: -1.8377565145492554
+Run 7 failed, retrying...
+Running gapxGP 8 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.1393786668777466
+Rank 0 - Epoch 10/200 loss: 0.9168221950531006
+Rank 0 - Epoch 20/200 loss: 0.626656174659729
+Rank 0 - Epoch 30/200 loss: 0.3126874268054962
+Rank 0 - Epoch 40/200 loss: -0.04122741520404816
+Rank 0 - Epoch 50/200 loss: -0.388926237821579
+Rank 0 - Epoch 60/200 loss: -0.717182993888855
+Rank 0 - Epoch 70/200 loss: -1.0203238725662231
+Rank 0 - Epoch 80/200 loss: -1.2928508520126343
+Rank 0 - Epoch 90/200 loss: -1.5251320600509644
+Rank 0 - Epoch 100/200 loss: -1.7082241773605347
+Rank 0 - Epoch 110/200 loss: -1.734700322151184
+Rank 0 - Epoch 120/200 loss: -1.8963185548782349
+Rank 0 - Epoch 130/200 loss: -1.9691054821014404
+Run 8 failed, retrying...
+Running gapxGP 9 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.1389846801757812
+Rank 0 - Epoch 10/200 loss: 0.9243710041046143
+Rank 0 - Epoch 20/200 loss: 0.6401326656341553
+Rank 0 - Epoch 30/200 loss: 0.31934988498687744
+Rank 0 - Epoch 40/200 loss: -0.029226409271359444
+Rank 0 - Epoch 50/200 loss: -0.374339759349823
+Rank 0 - Epoch 60/200 loss: -0.6984702348709106
+Rank 0 - Epoch 70/200 loss: -0.9955477118492126
+Rank 0 - Epoch 80/200 loss: -1.2647440433502197
+Rank 0 - Epoch 90/200 loss: -1.4959077835083008
+Rank 0 - Epoch 100/200 loss: -1.6811116933822632
+Rank 0 - Epoch 110/200 loss: -1.7394912242889404
+Rank 0 - Epoch 120/200 loss: -1.380455493927002
+Rank 0 - Epoch 130/200 loss: -1.929854393005371
+Run 9 failed, retrying...
+Running gapxGP 10 with agents: 100
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 1.143404245376587
+Rank 0 - Epoch 10/200 loss: 0.9283939599990845
+Rank 0 - Epoch 20/200 loss: 0.6501891016960144
+Rank 0 - Epoch 30/200 loss: 0.3233708143234253
+Rank 0 - Epoch 40/200 loss: -0.031551510095596313
+Rank 0 - Epoch 50/200 loss: -0.379679411649704
+Rank 0 - Epoch 60/200 loss: -0.7069554328918457
+Rank 0 - Epoch 70/200 loss: -1.0088660717010498
+Rank 0 - Epoch 80/200 loss: -1.2812213897705078
+Rank 0 - Epoch 90/200 loss: -1.5140330791473389
+Rank 0 - Epoch 100/200 loss: -1.6994547843933105
+Rank 0 - Epoch 110/200 loss: -1.7923253774642944
+Rank 0 - Epoch 120/200 loss: -1.9007817506790161
+Run 10 failed, retrying...
+Running apxGP 1 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 1 completed successfully
+Running apxGP 2 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 2 completed successfully
+Running apxGP 3 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 3 completed successfully
+Running apxGP 4 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 4 completed successfully
+Running apxGP 5 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 5 completed successfully
+Running apxGP 6 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 6 completed successfully
+Running apxGP 7 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 7 completed successfully
+Running apxGP 8 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 8 completed successfully
+Running apxGP 9 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 9 completed successfully
+Running apxGP 10 with agents: 100
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.87812739610672
+Rank 0 - Epoch 10/200 loss: 0.6152968406677246
+Rank 0 - Epoch 20/200 loss: 0.21170279383659363
+Rank 0 - Epoch 30/200 loss: -0.24994303286075592
+Rank 0 - Epoch 40/200 loss: -0.7611624598503113
+Rank 0 - Epoch 50/200 loss: -1.2697064876556396
+Rank 0 - Epoch 60/200 loss: -1.755716323852539
+Rank 0 - Epoch 70/200 loss: -2.2018792629241943
+Rank 0 - Epoch 80/200 loss: -2.570620536804199
+Rank 0 - Epoch 90/200 loss: -2.837144374847412
+Rank 0 - Epoch 100/200 loss: -3.005600690841675
+Rank 0 - Epoch 110/200 loss: -3.108778476715088
+Rank 0 - Epoch 120/200 loss: -3.1718385219573975
+Rank 0 - Epoch 130/200 loss: -3.212543249130249
+Rank 0 - Epoch 140/200 loss: -3.2404329776763916
+Rank 0 - Epoch 150/200 loss: -3.2606747150421143
+Rank 0 - Epoch 160/200 loss: -3.275718927383423
+Rank 0 - Epoch 170/200 loss: -3.2875092029571533
+Rank 0 - Epoch 180/200 loss: -3.296635866165161
+Rank 0 - Epoch 190/200 loss: -3.3044021129608154
+Rank 0 - Epoch 200/200 loss: -3.310346841812134
+Training complete.
+[92mRank 0 - Testing RMSE: 2.6220[0m
+[92mRank: 0, Lengthscale: [[0.607352   0.37049338]] [0m
+[92mRank: 0, Outputscale: 1.6988060474395752 [0m
+[92mRank: 0, Noise: 0.00011096759408246726 [0m
+Run 10 completed successfully
+Running cGP 1 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 1 completed successfully
+Running cGP 2 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 2 completed successfully
+Running cGP 3 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 3 completed successfully
+Running cGP 4 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 4 completed successfully
+Running cGP 5 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 5 completed successfully
+Running cGP 6 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 6 completed successfully
+Running cGP 7 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 7 completed successfully
+Running cGP 8 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 8 completed successfully
+Running cGP 9 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 9 completed successfully
+Running cGP 10 with agents: 100
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 100
+Rank 0 - Epoch 2/200 loss: 0.9363179206848145
+Rank 0 - Epoch 10/200 loss: 0.9328354001045227
+Rank 0 - Epoch 20/200 loss: 0.9285014867782593
+Rank 0 - Epoch 30/200 loss: 0.9241911768913269
+Rank 0 - Epoch 40/200 loss: 0.919906735420227
+Rank 0 - Epoch 50/200 loss: 0.9156504273414612
+Rank 0 - Epoch 60/200 loss: 0.9114248752593994
+Rank 0 - Epoch 70/200 loss: 0.9072327017784119
+Rank 0 - Epoch 80/200 loss: 0.9030768871307373
+Rank 0 - Epoch 90/200 loss: 0.898960530757904
+Rank 0 - Epoch 100/200 loss: 0.8948867321014404
+Rank 0 - Epoch 110/200 loss: 0.8908590078353882
+Rank 0 - Epoch 120/200 loss: 0.8868811130523682
+Rank 0 - Epoch 130/200 loss: 0.8829571604728699
+Rank 0 - Epoch 140/200 loss: 0.8790907859802246
+Rank 0 - Epoch 150/200 loss: 0.8752869367599487
+Rank 0 - Epoch 160/200 loss: 0.8715501427650452
+Rank 0 - Epoch 170/200 loss: 0.8678855895996094
+Rank 0 - Epoch 180/200 loss: 0.8642984628677368
+Rank 0 - Epoch 190/200 loss: 0.8607942461967468
+Rank 0 - Epoch 200/200 loss: 0.8573792576789856
+Training complete.
+[92mRank 0 - Testing RMSE: 3.9261[0m
+[92mRank: 0, Lengthscale: [[0.537227   0.53686374]] [0m
+[92mRank: 0, Outputscale: 0.5430728197097778 [0m
+[92mRank: 0, Noise: 0.522951602935791 [0m
+Run 10 completed successfully
+Running pxpGP 1 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 16.879
+Epoch 11/200 - Loss: 1.237
+Epoch 21/200 - Loss: 1.100
+Epoch 31/200 - Loss: 1.077
+Epoch 41/200 - Loss: 0.980
+Epoch 51/200 - Loss: 0.895
+Epoch 61/200 - Loss: 0.813
+Epoch 71/200 - Loss: 0.702
+Epoch 81/200 - Loss: 0.553
+Epoch 91/200 - Loss: 0.393
+Epoch 101/200 - Loss: 0.291
+Epoch 111/200 - Loss: 0.244
+Converged at epoch 119 with loss -0.014
+[92mRank 0 - Lengthscale: [[0.6856162 0.5182852]] [0m
+[92mRank 0 - Outputscale: 2.568081855773926 [0m
+[92mRank 0 - Noise: 0.11252264678478241 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.6856162  0.51828516]]
+Rank: 0, Outputscale: 2.568081855773926
+Rank: 0, Noise: 0.11252264678478241
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0397282838821411, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.0346691608428955, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.9822113513946533, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9822497963905334, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.991767406463623, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.9973474144935608, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.9948899149894714, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.9865103960037231, rho: 0.0531, lip: 1.0000
+rank 0, epoch 89, loss: 0.9785259366035461, rho: 0.0531, lip: 1.0000
+rank 0, epoch 99, loss: 0.9756618738174438, rho: 0.0531, lip: 1.0000
+rank 0, epoch 109, loss: 0.9751048684120178, rho: 0.0266, lip: 1.0000
+rank 0, epoch 119, loss: 0.9756879210472107, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.976982057094574, rho: 0.0017, lip: 1.0000
+rank 0, epoch 139, loss: 0.9784927368164062, rho: 0.0017, lip: 1.0000
+rank 0, epoch 149, loss: 0.9801035523414612, rho: 0.0017, lip: 1.0000
+rank 0, epoch 159, loss: 0.9815879464149475, rho: 0.0033, lip: 1.0000
+rank 0, epoch 169, loss: 0.9824693202972412, rho: 0.0066, lip: 1.0000
+rank 0, epoch 179, loss: 0.9823106527328491, rho: 0.0066, lip: 1.0000
+Rank 0 - Training time: 135.61 seconds
+[92mRank 0 - Testing RMSE: 0.3342[0m
+[92mRank: 0, Lengthscale: [[0.7149339  0.41962084]] [0m
+[92mRank: 0, Outputscale: 3.8868441581726074 [0m
+[92mRank: 0, Noise: 0.3042752742767334 [0m
+Run 1 completed successfully
+Running pxpGP 2 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 14.013
+Epoch 11/200 - Loss: 1.237
+Epoch 21/200 - Loss: 1.107
+Epoch 31/200 - Loss: 1.080
+Epoch 41/200 - Loss: 0.973
+Epoch 51/200 - Loss: 0.900
+Epoch 61/200 - Loss: 0.812
+Epoch 71/200 - Loss: 0.710
+Epoch 81/200 - Loss: 0.546
+Epoch 91/200 - Loss: 0.415
+Epoch 101/200 - Loss: 0.316
+Epoch 111/200 - Loss: 0.114
+Epoch 121/200 - Loss: 0.022
+Converged at epoch 122 with loss -0.020
+[92mRank 0 - Lengthscale: [[0.65896696 0.5838317 ]] [0m
+[92mRank 0 - Outputscale: 2.5435585975646973 [0m
+[92mRank 0 - Noise: 0.10192535817623138 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.65896696 0.5838317 ]]
+Rank: 0, Outputscale: 2.5435585975646973
+Rank: 0, Noise: 0.10192535817623138
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0653278827667236, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.1327736377716064, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 1.0348947048187256, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 1.015886902809143, rho: 0.2125, lip: 1.0000
+rank 0, epoch 49, loss: 1.0202374458312988, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 1.0227315425872803, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 1.021324634552002, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 1.01738703250885, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 1.0144635438919067, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 1.0137277841567993, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 1.0139423608779907, rho: 0.0266, lip: 1.0000
+rank 0, epoch 119, loss: 1.0147968530654907, rho: 0.0266, lip: 1.0000
+rank 0, epoch 129, loss: 1.016189694404602, rho: 0.0266, lip: 1.0000
+rank 0, epoch 139, loss: 1.017342448234558, rho: 0.0266, lip: 1.0000
+rank 0, epoch 149, loss: 1.0177103281021118, rho: 0.0266, lip: 1.0000
+rank 0, epoch 159, loss: 1.0174345970153809, rho: 0.0266, lip: 1.0000
+rank 0, epoch 169, loss: 1.0167450904846191, rho: 0.0066, lip: 1.0000
+rank 0, epoch 179, loss: 1.0159353017807007, rho: 0.0066, lip: 1.0000
+Rank 0 - Training time: 127.93 seconds
+[92mRank 0 - Testing RMSE: 0.4169[0m
+[92mRank: 0, Lengthscale: [[1.0377394 0.5328219]] [0m
+[92mRank: 0, Outputscale: 3.504058361053467 [0m
+[92mRank: 0, Noise: 0.3424846827983856 [0m
+Run 2 completed successfully
+Running pxpGP 3 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 18.020
+Epoch 11/200 - Loss: 1.193
+Epoch 21/200 - Loss: 1.108
+Epoch 31/200 - Loss: 1.064
+Epoch 41/200 - Loss: 0.979
+Epoch 51/200 - Loss: 0.895
+Epoch 61/200 - Loss: 0.796
+Epoch 71/200 - Loss: 0.729
+Epoch 81/200 - Loss: 0.568
+Epoch 91/200 - Loss: 0.419
+Epoch 101/200 - Loss: 0.277
+Epoch 111/200 - Loss: 0.120
+Converged at epoch 118 with loss -0.019
+[92mRank 0 - Lengthscale: [[0.6880173 0.4749707]] [0m
+[92mRank 0 - Outputscale: 2.582365036010742 [0m
+[92mRank 0 - Noise: 0.11378932744264603 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.6880173 0.4749707]]
+Rank: 0, Outputscale: 2.582365036010742
+Rank: 0, Noise: 0.11378932744264603
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 0.9846712946891785, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.0172110795974731, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.9517261385917664, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.9464671015739441, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9445033073425293, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.9438788294792175, rho: 0.0133, lip: 1.0000
+rank 0, epoch 69, loss: 0.9456130862236023, rho: 0.0133, lip: 1.0000
+rank 0, epoch 79, loss: 0.9472522735595703, rho: 0.0133, lip: 1.0000
+rank 0, epoch 89, loss: 0.9477314352989197, rho: 0.0133, lip: 1.0000
+rank 0, epoch 99, loss: 0.9472454190254211, rho: 0.0133, lip: 1.0000
+rank 0, epoch 109, loss: 0.9468809962272644, rho: 0.0133, lip: 1.0000
+rank 0, epoch 119, loss: 0.9472625255584717, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.9483049511909485, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.9498817920684814, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.9515211582183838, rho: 0.0133, lip: 1.0000
+rank 0, epoch 159, loss: 0.9527058005332947, rho: 0.0133, lip: 1.0000
+rank 0, epoch 169, loss: 0.9531164765357971, rho: 0.0133, lip: 1.0000
+rank 0, epoch 179, loss: 0.9526212811470032, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 136.64 seconds
+[92mRank 0 - Testing RMSE: 0.3233[0m
+[92mRank: 0, Lengthscale: [[0.86359775 0.34263793]] [0m
+[92mRank: 0, Outputscale: 5.248142719268799 [0m
+[92mRank: 0, Noise: 0.27540838718414307 [0m
+Run 3 completed successfully
+Running pxpGP 4 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 17.886
+Epoch 11/200 - Loss: 1.267
+Epoch 21/200 - Loss: 1.148
+Epoch 31/200 - Loss: 1.079
+Epoch 41/200 - Loss: 0.987
+Epoch 51/200 - Loss: 0.909
+Epoch 61/200 - Loss: 0.815
+Epoch 71/200 - Loss: 0.687
+Epoch 81/200 - Loss: 0.559
+Epoch 91/200 - Loss: 0.438
+Epoch 101/200 - Loss: 0.253
+Epoch 111/200 - Loss: 0.094
+Converged at epoch 118 with loss -0.001
+[92mRank 0 - Lengthscale: [[0.77923167 0.42666426]] [0m
+[92mRank 0 - Outputscale: 2.5702126026153564 [0m
+[92mRank 0 - Noise: 0.11105545610189438 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.77923167 0.42666426]]
+Rank: 0, Outputscale: 2.5702126026153564
+Rank: 0, Noise: 0.11105545610189438
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.031972050666809, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.0972028970718384, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 1.0130497217178345, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9937155246734619, rho: 0.2125, lip: 1.0000
+rank 0, epoch 49, loss: 0.9967628121376038, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.9967709183692932, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.9892981052398682, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.9790369868278503, rho: 0.0531, lip: 1.0000
+rank 0, epoch 89, loss: 0.9719324707984924, rho: 0.0531, lip: 1.0000
+rank 0, epoch 99, loss: 0.9685357213020325, rho: 0.0531, lip: 1.0000
+rank 0, epoch 109, loss: 0.9674789905548096, rho: 0.0531, lip: 1.0000
+rank 0, epoch 119, loss: 0.9686968922615051, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.9712651968002319, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 0.974714457988739, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 0.9778078198432922, rho: 0.0133, lip: 1.0000
+rank 0, epoch 159, loss: 0.9784799814224243, rho: 0.0133, lip: 1.0000
+rank 0, epoch 169, loss: 0.9762477874755859, rho: 0.0133, lip: 1.0000
+rank 0, epoch 179, loss: 0.9730035662651062, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 150.28 seconds
+[92mRank 0 - Testing RMSE: 0.3749[0m
+[92mRank: 0, Lengthscale: [[0.95546675 0.4158163 ]] [0m
+[92mRank: 0, Outputscale: 2.8676748275756836 [0m
+[92mRank: 0, Noise: 0.3059155344963074 [0m
+Run 4 completed successfully
+Running pxpGP 5 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 17.105
+Epoch 11/200 - Loss: 1.264
+Epoch 21/200 - Loss: 1.118
+Epoch 31/200 - Loss: 1.046
+Epoch 41/200 - Loss: 0.992
+Epoch 51/200 - Loss: 0.905
+Epoch 61/200 - Loss: 0.802
+Epoch 71/200 - Loss: 0.719
+Epoch 81/200 - Loss: 0.578
+Epoch 91/200 - Loss: 0.404
+Epoch 101/200 - Loss: 0.248
+Epoch 111/200 - Loss: 0.146
+Converged at epoch 117 with loss -0.016
+[92mRank 0 - Lengthscale: [[0.690423 0.527716]] [0m
+[92mRank 0 - Outputscale: 2.566977024078369 [0m
+[92mRank 0 - Noise: 0.1187538132071495 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.690423 0.527716]]
+Rank: 0, Outputscale: 2.566977024078369
+Rank: 0, Noise: 0.1187538132071495
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0272223949432373, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 1.062654972076416, rho: 0.4250, lip: 1.0000
+rank 0, epoch 29, loss: 1.0252069234848022, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9945547580718994, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9923382997512817, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 1.0009334087371826, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 1.0065330266952515, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 1.003611445426941, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.9994275569915771, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.9977026581764221, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.9980136156082153, rho: 0.0266, lip: 1.0000
+rank 0, epoch 119, loss: 0.9998738169670105, rho: 0.0066, lip: 1.0000
+rank 0, epoch 129, loss: 1.002360463142395, rho: 0.0066, lip: 1.0000
+rank 0, epoch 139, loss: 1.004908561706543, rho: 0.0066, lip: 1.0000
+rank 0, epoch 149, loss: 1.0073387622833252, rho: 0.0066, lip: 1.0000
+rank 0, epoch 159, loss: 1.009273648262024, rho: 0.0066, lip: 1.0000
+rank 0, epoch 169, loss: 1.0102791786193848, rho: 0.0066, lip: 1.0000
+rank 0, epoch 179, loss: 1.0103014707565308, rho: 0.0066, lip: 1.0000
+Rank 0 - Training time: 150.32 seconds
+[92mRank 0 - Testing RMSE: 0.4299[0m
+[92mRank: 0, Lengthscale: [[1.3702797 0.3666622]] [0m
+[92mRank: 0, Outputscale: 5.218228816986084 [0m
+[92mRank: 0, Noise: 0.39118877053260803 [0m
+Run 5 completed successfully
+Running pxpGP 6 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 17.303
+Epoch 11/200 - Loss: 1.231
+Epoch 21/200 - Loss: 1.112
+Epoch 31/200 - Loss: 1.090
+Epoch 41/200 - Loss: 0.988
+Epoch 51/200 - Loss: 0.887
+Epoch 61/200 - Loss: 0.804
+Epoch 71/200 - Loss: 0.706
+Epoch 81/200 - Loss: 0.565
+Epoch 91/200 - Loss: 0.418
+Epoch 101/200 - Loss: 0.289
+Epoch 111/200 - Loss: 0.094
+Epoch 121/200 - Loss: -0.043
+Converged at epoch 121 with loss -0.043
+[92mRank 0 - Lengthscale: [[0.66172636 0.623683  ]] [0m
+[92mRank 0 - Outputscale: 2.5570340156555176 [0m
+[92mRank 0 - Noise: 0.10502314567565918 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.66172636 0.623683  ]]
+Rank: 0, Outputscale: 2.5570340156555176
+Rank: 0, Noise: 0.10502316057682037
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0041803121566772, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 1.0257341861724854, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 0.958794355392456, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.94452965259552, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9537546038627625, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.9590035080909729, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.958128809928894, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.9547700881958008, rho: 0.0531, lip: 1.0000
+rank 0, epoch 89, loss: 0.9501789212226868, rho: 0.0531, lip: 1.0000
+rank 0, epoch 99, loss: 0.9468033313751221, rho: 0.0531, lip: 1.0000
+rank 0, epoch 109, loss: 0.9455305337905884, rho: 0.0266, lip: 1.0000
+rank 0, epoch 119, loss: 0.9461994171142578, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.9481894373893738, rho: 0.0066, lip: 1.0000
+rank 0, epoch 139, loss: 0.9503480792045593, rho: 0.0066, lip: 1.0000
+rank 0, epoch 149, loss: 0.9519022703170776, rho: 0.0066, lip: 1.0000
+rank 0, epoch 159, loss: 0.9522749781608582, rho: 0.0066, lip: 1.0000
+rank 0, epoch 169, loss: 0.9514647126197815, rho: 0.0066, lip: 1.0000
+rank 0, epoch 179, loss: 0.9498076438903809, rho: 0.0066, lip: 1.0000
+Rank 0 - Training time: 138.95 seconds
+[92mRank 0 - Testing RMSE: 0.3116[0m
+[92mRank: 0, Lengthscale: [[0.63560915 0.4647313 ]] [0m
+[92mRank: 0, Outputscale: 3.6693689823150635 [0m
+[92mRank: 0, Noise: 0.29857513308525085 [0m
+Run 6 completed successfully
+Running pxpGP 7 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 19.471
+Epoch 11/200 - Loss: 1.297
+Epoch 21/200 - Loss: 1.112
+Epoch 31/200 - Loss: 1.050
+Epoch 41/200 - Loss: 0.974
+Epoch 51/200 - Loss: 0.912
+Epoch 61/200 - Loss: 0.812
+Epoch 71/200 - Loss: 0.691
+Epoch 81/200 - Loss: 0.560
+Epoch 91/200 - Loss: 0.413
+Epoch 101/200 - Loss: 0.313
+Epoch 111/200 - Loss: 0.125
+Converged at epoch 120 with loss -0.035
+[92mRank 0 - Lengthscale: [[0.7078065 0.4686194]] [0m
+[92mRank 0 - Outputscale: 2.6014459133148193 [0m
+[92mRank 0 - Noise: 0.10654056072235107 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.7078065 0.4686194]]
+Rank: 0, Outputscale: 2.6014461517333984
+Rank: 0, Noise: 0.10654056072235107
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0399852991104126, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 1.1043795347213745, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 1.0155664682388306, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 1.0032086372375488, rho: 0.2125, lip: 1.0000
+rank 0, epoch 49, loss: 1.0099819898605347, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 1.0121140480041504, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 1.0102007389068604, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 1.0060306787490845, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 1.0038176774978638, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 1.00346839427948, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 1.0036287307739258, rho: 0.0266, lip: 1.0000
+rank 0, epoch 119, loss: 1.0038483142852783, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 1.0041873455047607, rho: 0.0133, lip: 1.0000
+rank 0, epoch 139, loss: 1.0045976638793945, rho: 0.0133, lip: 1.0000
+rank 0, epoch 149, loss: 1.0050427913665771, rho: 0.0133, lip: 1.0000
+rank 0, epoch 159, loss: 1.0054007768630981, rho: 0.0133, lip: 1.0000
+rank 0, epoch 169, loss: 1.0054749250411987, rho: 0.0133, lip: 1.0000
+rank 0, epoch 179, loss: 1.0050755739212036, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 131.35 seconds
+[92mRank 0 - Testing RMSE: 0.3948[0m
+[92mRank: 0, Lengthscale: [[0.9294317 0.5313527]] [0m
+[92mRank: 0, Outputscale: 3.5785071849823 [0m
+[92mRank: 0, Noise: 0.3496630787849426 [0m
+Run 7 completed successfully
+Running pxpGP 8 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 13.896
+Epoch 11/200 - Loss: 1.227
+Epoch 21/200 - Loss: 1.128
+Epoch 31/200 - Loss: 1.064
+Epoch 41/200 - Loss: 0.975
+Epoch 51/200 - Loss: 0.896
+Epoch 61/200 - Loss: 0.817
+Epoch 71/200 - Loss: 0.707
+Epoch 81/200 - Loss: 0.550
+Epoch 91/200 - Loss: 0.437
+Epoch 101/200 - Loss: 0.271
+Epoch 111/200 - Loss: 0.147
+Epoch 121/200 - Loss: -0.032
+Converged at epoch 121 with loss -0.032
+[92mRank 0 - Lengthscale: [[0.6809223 0.5728968]] [0m
+[92mRank 0 - Outputscale: 2.5649287700653076 [0m
+[92mRank 0 - Noise: 0.103147491812706 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.6809223 0.5728968]]
+Rank: 0, Outputscale: 2.5649287700653076
+Rank: 0, Noise: 0.103147491812706
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.028493881225586, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.1088684797286987, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 1.0013612508773804, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9877890944480896, rho: 0.2125, lip: 1.0000
+rank 0, epoch 49, loss: 0.9930533766746521, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.9940556287765503, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.9906817078590393, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.9864381551742554, rho: 0.0531, lip: 1.0000
+rank 0, epoch 89, loss: 0.9862245321273804, rho: 0.0531, lip: 1.0000
+rank 0, epoch 99, loss: 0.9882328510284424, rho: 0.0531, lip: 1.0000
+rank 0, epoch 109, loss: 0.9891373515129089, rho: 0.0266, lip: 1.0000
+rank 0, epoch 119, loss: 0.9887871146202087, rho: 0.0266, lip: 1.0000
+rank 0, epoch 129, loss: 0.9883142113685608, rho: 0.0266, lip: 1.0000
+rank 0, epoch 139, loss: 0.988491415977478, rho: 0.0266, lip: 1.0000
+rank 0, epoch 149, loss: 0.9890698790550232, rho: 0.0133, lip: 1.0000
+rank 0, epoch 159, loss: 0.9897599220275879, rho: 0.0133, lip: 1.0000
+rank 0, epoch 169, loss: 0.9902206063270569, rho: 0.0133, lip: 1.0000
+rank 0, epoch 179, loss: 0.9902788996696472, rho: 0.0133, lip: 1.0000
+Rank 0 - Training time: 106.86 seconds
+[92mRank 0 - Testing RMSE: 0.3990[0m
+[92mRank: 0, Lengthscale: [[0.9024536 0.5140222]] [0m
+[92mRank: 0, Outputscale: 2.7429652214050293 [0m
+[92mRank: 0, Noise: 0.32663094997406006 [0m
+Run 8 completed successfully
+Running pxpGP 9 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 19.138
+Epoch 11/200 - Loss: 1.260
+Epoch 21/200 - Loss: 1.120
+Epoch 31/200 - Loss: 1.042
+Epoch 41/200 - Loss: 0.977
+Epoch 51/200 - Loss: 0.892
+Epoch 61/200 - Loss: 0.828
+Epoch 71/200 - Loss: 0.683
+Epoch 81/200 - Loss: 0.591
+Epoch 91/200 - Loss: 0.405
+Epoch 101/200 - Loss: 0.278
+Epoch 111/200 - Loss: 0.124
+Converged at epoch 117 with loss -0.001
+[92mRank 0 - Lengthscale: [[0.6813497 0.5937571]] [0m
+[92mRank 0 - Outputscale: 2.5697669982910156 [0m
+[92mRank 0 - Noise: 0.11698224395513535 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.6813497 0.5937571]]
+Rank: 0, Outputscale: 2.5697669982910156
+Rank: 0, Noise: 0.11698227375745773
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.0506558418273926, rho: 0.2125, lip: 1.0000
+rank 0, epoch 19, loss: 1.086670994758606, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 1.0112695693969727, rho: 0.2125, lip: 1.0000
+rank 0, epoch 39, loss: 0.9974496364593506, rho: 0.2125, lip: 1.0000
+rank 0, epoch 49, loss: 0.9995121359825134, rho: 0.0531, lip: 1.0000
+rank 0, epoch 59, loss: 0.9994054436683655, rho: 0.0531, lip: 1.0000
+rank 0, epoch 69, loss: 0.9947944283485413, rho: 0.0531, lip: 1.0000
+rank 0, epoch 79, loss: 0.9898344874382019, rho: 0.0531, lip: 1.0000
+rank 0, epoch 89, loss: 0.9884887933731079, rho: 0.0531, lip: 1.0000
+rank 0, epoch 99, loss: 0.990320086479187, rho: 0.0531, lip: 1.0000
+rank 0, epoch 109, loss: 0.9916954636573792, rho: 0.0531, lip: 1.0000
+rank 0, epoch 119, loss: 0.9912557005882263, rho: 0.0531, lip: 1.0000
+rank 0, epoch 129, loss: 0.989778459072113, rho: 0.0531, lip: 1.0000
+rank 0, epoch 139, loss: 0.9887621998786926, rho: 0.0266, lip: 1.0000
+rank 0, epoch 149, loss: 0.9884966611862183, rho: 0.0266, lip: 1.0000
+rank 0, epoch 159, loss: 0.9887324571609497, rho: 0.0066, lip: 1.0000
+rank 0, epoch 169, loss: 0.9889792203903198, rho: 0.0066, lip: 1.0000
+rank 0, epoch 179, loss: 0.9891510605812073, rho: 0.0066, lip: 1.0000
+Rank 0 - Training time: 122.72 seconds
+[92mRank 0 - Testing RMSE: 0.3791[0m
+[92mRank: 0, Lengthscale: [[0.86207044 0.43212584]] [0m
+[92mRank: 0, Outputscale: 2.0655229091644287 [0m
+[92mRank: 0, Noise: 0.3157538175582886 [0m
+Run 9 completed successfully
+Running pxpGP 10 with agents: 121
+[92mRank 0 - sparse dataset size is: 3, local dataset: torch.Size([144, 2]), [0m
+[92mRank 0 - Training local sparse GP model with 144 samples[0m
+Epoch 1/200 - Loss: 16.405
+Epoch 11/200 - Loss: 1.227
+Epoch 21/200 - Loss: 1.160
+Epoch 31/200 - Loss: 1.058
+Epoch 41/200 - Loss: 0.968
+Epoch 51/200 - Loss: 0.932
+Epoch 61/200 - Loss: 0.809
+Epoch 71/200 - Loss: 0.683
+Epoch 81/200 - Loss: 0.544
+Epoch 91/200 - Loss: 0.402
+Epoch 101/200 - Loss: 0.282
+Epoch 111/200 - Loss: 0.181
+Converged at epoch 119 with loss -0.001
+[92mRank 0 - Lengthscale: [[0.7132904  0.74157196]] [0m
+[92mRank 0 - Outputscale: 2.5479159355163574 [0m
+[92mRank 0 - Noise: 0.11289801448583603 [0m
+Rank 0 - Augmented dataset size: 507
+Rank 0: After warm start model parameters:
+Rank: 0, Lengthscale: [[0.7132904 0.741572 ]]
+Rank: 0, Outputscale: 2.5479159355163574
+Rank: 0, Noise: 0.11289801448583603
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+[92mRank 0 - Training global model with dec-pxADMM optimizer[0m
+rank 0, epoch 9, loss: 1.058911681175232, rho: 0.4250, lip: 1.0000
+rank 0, epoch 19, loss: 1.0885642766952515, rho: 0.2125, lip: 1.0000
+rank 0, epoch 29, loss: 1.0058305263519287, rho: 0.1062, lip: 1.0000
+rank 0, epoch 39, loss: 0.9997297525405884, rho: 0.1062, lip: 1.0000
+rank 0, epoch 49, loss: 0.9994826316833496, rho: 0.0266, lip: 1.0000
+rank 0, epoch 59, loss: 0.9974300265312195, rho: 0.0266, lip: 1.0000
+rank 0, epoch 69, loss: 0.9941797256469727, rho: 0.0266, lip: 1.0000
+rank 0, epoch 79, loss: 0.9908417463302612, rho: 0.0266, lip: 1.0000
+rank 0, epoch 89, loss: 0.9892585873603821, rho: 0.0266, lip: 1.0000
+rank 0, epoch 99, loss: 0.9892053008079529, rho: 0.0266, lip: 1.0000
+rank 0, epoch 109, loss: 0.9894337058067322, rho: 0.0266, lip: 1.0000
+rank 0, epoch 119, loss: 0.9895014762878418, rho: 0.0133, lip: 1.0000
+rank 0, epoch 129, loss: 0.9896717071533203, rho: 0.0066, lip: 1.0000
+rank 0, epoch 139, loss: 0.9899076223373413, rho: 0.0066, lip: 1.0000
+rank 0, epoch 149, loss: 0.9900943636894226, rho: 0.0066, lip: 1.0000
+rank 0, epoch 159, loss: 0.990202009677887, rho: 0.0066, lip: 1.0000
+rank 0, epoch 169, loss: 0.9902763366699219, rho: 0.0066, lip: 1.0000
+rank 0, epoch 179, loss: 0.9903236627578735, rho: 0.0066, lip: 1.0000
+Rank 0 - Training time: 127.34 seconds
+[92mRank 0 - Testing RMSE: 0.3528[0m
+[92mRank: 0, Lengthscale: [[0.8864431  0.40443072]] [0m
+[92mRank: 0, Outputscale: 3.1270322799682617 [0m
+[92mRank: 0, Noise: 0.3043891191482544 [0m
+Run 10 completed successfully
+Running gapxGP 1 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1242250204086304
+Rank 0 - Epoch 10/242 loss: 0.9085597395896912
+Rank 0 - Epoch 20/242 loss: 0.6165674924850464
+Rank 0 - Epoch 30/242 loss: 0.28759923577308655
+Rank 0 - Epoch 40/242 loss: -0.0769554004073143
+Rank 0 - Epoch 50/242 loss: -0.4361807107925415
+Rank 0 - Epoch 60/242 loss: -0.7730748057365417
+Rank 0 - Epoch 70/242 loss: -1.0814793109893799
+Rank 0 - Epoch 80/242 loss: -1.357422113418579
+Rank 0 - Epoch 90/242 loss: -1.591880202293396
+Rank 0 - Epoch 100/242 loss: -1.775559902191162
+Rank 0 - Epoch 110/242 loss: -1.8138458728790283
+Rank 0 - Epoch 120/242 loss: -1.9175448417663574
+Run 1 failed, retrying...
+Running gapxGP 2 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1248427629470825
+Rank 0 - Epoch 10/242 loss: 0.9161156415939331
+Rank 0 - Epoch 20/242 loss: 0.644317090511322
+Rank 0 - Epoch 30/242 loss: 0.3278403580188751
+Rank 0 - Epoch 40/242 loss: -0.050300780683755875
+Rank 0 - Epoch 50/242 loss: -0.4103604257106781
+Rank 0 - Epoch 60/242 loss: -0.748191237449646
+Rank 0 - Epoch 70/242 loss: -1.0577185153961182
+Rank 0 - Epoch 80/242 loss: -1.3343864679336548
+Rank 0 - Epoch 90/242 loss: -1.5714362859725952
+Rank 0 - Epoch 100/242 loss: -1.7549830675125122
+Rank 0 - Epoch 110/242 loss: -1.7490990161895752
+Rank 0 - Epoch 120/242 loss: -1.4044020175933838
+Run 2 failed, retrying...
+Running gapxGP 3 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1289211511611938
+Rank 0 - Epoch 10/242 loss: 0.9250112771987915
+Rank 0 - Epoch 20/242 loss: 0.6544830203056335
+Rank 0 - Epoch 30/242 loss: 0.32952991127967834
+Rank 0 - Epoch 40/242 loss: -0.047758799046278
+Rank 0 - Epoch 50/242 loss: -0.4083305299282074
+Rank 0 - Epoch 60/242 loss: -0.7481887936592102
+Rank 0 - Epoch 70/242 loss: -1.0587130784988403
+Rank 0 - Epoch 80/242 loss: -1.3367983102798462
+Rank 0 - Epoch 90/242 loss: -1.5748392343521118
+Rank 0 - Epoch 100/242 loss: -1.7614572048187256
+Rank 0 - Epoch 110/242 loss: -1.8372008800506592
+Rank 0 - Epoch 120/242 loss: -1.887740135192871
+Run 3 failed, retrying...
+Running gapxGP 4 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1324807405471802
+Rank 0 - Epoch 10/242 loss: 0.9191820621490479
+Rank 0 - Epoch 20/242 loss: 0.628841757774353
+Rank 0 - Epoch 30/242 loss: 0.29773226380348206
+Rank 0 - Epoch 40/242 loss: -0.0714605450630188
+Rank 0 - Epoch 50/242 loss: -0.4303438663482666
+Rank 0 - Epoch 60/242 loss: -0.7670658826828003
+Rank 0 - Epoch 70/242 loss: -1.0747534036636353
+Rank 0 - Epoch 80/242 loss: -1.3512486219406128
+Rank 0 - Epoch 90/242 loss: -1.5867950916290283
+Rank 0 - Epoch 100/242 loss: -1.7658628225326538
+Rank 0 - Epoch 110/242 loss: -1.7404128313064575
+Rank 0 - Epoch 120/242 loss: -0.3766324520111084
+Run 4 failed, retrying...
+Running gapxGP 5 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1245976686477661
+Rank 0 - Epoch 10/242 loss: 0.9083680510520935
+Rank 0 - Epoch 20/242 loss: 0.6357643604278564
+Rank 0 - Epoch 30/242 loss: 0.3219514787197113
+Rank 0 - Epoch 40/242 loss: -0.051146309822797775
+Rank 0 - Epoch 50/242 loss: -0.4089500904083252
+Rank 0 - Epoch 60/242 loss: -0.746526300907135
+Rank 0 - Epoch 70/242 loss: -1.0548875331878662
+Rank 0 - Epoch 80/242 loss: -1.3308202028274536
+Rank 0 - Epoch 90/242 loss: -1.566620111465454
+Rank 0 - Epoch 100/242 loss: -1.7528163194656372
+Rank 0 - Epoch 110/242 loss: -1.8481738567352295
+Rank 0 - Epoch 120/242 loss: -1.9188798666000366
+Run 5 failed, retrying...
+Running gapxGP 6 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1407318115234375
+Rank 0 - Epoch 10/242 loss: 0.9252318143844604
+Rank 0 - Epoch 20/242 loss: 0.6372678279876709
+Rank 0 - Epoch 30/242 loss: 0.3055013120174408
+Rank 0 - Epoch 40/242 loss: -0.06389660388231277
+Rank 0 - Epoch 50/242 loss: -0.4193454384803772
+Rank 0 - Epoch 60/242 loss: -0.7533841729164124
+Rank 0 - Epoch 70/242 loss: -1.0600370168685913
+Rank 0 - Epoch 80/242 loss: -1.335805058479309
+Rank 0 - Epoch 90/242 loss: -1.5705723762512207
+Rank 0 - Epoch 100/242 loss: -1.7531543970108032
+Rank 0 - Epoch 110/242 loss: -1.8421318531036377
+Rank 0 - Epoch 120/242 loss: -1.8209381103515625
+Run 6 failed, retrying...
+Running gapxGP 7 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1231106519699097
+Rank 0 - Epoch 10/242 loss: 0.9140613079071045
+Rank 0 - Epoch 20/242 loss: 0.6409058570861816
+Rank 0 - Epoch 30/242 loss: 0.32948338985443115
+Rank 0 - Epoch 40/242 loss: -0.046228498220443726
+Rank 0 - Epoch 50/242 loss: -0.4066392183303833
+Rank 0 - Epoch 60/242 loss: -0.745953381061554
+Rank 0 - Epoch 70/242 loss: -1.0568610429763794
+Rank 0 - Epoch 80/242 loss: -1.3350924253463745
+Rank 0 - Epoch 90/242 loss: -1.5724531412124634
+Rank 0 - Epoch 100/242 loss: -1.7597273588180542
+Rank 0 - Epoch 110/242 loss: -1.8269224166870117
+Rank 0 - Epoch 120/242 loss: -1.8306281566619873
+Run 7 failed, retrying...
+Running gapxGP 8 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1333792209625244
+Rank 0 - Epoch 10/242 loss: 0.905795156955719
+Rank 0 - Epoch 20/242 loss: 0.6079096794128418
+Rank 0 - Epoch 30/242 loss: 0.2777255177497864
+Rank 0 - Epoch 40/242 loss: -0.0885842964053154
+Rank 0 - Epoch 50/242 loss: -0.4439748227596283
+Rank 0 - Epoch 60/242 loss: -0.781024158000946
+Rank 0 - Epoch 70/242 loss: -1.090172529220581
+Rank 0 - Epoch 80/242 loss: -1.3664724826812744
+Rank 0 - Epoch 90/242 loss: -1.6007345914840698
+Rank 0 - Epoch 100/242 loss: -1.7830246686935425
+Rank 0 - Epoch 110/242 loss: -1.8033578395843506
+Rank 0 - Epoch 120/242 loss: -1.953855276107788
+Run 8 failed, retrying...
+Running gapxGP 9 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.134256362915039
+Rank 0 - Epoch 10/242 loss: 0.917198896408081
+Rank 0 - Epoch 20/242 loss: 0.6348440051078796
+Rank 0 - Epoch 30/242 loss: 0.3028007447719574
+Rank 0 - Epoch 40/242 loss: -0.0739072784781456
+Rank 0 - Epoch 50/242 loss: -0.43402862548828125
+Rank 0 - Epoch 60/242 loss: -0.7719886302947998
+Rank 0 - Epoch 70/242 loss: -1.0805859565734863
+Rank 0 - Epoch 80/242 loss: -1.3569732904434204
+Rank 0 - Epoch 90/242 loss: -1.5916752815246582
+Rank 0 - Epoch 100/242 loss: -1.776108980178833
+Rank 0 - Epoch 110/242 loss: -1.8326784372329712
+Rank 0 - Epoch 120/242 loss: -1.8502546548843384
+Run 9 failed, retrying...
+Running gapxGP 10 with agents: 121
+decpxADMM initialized with rho: 0.75, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 1.1417359113693237
+Rank 0 - Epoch 10/242 loss: 0.9197739958763123
+Rank 0 - Epoch 20/242 loss: 0.625560998916626
+Rank 0 - Epoch 30/242 loss: 0.2880190908908844
+Rank 0 - Epoch 40/242 loss: -0.082207091152668
+Rank 0 - Epoch 50/242 loss: -0.4373641312122345
+Rank 0 - Epoch 60/242 loss: -0.7728216052055359
+Rank 0 - Epoch 70/242 loss: -1.0806211233139038
+Rank 0 - Epoch 80/242 loss: -1.356848120689392
+Rank 0 - Epoch 90/242 loss: -1.591416358947754
+Rank 0 - Epoch 100/242 loss: -1.7730761766433716
+Rank 0 - Epoch 110/242 loss: -1.864973783493042
+Rank 0 - Epoch 120/242 loss: -1.5195908546447754
+Run 10 failed, retrying...
+Running apxGP 1 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 1 completed successfully
+Running apxGP 2 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 2 completed successfully
+Running apxGP 3 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 3 completed successfully
+Running apxGP 4 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 4 completed successfully
+Running apxGP 5 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 5 completed successfully
+Running apxGP 6 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 6 completed successfully
+Running apxGP 7 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 7 completed successfully
+Running apxGP 8 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 8 completed successfully
+Running apxGP 9 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 9 completed successfully
+Running apxGP 10 with agents: 121
+decpxADMM initialized with rho: 0.85, lip: 1.0, tol_abs: 1e-05, tol_rel: 0.001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9011399149894714
+Rank 0 - Epoch 10/242 loss: 0.6365140080451965
+Rank 0 - Epoch 20/242 loss: 0.230325385928154
+Rank 0 - Epoch 30/242 loss: -0.2236296385526657
+Rank 0 - Epoch 40/242 loss: -0.726421058177948
+Rank 0 - Epoch 50/242 loss: -1.2408621311187744
+Rank 0 - Epoch 60/242 loss: -1.721428394317627
+Rank 0 - Epoch 70/242 loss: -2.1632041931152344
+Rank 0 - Epoch 80/242 loss: -2.534670829772949
+Rank 0 - Epoch 90/242 loss: -2.8050944805145264
+Rank 0 - Epoch 100/242 loss: -2.9787814617156982
+Rank 0 - Epoch 110/242 loss: -3.082794189453125
+Rank 0 - Epoch 120/242 loss: -3.146533489227295
+Rank 0 - Epoch 130/242 loss: -3.1869137287139893
+Rank 0 - Epoch 140/242 loss: -3.2143054008483887
+Rank 0 - Epoch 150/242 loss: -3.2338883876800537
+Rank 0 - Epoch 160/242 loss: -3.2487056255340576
+Rank 0 - Epoch 170/242 loss: -3.260503053665161
+Rank 0 - Epoch 180/242 loss: -3.2703568935394287
+Rank 0 - Epoch 190/242 loss: -3.2783381938934326
+Rank 0 - Epoch 200/242 loss: -3.284621000289917
+Rank 0 - Epoch 210/242 loss: -3.2895987033843994
+Rank 0 - Epoch 220/242 loss: -3.2940564155578613
+Rank 0 - Epoch 230/242 loss: -3.29839825630188
+Rank 0 - Epoch 240/242 loss: -3.3019680976867676
+Training complete.
+[92mRank 0 - Testing RMSE: 2.4471[0m
+[92mRank: 0, Lengthscale: [[0.6214729 0.3748621]] [0m
+[92mRank: 0, Outputscale: 1.849669098854065 [0m
+[92mRank: 0, Noise: 0.00010778934665722772 [0m
+Run 10 completed successfully
+Running cGP 1 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 1 completed successfully
+Running cGP 2 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 2 completed successfully
+Running cGP 3 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 3 completed successfully
+Running cGP 4 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 4 completed successfully
+Running cGP 5 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 5 completed successfully
+Running cGP 6 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 6 completed successfully
+Running cGP 7 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 7 completed successfully
+Running cGP 8 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 8 completed successfully
+Running cGP 9 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 9 completed successfully
+Running cGP 10 with agents: 121
+decADMM initialized with rho: 0.85, max_iter: 5, lr: 0.0001, rank: 0, world_size: 121
+Rank 0 - Epoch 2/242 loss: 0.9608670473098755
+Rank 0 - Epoch 10/242 loss: 0.9577572345733643
+Rank 0 - Epoch 20/242 loss: 0.9538959860801697
+Rank 0 - Epoch 30/242 loss: 0.9500656127929688
+Rank 0 - Epoch 40/242 loss: 0.9462684988975525
+Rank 0 - Epoch 50/242 loss: 0.9425066709518433
+Rank 0 - Epoch 60/242 loss: 0.9387826919555664
+Rank 0 - Epoch 70/242 loss: 0.9350990653038025
+Rank 0 - Epoch 80/242 loss: 0.9314587712287903
+Rank 0 - Epoch 90/242 loss: 0.9278644919395447
+Rank 0 - Epoch 100/242 loss: 0.9243193864822388
+Rank 0 - Epoch 110/242 loss: 0.9208264946937561
+Rank 0 - Epoch 120/242 loss: 0.9173895716667175
+Rank 0 - Epoch 130/242 loss: 0.91401207447052
+Rank 0 - Epoch 140/242 loss: 0.9106979370117188
+Rank 0 - Epoch 150/242 loss: 0.9074510931968689
+Rank 0 - Epoch 160/242 loss: 0.9042761325836182
+Rank 0 - Epoch 170/242 loss: 0.9011772871017456
+Rank 0 - Epoch 180/242 loss: 0.8981597423553467
+Rank 0 - Epoch 190/242 loss: 0.8952285051345825
+Rank 0 - Epoch 200/242 loss: 0.8923890590667725
+Rank 0 - Epoch 210/242 loss: 0.8896471858024597
+Rank 0 - Epoch 220/242 loss: 0.8870092034339905
+Rank 0 - Epoch 230/242 loss: 0.8844813108444214
+Rank 0 - Epoch 240/242 loss: 0.8820702433586121
+Training complete.
+[92mRank 0 - Testing RMSE: 4.0060[0m
+[92mRank: 0, Lengthscale: [[0.50794876 0.5081336 ]] [0m
+[92mRank: 0, Outputscale: 0.5162227153778076 [0m
+[92mRank: 0, Noise: 0.49146929383277893 [0m
+Run 10 completed successfully

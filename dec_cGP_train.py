@@ -165,8 +165,8 @@ if __name__ == "__main__":
     graph_viz = bool(config.get('graph_viz', False))
 
     # load dataset
-    datax_path = f'dataset/dataset{dataset}/dataset1x_{input_dim}d_{num_samples}.csv'
-    datay_path = f'dataset/dataset{dataset}/dataset1y_{input_dim}d_{num_samples}.csv'
+    datax_path = f'dataset/dataset{dataset}/dataset{dataset}x_{input_dim}d_{num_samples}.csv'
+    datay_path = f'dataset/dataset{dataset}/dataset{dataset}y_{input_dim}d_{num_samples}.csv'
 
     if not os.path.exists(datax_path) or not os.path.exists(datay_path):
         raise FileNotFoundError(f"Dataset files {datax_path} or {datay_path} do not exist.")
