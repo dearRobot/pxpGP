@@ -188,7 +188,7 @@ class ScaledPxADMM(Optimizer):
             # adaptive tolerance 
             p = self.total_params
             eps_primal = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.max(torch.norm(x_new), torch.norm(z_new))
-            eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.norm(rho * u_new)
+            eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs * 10 + tol_rel * 10.0 * torch.norm(rho * u_new)
 
             dist.all_reduce(eps_primal, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
             dist.all_reduce(eps_dual, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
@@ -223,10 +223,10 @@ class ScaledPxADMM(Optimizer):
             rho = max(1.0e-3, min(100.0, rho))
 
             # update lip
-            beta = 0.9
-            diff_norm = torch.norm(grad - grad_old) / (torch.norm(z_new - z_old) + 1e-8)
-            lip_new = beta * lip + (1 - beta) * diff_norm.item()
-            lip_new = max(1.0e-3, min(1000, lip_new))
+            # beta = 0.2
+            # diff_norm = torch.norm(grad - grad_old) / (torch.norm(z_new - z_old) + 1e-8)
+            # lip_new = beta * lip + (1 - beta) * diff_norm.item()
+            # lip_new = max(1.0e-3, min(1000, lip_new))
             
             # Update state
             self.state['flat']['z'] = z_new
@@ -234,7 +234,7 @@ class ScaledPxADMM(Optimizer):
             self.state['flat']['old_grad'] = grad.clone().detach()
 
             group['rho'] = rho
-            group['lip'] = lip_new
+            # group['lip'] = lip
  
         return False    
     
