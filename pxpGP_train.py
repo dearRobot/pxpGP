@@ -427,16 +427,16 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     outputscale_ = torch.tensor(avg_hyperparams['outputscale'], dtype=torch.float32)
     noise_ = torch.tensor(avg_hyperparams['noise'], dtype=torch.float32).to(device)
     
-    # raw_lengthscale = torch.log(torch.exp(lengthscale_) - torch.ones_like(lengthscale_) * 1e-6)  # Avoid log(0)
-    # model.covar_module.base_kernel.raw_lengthscale.data = raw_lengthscale
+    raw_lengthscale = torch.log(torch.exp(lengthscale_) - torch.ones_like(lengthscale_) * 1e-6)  # Avoid log(0)
+    model.covar_module.base_kernel.raw_lengthscale.data = raw_lengthscale
     
-    # raw_outputscale = torch.log(torch.exp(outputscale_) - torch.ones_like(outputscale_) * 1e-6)  
-    # model.covar_module.raw_outputscale.data = raw_outputscale
+    raw_outputscale = torch.log(torch.exp(outputscale_) - torch.ones_like(outputscale_) * 1e-6)  
+    model.covar_module.raw_outputscale.data = raw_outputscale
 
     model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32).to(device)
-    model.covar_module.base_kernel.lengthscale = lengthscale_
-    model.covar_module.outputscale = outputscale_
-    likelihood.noise = noise_
+    # model.covar_module.base_kernel.lengthscale = lengthscale_
+    # model.covar_module.outputscale = outputscale_
+    # likelihood.noise = noise_
     
     model = model.to(device)
     likelihood = likelihood.to(device)

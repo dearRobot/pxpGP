@@ -188,7 +188,7 @@ class ScaledPxADMM(Optimizer):
             # adaptive tolerance 
             p = self.total_params
             eps_primal = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.max(torch.norm(x_new), torch.norm(z_new))
-            eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs * 10 + tol_rel * 10.0 * torch.norm(rho * u_new)
+            eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs * 10 + tol_rel * 10 * torch.norm(rho * u_new)
 
             dist.all_reduce(eps_primal, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
             dist.all_reduce(eps_dual, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
