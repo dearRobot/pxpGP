@@ -170,7 +170,7 @@ if __name__ == "__main__":
     admm_params['tol_abs'] = float(config.get('tol_abs', 1e-6))
     admm_params['tol_rel'] = float(config.get('tol_rel', 1e-4))
 
-    admm_params['num_epochs'] = int(min(world_size*2.0, 500))
+    admm_params['num_epochs'] = int(min(world_size*2.0, 200))
 
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))

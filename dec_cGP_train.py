@@ -159,7 +159,7 @@ if __name__ == "__main__":
     admm_params['lr'] = float(config.get('lr', 0.01))
     admm_params['max_iter'] = int(config.get('max_iter', 10))
 
-    admm_params['num_epochs'] = int(min(world_size*2.0, 500))
+    admm_params['num_epochs'] = int(min(world_size*2.0, 200))
 
     backend = str(config.get('backend', 'nccl'))
     graph_viz = bool(config.get('graph_viz', False))
