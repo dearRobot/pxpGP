@@ -1,10 +1,10 @@
-num_samples: 16900
+num_samples: 4900
 input_dim: 3
 dataset: 5
 
 # must be total 1.0
-train_split: 0.5
-test_split: 0.5
+train_split: 0.95
+test_split: 0.05
 
 num_epochs: 500 #1000
 lr: 0.005 #0.015

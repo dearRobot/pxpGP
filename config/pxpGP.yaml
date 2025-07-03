@@ -1,4 +1,4 @@
-num_samples: 16900
+num_samples: 4900
 input_dim: 3
 dataset: 5
 
@@ -6,9 +6,9 @@ dataset: 5
 train_split: 0.95
 test_split: 0.05
 
-num_epochs: 50
-rho: 0.85
-lip: 1.0 # Lipschitz constant
+num_epochs: 100
+rho: 2.0
+lip: 5.0 # Lipschitz constant
 tol_abs: 1e-4
 tol_rel: 1e-2
 backend: 'gloo'

@@ -105,11 +105,11 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
     random_int = torch.randint(0, 1000, (1,)).item() 
     torch.manual_seed(random_int + rank)  
         
-    # x_min = local_x.min(dim=0).values
-    # x_max = local_x.max(dim=0).values
+    x_min = local_x.min(dim=0).values
+    x_max = local_x.max(dim=0).values
 
-    x_min = local_x.min().item()
-    x_max = local_x.max().item()
+    # x_min = local_x.min().item()
+    # x_max = local_x.max().item()
     
     if rank == 0:
         print(f"\033[92mRank {rank} - sparse dataset size is: {dataset_size}, local dataset: {local_x.shape}, \033[0m")
@@ -433,10 +433,10 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     # raw_outputscale = torch.log(torch.exp(outputscale_) - torch.ones_like(outputscale_) * 1e-6)  
     # model.covar_module.raw_outputscale.data = raw_outputscale
 
-    # model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32).to(device)
-    # model.covar_module.base_kernel.lengthscale = lengthscale_
-    # model.covar_module.outputscale = outputscale_
-    # likelihood.noise = noise_
+    model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32).to(device)
+    model.covar_module.base_kernel.lengthscale = lengthscale_
+    model.covar_module.outputscale = outputscale_
+    likelihood.noise = noise_
     
     model = model.to(device)
     likelihood = likelihood.to(device)
