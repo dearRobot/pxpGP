@@ -107,9 +107,6 @@ def create_local_pseudo_dataset(local_x, local_y, device, dataset_size: int=50, 
         
     x_min = local_x.min(dim=0).values
     x_max = local_x.max(dim=0).values
-
-    # x_min = local_x.min().item()
-    # x_max = local_x.max().item()
     
     if rank == 0:
         print(f"\033[92mRank {rank} - sparse dataset size is: {dataset_size}, local dataset: {local_x.shape}, \033[0m")
@@ -253,7 +250,7 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     
     # make sure dataset size is same for all ranks
     if rank == 0:
-        dataset_size = int(local_x.size(0) // world_size) #min(int(local_x.size(0) // world_size), int(local_x.size(0) // 10))
+        dataset_size = int(local_x.size(0) // world_size) 
         dataset_size = max(dataset_size, 3)
     else:
         dataset_size = 0
@@ -287,87 +284,11 @@ def create_augmented_dataset(local_x, local_y, device, world_size: int=1, rank: 
     # broadcast the communication dataset to all agents from rank 0
     dist.broadcast(comm_x, src=0)
     dist.broadcast(comm_y, src=0)
-
-    # if rank == 0:
-    #     print(f"\033[92mRank {rank} - Communication dataset is : {comm_x} and {comm_y}\033[0m")
     
     # create augmented dataset
     pseudo_x = torch.cat([local_x, comm_x], dim=0)
     pseudo_y = torch.cat([local_y, comm_y], dim=0)
 
-    # # Step 3: Share the local model hyperparameters with the central node (rank 0) to form averag
-    # hyperparams_list = [{} for _ in range(world_size)]
-    
-    # if rank == 0:
-    #     # Placeholder for gathering; we'll handle averaging manually
-    #     for i in range(world_size):
-    #         hyperparams_list[i] = {
-    #             'mean_constant': torch.tensor(0.0, device=device),
-    #             'lengthscale': torch.zeros(input_dim, device=device),
-    #             'outputscale': torch.tensor(0.0, device=device),
-    #             'noise': torch.tensor(0.0, device=device)
-    #         }
-    # else:
-    #     hyperparams_list = None
-
-    # # Custom gather for dictionary
-    # dist.gather_object(local_hyperparams, hyperparams_list if rank == 0 else None, dst=0)
-
-    # if rank == 0:
-    #     # Average hyperparameters
-    #     mean_constants = torch.tensor([h['mean_constant'] for h in hyperparams_list], device=device)
-    #     lengthscales = torch.stack([torch.tensor(h['lengthscale'], device=device) for h in hyperparams_list])
-    #     outputscales = torch.tensor([h['outputscale'] for h in hyperparams_list], device=device)
-    #     noise = torch.tensor([h['noise'] for h in hyperparams_list], device=device)
-
-    #     avg_hyperparams = {
-    #         'mean_constant': mean_constants.mean().item(),
-    #         'lengthscale': lengthscales.mean(dim=0).cpu().numpy().flatten(),  # Flatten to 1D array
-    #         'outputscale': outputscales.mean().item(),
-    #         'noise': noise.mean().item()
-    #     }
-    # else:
-    #     avg_hyperparams = {
-    #         'mean_constant': 0.0,
-    #         'lengthscale': torch.zeros(input_dim),
-    #         'outputscale': 0.0,
-    #         'noise': 0.0
-    #     }
-    
-    # # print average hyperparameters
-    # if rank == 0:
-    #     print(f"\033[92mRank {rank} - Average hyperparameters from local models:")
-    #     print(f"Mean constant: {avg_hyperparams['mean_constant']}, Lengthscale: {avg_hyperparams['lengthscale']}, Outputscale: {avg_hyperparams['outputscale']}, Noise: {avg_hyperparams['noise']}\033[0m")
-
-    # if rank == 0:
-    #     avg_hyperparams_tensor = torch.cat([
-    #         torch.tensor([avg_hyperparams['mean_constant']], device=device),
-    #         torch.tensor(avg_hyperparams['lengthscale'], device=device),
-    #         torch.tensor([avg_hyperparams['outputscale']], device=device),
-    #         torch.tensor([avg_hyperparams['noise']], device=device)
-    #     ])
-    # else:
-    #     avg_hyperparams_tensor = torch.zeros(3 + input_dim, device=device)
-
-    # dist.broadcast(avg_hyperparams_tensor, src=0)
-    
-    # # Reconstruct avg_hyperparams on all ranks
-    # if rank != 0:
-    #     avg_hyperparams = {
-    #         'mean_constant': avg_hyperparams_tensor[0].item(),
-    #         'lengthscale': avg_hyperparams_tensor[1:1+input_dim].cpu().numpy(),
-    #         'outputscale': avg_hyperparams_tensor[-2].item(),
-    #         'noise': avg_hyperparams_tensor[-1].item()
-    #     }
-    # else:
-    #     avg_hyperparams = {
-    #         'mean_constant': avg_hyperparams_tensor[0].item(),
-    #         'lengthscale': avg_hyperparams['lengthscale'],
-    #         'outputscale': avg_hyperparams_tensor[-2].item(),
-    #         'noise': avg_hyperparams_tensor[-1].item()
-    #     }
-    
-    # Alternative testig:
     # Step 3: Use the local sparse GP model hyperparameters without sharing
     
     avg_hyperparams = {
@@ -433,11 +354,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     raw_outputscale = torch.log(torch.exp(outputscale_) - torch.ones_like(outputscale_) * 1e-6)  
     model.covar_module.raw_outputscale.data = raw_outputscale
 
-    model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32).to(device)
-    # model.covar_module.base_kernel.lengthscale = lengthscale_
-    # model.covar_module.outputscale = outputscale_
-    # likelihood.noise = noise_
-    
+    model.mean_module.constant.data = torch.tensor(avg_hyperparams['mean_constant'], dtype=torch.float32).to(device)   
     model = model.to(device)
     likelihood = likelihood.to(device)
     pseudo_x = pseudo_x.to(device)
