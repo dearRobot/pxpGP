@@ -113,8 +113,6 @@ def test_model(model, likelihood, test_x, test_y, device):
 
 if __name__ == "__main__":
     device = 'cpu'
-    # torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     # Load configuration
     config_path = "config/fullGP.yaml"
     if not os.path.exists(config_path):
