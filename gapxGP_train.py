@@ -166,7 +166,6 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int=1, backend
         
     def closure_aug():
         optimizer_aug.zero_grad()
-        # with gpytorch.settings.min_preconditioning_size(0.005), max_cg_iterations(2000), cg_tolerance(1e-2):
         with gpytorch.settings.cholesky_jitter(1e-2), \
             gpytorch.settings.min_preconditioning_size(0), \
             gpytorch.settings.max_cholesky_size(2000), \
