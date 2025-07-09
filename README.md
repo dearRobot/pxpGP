@@ -15,7 +15,17 @@ In this work, we propose the **Proximal Inexact Pseudo Gaussian Process (pxpGP)*
 
 ## Results:
 
+**Centralized pxpGP with 16k dataset:**
 ![pxpGP with 16k dataset in centralized settings](results/figs/cen_result_16k.svg)
+
+**Centralized pxpGP with 32k dataset:**
+![pxpGP with 32k dataset in centralized settings](results/figs/cen_result_32k.svg)
+
+**Decentralized dec-pxpGP with 16k dataset:**
+![decpxpGP with 16k dataset in decentralized settings](results/figs/dec_result_16k.svg)
+
+**Decentralized dec-pxpGP with 32k dataset:**
+![decpxpGP with 32k dataset in decentralized settings](results/figs/dec_result_32k.svg)
 
 
 <!-- -------------------------------------------------------------------------------------- -->
