@@ -9,7 +9,9 @@ In this work, we propose the **Proximal Inexact Pseudo Gaussian Process (pxpGP)*
 
 **Contribution**:
 
-1. We extend sparse variational inference technique to generate compact pseudo-datasets, significantly improving the informativeness of shared data and enabling scalability to larger network sizes.
+1. We extend sparse variational inference technique to generate compact pseudo-datasets, significantly improving the informativeness of shared data and enabling scalability to larger network sizes. These pseudo-datasets also preserve local data privacy, facilitating federated learning through inter-agent collaboration without sharing raw observations.
+
+2. pxpGP is formulated as scaled proximal-inexact consensus ADMM algorithm initialized with warm-start hyperparameters and adaptive residual balancing. This leads to faster convergence and reduces the number of communication rounds. 
 
 <!-- -------------------------------------------------------------------------------------- -->
 
