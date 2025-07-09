@@ -1,7 +1,11 @@
-# Gaussian Processes:
+# Proximal Inexact Pseduo Gaussian Processes: (pxpGP)
 
-**Maintained by:** Sanket A Salunkhe  
-**Contact details:** Sanket (sanket_salunkhe@mines.edu), George (george.kontoudis@mines.edu)
+![pxpGP Overview](results/figs/title3.png)
+
+<!-- **Maintained by:** Sanket A Salunkhe  
+**Contact details:** Sanket (sanket_salunkhe@mines.edu), George (george.kontoudis@mines.edu) -->
+
+In this work, we propose the **Proximal Inexact Pseudo Gaussian Process (pxpGP)**, a distributed GP training framework designed for large-scale centralized and decentralized multi-robot networks. Beyond scalability, pxpGP ensures data privacy by exchanging only pseudo-datasets among agents, rather than raw observations.
 
 <!-- -------------------------------------------------------------------------------------- -->
 
