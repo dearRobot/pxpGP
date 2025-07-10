@@ -221,13 +221,7 @@ class ScaledPxADMM(Optimizer):
             elif s_norm.item() > 10 * r_norm.item():
                 rho /= 2.0
             rho = max(1.0e-3, min(100.0, rho))
-
-            # update lip
-            # beta = 0.2
-            # diff_norm = torch.norm(grad - grad_old) / (torch.norm(z_new - z_old) + 1e-8)
-            # lip_new = beta * lip + (1 - beta) * diff_norm.item()
-            # lip_new = max(1.0e-3, min(1000, lip_new))
-            
+           
             # Update state
             self.state['flat']['z'] = z_new
             self.state['flat']['u'] = u_new
