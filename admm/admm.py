@@ -37,9 +37,6 @@ class ADMM(Optimizer):
       
         for group in self.param_groups:
             for param in group['params']:
-                # if param.grad is None:
-                #     continue
-
                 # param is a x variable tensor so no need to initialize again
                 # Initialize auxilary variable z and dual variable lambda
                 self.state[param]['z'] = param.clone().detach().requires_grad_(False)
@@ -83,7 +80,6 @@ class ADMM(Optimizer):
                     # compute loss
                     loss, output = closure()
                     
-                    # loss.backward() # no need to call backward here
                     # ADMM penalty term
                     penalty = (lambda_ * (param.detach() - z)).sum() + (rho / 2) * torch.norm(param.detach() - z) ** 2
                     total_loss = loss + penalty
@@ -100,7 +96,6 @@ class ADMM(Optimizer):
                 # Step 2: update z i.e. the auxilary variable
                 # closed form solution for z in GP in general it is also an argmin problem
                 z_new = param.detach() + (lambda_ / rho)
-        # soft thresholding operator  need to check
                 z_new = torch.sign(z_new) * torch.clamp(torch.abs(z_new) - (1 / rho), min=0.0)
 
                 # Step 3: update lambda i.e. the dual variable
