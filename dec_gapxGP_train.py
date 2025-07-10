@@ -103,13 +103,7 @@ def create_augmented_dataset(local_x, local_y, world_size: int=1, rank: int=0, d
     local_comm_x = local_x[sample_indices]
     local_comm_y = local_y[sample_indices]
 
-    # Step 2: communicate local communication dataset to other agents 
-# TODO: (flooding, BFS spanning tree, gossip, etc.)
-    
-    # broadcast_data(local_pseudo_x, neighbors, rank=rank, world_size=world_size)
-    # broadcast_data(local_pseudo_y, neighbors, rank=rank, world_size=world_size)
-    # broadcast_data(local_hyperparams, neighbors, rank=rank, world_size=world_size)
-    
+    # Step 2: communicate local communication dataset to other agents     
     sample_x_list = [torch.empty_like(local_comm_x) for _ in range(world_size)]
     sample_y_list = [torch.empty_like(local_comm_y) for _ in range(world_size)]
 
@@ -307,7 +301,6 @@ if __name__ == "__main__":
     # get information about neighbors
     dec_graph = DecentralizedNetwork(num_nodes=world_size, graph_type='degree', dim=input_dim, degree=2, seed=42)
     neighbors = dec_graph.neighbors[rank]
-    # print(f"Rank {rank} neighbors: {neighbors}")
 
     if graph_viz and rank == 0:
         dec_graph.visualize_graph()
