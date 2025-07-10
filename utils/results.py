@@ -83,19 +83,6 @@ def plot_result(train_x, train_y, test_x, mean, lower, upper, input_dim: int = 1
         plot_2d_result(train_x, train_y, test_x, mean, lower, upper, rank)
         
 
-
-    # plt.figure(figsize=(12, 6))
-    # plt.plot(train_x.cpu().numpy(), train_y.cpu().numpy(), 'k*', label='Train Data')
-    # plt.plot(test_x.cpu().numpy(), mean.cpu().numpy(), 'b', label='Mean Prediction')
-    # plt.fill_between(test_x.cpu().numpy(), lower.cpu().numpy(), upper.cpu().numpy(), 
-    #                     alpha=0.5, color='blue', label='Confidence Interval')
-    # plt.title('Gaussian Process Regression Rank {}'.format(rank))
-    # plt.legend()
-    # plt.show()
-
-
-
-
 def plot_pxpGP_result(train_x, train_y, inducing_pt, test_x, mean, lower, upper, rank: int = 0):
     """
     Plot the results of PXP-GP Regression.
