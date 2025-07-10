@@ -1,4 +1,4 @@
-# Proximal Inexact Pseudo Gaussian Process (pxpGP) :
+# Proximal Inexact Pseudo Gaussian Process (pxpGP)
 
 ![pxpGP Overview](results/figs/title3.png)
 
