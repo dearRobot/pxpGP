@@ -189,26 +189,26 @@ class DecScaledPxAdmm(Optimizer):
             x_new = (1.0 / (lip + 2.0*rho*self.degree)) * (rho*neighbor_sum - grad - alpha_new +
                     (rho * self.degree + lip) * x_prev)
 
-            # # Armijo condition for lip
-            # step_size = (1.0 / (lip + 2.0*rho*self.degree))
-            # x_try = step_size * (rho*neighbor_sum - grad - alpha_new + (rho * self.degree + lip) * x_prev)
+            # Armijo condition for lip
+            step_size = (1.0 / (lip + 2.0*rho*self.degree))
+            x_try = step_size * (rho*neighbor_sum - grad - alpha_new + (rho * self.degree + lip) * x_prev)
                     
-            # self._unflatten_params(x_try)  # unflatten x_try to original shapes
-            # f_try = closure()[0].item()
+            self._unflatten_params(x_try)  # unflatten x_try to original shapes
+            f_try = closure()[0].item()
 
-            # c, tau = 1e-4, 0.5
-            # iter = 0
+            c, tau = 1e-4, 0.5
+            iter = 0
 
-            # while (f_try > f_old - c*step_size*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
-            #     lip *= tau
-            #     step_size = (1.0 / (lip + 2.0*rho*self.degree))
-            #     x_try = step_size * (rho*neighbor_sum - grad - alpha_new + (rho * self.degree + lip) * x_prev)
-            #     self._unflatten_params(x_try)
-            #     f_try = closure()[0].item()
-            #     iter += 1
+            while (f_try > f_old - c*step_size*torch.dot(grad.flatten(), grad.flatten())) and (iter < 10):
+                lip *= tau
+                step_size = (1.0 / (lip + 2.0*rho*self.degree))
+                x_try = step_size * (rho*neighbor_sum - grad - alpha_new + (rho * self.degree + lip) * x_prev)
+                self._unflatten_params(x_try)
+                f_try = closure()[0].item()
+                iter += 1
 
-            # lip = max(1.0e-3, min(1000, lip))
-            # x_new = x_try
+            lip = max(1.0e-3, min(1000, lip))
+            x_new = x_try
             
             # update state
             self.state['flat']['alpha'] = alpha_new
@@ -227,13 +227,7 @@ class DecScaledPxAdmm(Optimizer):
             
             eps_primal = (eps_primal + self.get_neighbors_sum(eps_primal))/p
             eps_dual = (eps_dual + self.get_neighbors_sum(eps_dual))/p
-
-            # if r_norm < eps_primal: # and s_norm < eps_dual:
-            #     self.isConverged = True
-            #     if self.rank == 0:
-            #         print(f"decpxADMM converged at iteration {self.iter} with r_norm: {r_norm:.6f}, s_norm: {s_norm:.6f}")
-            #     return True
-            
+           
             if self.rank == 0 and self.iter % 10 == 0:
                 print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}')
             
