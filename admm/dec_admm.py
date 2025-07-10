@@ -130,9 +130,7 @@ class decADMM(Optimizer):
                 dist.barrier()  
    
                 # x_i^k+1 update:
-                # \nabla f_i(x_i) + \alpha_i^k + 2c |N_i| x_i - c (|N_i| x_i^k + \sum_{j \in N_i} x_j^k) = 0 
-# TODO: Try with Adam optimizer
-                
+                # \nabla f_i(x_i) + \alpha_i^k + 2c |N_i| x_i - c (|N_i| x_i^k + \sum_{j \in N_i} x_j^k) = 0                
                 optimizer = torch.optim.SGD([param], lr=lr)
                 for _ in range(max_iter):
                     optimizer.zero_grad()
