@@ -580,7 +580,7 @@ if __name__ == "__main__":
     x_norm = (x - x_mean) / x_std
     y_norm = (y - y_mean) / y_std
     
-    train_x, test_x, train_y, test_y = train_test_split(x_norm, y_norm, test_size=test_split, random_state=42)
+    # train_x, test_x, train_y, test_y = train_test_split(x_norm, y_norm, test_size=test_split, random_state=42)
     local_x, local_y = split_agent_data(x_norm, y_norm, world_size, rank, input_dim=input_dim, partition='sequential')    
     
     # train the model
@@ -589,8 +589,23 @@ if __name__ == "__main__":
                                     admm_params, input_dim=input_dim, backend=backend)
     train_time = time.time() - start_time
     
-    # test the model
-    mean, lower, upper, rmse_error, nrmse_error, nlpd = test_model(model, likelihood, test_x, test_y, device)
+    # --------------------------------------------- test the model -------------------------------------------------
+    # load dataset
+    test_sample_size = 300
+    test_datax_path = f'dataset/dataset{dataset}/dataset{dataset}x_{input_dim}d_{test_sample_size}_test.csv'
+    test_datay_path = f'dataset/dataset{dataset}/dataset{dataset}y_{input_dim}d_{test_sample_size}_test.csv'
+
+    if not os.path.exists(test_datax_path) or not os.path.exists(test_datay_path):
+        raise FileNotFoundError(f"Dataset files {test_datax_path} or {test_datay_path} do not exist.")
+    
+    test_x = torch.tensor(np.loadtxt(test_datax_path, delimiter=',', dtype=np.float32))
+    test_y = torch.tensor(np.loadtxt(test_datay_path, delimiter=',', dtype=np.float32))
+
+    # normalize data
+    test_x_norm = (test_x - x_mean) / x_std
+    test_y_norm = (test_y - y_mean) / y_std
+
+    mean, lower, upper, rmse_error, nrmse_error, nlpd = test_model(model, likelihood, test_x_norm, test_y_norm, device)
 
     # print model and likelihood parameters
     if rank == 0:
