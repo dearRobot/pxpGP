@@ -105,6 +105,19 @@ Where,
 3. `master_port` : Port ID of central node
 
 
+### Run on HPC:
+
+Use slurm file to write commands and run using following command:
+```
+sbatch ./scratch/gaussian_processes/results/scripts/run_100.slurm
+```
+Check result/script for reference slurm and bash script.
+
+It's advisible to run inside tmux session:
+```
+
+```
+
 
 <!-- -------------------------------------------------------------------------------------- -->
 
