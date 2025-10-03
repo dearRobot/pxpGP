@@ -118,6 +118,11 @@ It's advisible to run inside tmux session:
 
 ```
 
+### Datasets:
+
+Dataset 1-5: Synthetic dataset generated using generative GP models
+Dataaset 6-8: Real world elevation dataset from NASA SRTM 
+
 
 <!-- -------------------------------------------------------------------------------------- -->
 
