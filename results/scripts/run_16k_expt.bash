@@ -20,15 +20,77 @@ NUM_RUN=3
 NUM_AGENTS=(16 49 64 100)
 MAX_ATTEMPTS=3
 
+# for a in "${NUM_AGENTS[@]}"; do
+#     echo "Starting experiments with $a agents"
+    
+#     for i in $(seq 1 $NUM_RUN); do
+#         echo "Running pxpgp $i with agents: $a"
+
+#         # Retry until success
+#         for j in ${MAX_ATTEMPTS}; do
+#             torchrun --nproc_per_node=$a --master_addr=localhost --master_port=12345 pxpGP_train.py
+#             if [ $? -eq 0 ]; then
+#                 echo "Run $i completed successfully"
+#                 break
+#             else
+#                 echo "Run $i failed, retrying..."
+#                 sleep 2  # Optional: brief pause before retrying
+#             fi
+#         done
+#     done
+# done
+
+# for a in "${NUM_AGENTS[@]}"; do
+#     echo "Starting experiments with $a agents"
+    
+#     for i in $(seq 1 $NUM_RUN); do
+#         echo "Running gapxGP $i with agents: $a"
+
+#         # Retry until success
+#         for j in ${MAX_ATTEMPTS}; do
+#             torchrun --nproc_per_node=$a --master_addr=localhost --master_port=12345 gapxGP_train.py
+#             if [ $? -eq 0 ]; then
+#                 echo "Run $i completed successfully"
+#                 break
+#             else
+#                 echo "Run $i failed, retrying..."
+#                 sleep 2  # Optional: brief pause before retrying
+#             fi
+#         done
+#     done
+# done
+
+
+# for a in "${NUM_AGENTS[@]}"; do
+#     echo "Starting experiments with $a agents"
+    
+#     for i in $(seq 1 $NUM_RUN); do
+#         echo "Running dec-pxpgp $i with agents: $a"
+
+#         # Retry until success
+#         for j in ${MAX_ATTEMPTS}; do
+#             torchrun --nproc_per_node=$a --master_addr=localhost --master_port=12345 dec_pxpGP_train.py
+#             if [ $? -eq 0 ]; then
+#                 echo "Run $i completed successfully"
+#                 break
+#             else
+#                 echo "Run $i failed, retrying..."
+#                 sleep 2  # Optional: brief pause before retrying
+#             fi
+#         done
+#     done
+# done
+
+       
 for a in "${NUM_AGENTS[@]}"; do
     echo "Starting experiments with $a agents"
     
     for i in $(seq 1 $NUM_RUN); do
-        echo "Running pxpgp $i with agents: $a"
+        echo "Running dec-gapxgp $i with agents: $a"
 
         # Retry until success
         for j in ${MAX_ATTEMPTS}; do
-            torchrun --nproc_per_node=$a --master_addr=localhost --master_port=12345 pxpGP_train.py
+            torchrun --nproc_per_node=$a --master_addr=localhost --master_port=12345 dec_gapxGP_train.py
             if [ $? -eq 0 ]; then
                 echo "Run $i completed successfully"
                 break
@@ -40,25 +102,9 @@ for a in "${NUM_AGENTS[@]}"; do
     done
 done
 
-for a in "${NUM_AGENTS[@]}"; do
-    echo "Starting experiments with $a agents"
-    
-    for i in $(seq 1 $NUM_RUN); do
-        echo "Running gapxGP $i with agents: $a"
 
-        # Retry until success
-        for j in ${MAX_ATTEMPTS}; do
-            torchrun --nproc_per_node=$a --master_addr=localhost --master_port=12345 gapxGP_train.py
-            if [ $? -eq 0 ]; then
-                echo "Run $i completed successfully"
-                break
-            else
-                echo "Run $i failed, retrying..."
-                sleep 2  # Optional: brief pause before retrying
-            fi
-        done
-    done
-done
+# --------------------------------------------------------------------------------------
+
 
 # for i in $(seq 1 $NUM_RUN); do
 #     echo "Running gapxGP $i with agents: $NUM_AGENTS"
