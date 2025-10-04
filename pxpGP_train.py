@@ -458,6 +458,10 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
                                 tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
                                 rank=rank, world_size=world_size, dual=True)   
     
+    # optimizer = pxadmm(model.parameters(), rho=admm_params['rho'], lip=admm_params['lip'],
+    #                             tol_abs=admm_params['tol_abs'], tol_rel=admm_params['tol_rel'],
+    #                             rank=rank, world_size=world_size, dual=True)
+    
     def closure():
         optimizer.zero_grad()
         with gpytorch.settings.min_preconditioning_size(0.001), max_cg_iterations(5000), cg_tolerance(1e-1):
@@ -477,6 +481,7 @@ def train_model(train_x, train_y, device, admm_params, input_dim: int= 1, backen
     start_time = time.time()
     for epoch in range(admm_params['num_epochs']):
         converged = optimizer.step(closure, epoch=epoch)
+        # converged  = optimizer.step(closure, consensus=True)
         loss_val = closure()[0].item()
 
         if not torch.isfinite(torch.tensor(loss_val)):

@@ -96,7 +96,6 @@ class ScaledPxADMM(Optimizer):
                 i += 1
 
 
-    # TODO: Implement scaled pxADMM and adaptive tolerance
     def step(self, closure=None, epoch: int=1):
         """
         Performs a single optimization step.
@@ -154,26 +153,24 @@ class ScaledPxADMM(Optimizer):
             alpha = 1.0 / (rho + lip)
             x_try = v_ - alpha * grad #- alpha * m 
             self._unflatten_params(x_try)
-            f_try = closure()[0].item()
+            # f_try = closure()[0].item()
 
-            # Armijo constants
-            c, tau = 1e-4, 0.5
-            iter = 0
+            # # Armijo constants
+            # c, tau = 1e-4, 0.5
+            # iter = 0
 
             # while f_try > f_old + 0.1 * lip * torch.norm(x_try - v)**2 and iter < 10: # Armijo condition
-            while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 3):
-                lip *= tau
-                alpha = 1.0 / (rho + lip)
-                x_try = v_ - alpha * grad #- alpha * m 
-                self._unflatten_params(x_try)
-                f_try = closure()[0].item()
-                iter += 1
+            # while (f_try > f_old - c*alpha*torch.dot(grad.flatten(), grad.flatten())) and (iter < 3):
+            #     lip *= tau
+            #     alpha = 1.0 / (rho + lip)
+            #     x_try = v_ - alpha * grad #- alpha * m 
+            #     self._unflatten_params(x_try)
+            #     f_try = closure()[0].item()
+            #     iter += 1
             
             x_new = x_try
             x_new = torch.nan_to_num(x_new, nan=0.0, posinf=0.0, neginf=0.0)
-
-            # noise addition
-            
+           
             # Step 3: u-update // u_i^{k+1} = u_i^k + x_i^{k+1} - z^{k+1}
             primal_residual = x_new - z_new
             u_new = u_ + primal_residual
@@ -190,14 +187,19 @@ class ScaledPxADMM(Optimizer):
             eps_primal = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs + tol_rel * torch.max(torch.norm(x_new), torch.norm(z_new))
             eps_dual = torch.sqrt(torch.tensor(p, dtype=torch.float)) * tol_abs * 10 + tol_rel * 10 * torch.norm(rho * u_new)
 
-            dist.all_reduce(eps_primal, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
-            dist.all_reduce(eps_dual, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
-            dist.all_reduce(r_norm, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
-            dist.all_reduce(s_norm, op=dist.ReduceOp.SUM) #op=dist.ReduceOp.MAX)
-            eps_primal /= self.world_size
-            eps_dual /= self.world_size
-            r_norm /= self.world_size
-            s_norm /= self.world_size
+            # dist.all_reduce(eps_primal, op=dist.ReduceOp.SUM) 
+            # dist.all_reduce(eps_dual, op=dist.ReduceOp.SUM) 
+            # dist.all_reduce(r_norm, op=dist.ReduceOp.SUM) 
+            # dist.all_reduce(s_norm, op=dist.ReduceOp.SUM) 
+            # eps_primal /= self.world_size
+            # eps_dual /= self.world_size
+            # r_norm /= self.world_size
+            # s_norm /= self.world_size
+
+            metrics = torch.stack([eps_primal, eps_dual, r_norm, s_norm])
+            dist.all_reduce(metrics, op=dist.ReduceOp.SUM)
+            metrics /= self.world_size
+            eps_primal, eps_dual, r_norm, s_norm = metrics
 
             if self.rank == 0:# and self.iter % 10 == 0:
                 print(f'rank {self.rank}, epoch {epoch}, loss: {loss.item()}, rho: {rho:.4f}, lip: {lip:.4f}')
@@ -216,11 +218,12 @@ class ScaledPxADMM(Optimizer):
                     return True
             
             # update rho
-            if r_norm.item() > 10 * s_norm.item():
-                rho *= 2.0
-            elif s_norm.item() > 10 * r_norm.item():
-                rho /= 2.0
-            rho = max(1.0e-3, min(100.0, rho))
+            if self.iter % 10 == 0:
+                if r_norm.item() > 10 * s_norm.item():
+                    rho *= 2.0
+                elif s_norm.item() > 10 * r_norm.item():
+                    rho /= 2.0
+                rho = max(1.0e-3, min(100.0, rho))
 
             # update lip
             # beta = 0.2

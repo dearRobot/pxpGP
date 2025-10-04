@@ -1,45 +1,5 @@
 #!/usr/bin/bash
 
-# NUM_RUN=3
-# NUM_AGENTS=100
-# MAX_ATTEMPTS=3
-
-# for i in $(seq 1 $NUM_RUN); do
-#     echo "Running pxpGP $i with agents: $NUM_AGENTS"
-    
-#     # Retry until success
-#     for j in ${MAX_ATTEMPTS}; do
-#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 pxpGP_train.py
-#         if [ $? -eq 0 ]; then
-#             echo "Run $i completed successfully"
-#             break
-#         else
-#             echo "Run $i failed, retrying..."
-#             sleep 2  # Optional: brief pause before retrying
-#         fi
-#     done
-# done
-
-# NUM_RUN=3
-# NUM_AGENTS=64
-# MAX_ATTEMPTS=3
-
-# for i in $(seq 1 $NUM_RUN); do
-#     echo "Running pxpGP $i with agents: $NUM_AGENTS"
-    
-#     # Retry until success
-#     for j in ${MAX_ATTEMPTS}; do
-#         torchrun --nproc_per_node=$NUM_AGENTS --master_addr=localhost --master_port=12345 pxpGP_train.py
-#         if [ $? -eq 0 ]; then
-#             echo "Run $i completed successfully"
-#             break
-#         else
-#             echo "Run $i failed, retrying..."
-#             sleep 2  # Optional: brief pause before retrying
-#         fi
-#     done
-# done
-
 # for i in $(seq 1 $NUM_RUN); do
 #     echo "Running fullGP $i"
     
@@ -64,6 +24,26 @@ for a in "${NUM_AGENTS[@]}"; do
     echo "Starting experiments with $a agents"
     
     for i in $(seq 1 $NUM_RUN); do
+        echo "Running pxpgp $i with agents: $a"
+
+        # Retry until success
+        for j in ${MAX_ATTEMPTS}; do
+            torchrun --nproc_per_node=$a --master_addr=localhost --master_port=12345 pxpGP_train.py
+            if [ $? -eq 0 ]; then
+                echo "Run $i completed successfully"
+                break
+            else
+                echo "Run $i failed, retrying..."
+                sleep 2  # Optional: brief pause before retrying
+            fi
+        done
+    done
+done
+
+for a in "${NUM_AGENTS[@]}"; do
+    echo "Starting experiments with $a agents"
+    
+    for i in $(seq 1 $NUM_RUN); do
         echo "Running gapxGP $i with agents: $a"
 
         # Retry until success
@@ -77,7 +57,7 @@ for a in "${NUM_AGENTS[@]}"; do
                 sleep 2  # Optional: brief pause before retrying
             fi
         done
-
+    done
 done
 
 # for i in $(seq 1 $NUM_RUN); do
