@@ -231,12 +231,19 @@ def test_model(model, likelihood, test_x, test_y, device):
     with torch.no_grad(), gpytorch.settings.fast_pred_var():
         observed_pred = likelihood(model(test_x))
         mean = observed_pred.mean
+        var = observed_pred.variance
         lower, upper = observed_pred.confidence_region()
 
     # compute RMSE error
     rmse_error = torch.sqrt(torch.mean((mean - test_y) ** 2)).item()
+    nrmse_error = rmse_error / (test_y.max() - test_y.min()).item()
     
-    return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error
+    # compute NLPD 
+    eps = 1e-9
+    nlpds = 0.5 * torch.log(2 * torch.pi * var + eps) + 0.5 * ((test_y - mean) ** 2) / (var + eps)
+    nlpd = torch.mean(nlpds).item()
+    
+    return mean.cpu(), lower.cpu(), upper.cpu(), rmse_error, nrmse_error, nlpd
 
 
 if __name__ == "__main__":
@@ -278,10 +285,16 @@ if __name__ == "__main__":
     x = torch.tensor(np.loadtxt(datax_path, delimiter=',', dtype=np.float32))
     y = torch.tensor(np.loadtxt(datay_path, delimiter=',', dtype=np.float32))
     
-    train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
+    # normalize data
+    x_mean, x_std = x.mean(dim=0), x.std(dim=0)
+    y_mean, y_std = y.mean(), y.std()
+    x_norm = (x - x_mean) / x_std
+    y_norm = (y - y_mean) / y_std
+    
+    # train_x, test_x, train_y, test_y = train_test_split(x, y, test_size=test_split, random_state=42)
 
     # split data among agents
-    local_x, local_y = split_agent_data(x, y, world_size, rank, partition='sequential', input_dim=input_dim)
+    local_x, local_y = split_agent_data(x_norm, y_norm, world_size, rank, partition='sequential', input_dim=input_dim)
 
     # train the model
     start_time = time.time()
@@ -289,12 +302,30 @@ if __name__ == "__main__":
                                     admm_params, input_dim=input_dim, backend=backend)
     train_time = time.time() - start_time
     
-    # test the model
-    mean, lower, upper, rmse_error = test_model(model, likelihood, test_x, test_y, device)
+    # --------------------------------------------- test the model -------------------------------------------------
+    # load dataset
+    test_sample_size = 300
+    test_datax_path = f'dataset/dataset{dataset}/dataset{dataset}x_{input_dim}d_{test_sample_size}_test.csv'
+    test_datay_path = f'dataset/dataset{dataset}/dataset{dataset}y_{input_dim}d_{test_sample_size}_test.csv'
+
+    if not os.path.exists(test_datax_path) or not os.path.exists(test_datay_path):
+        raise FileNotFoundError(f"Dataset files {test_datax_path} or {test_datay_path} do not exist.")
+    
+    test_x = torch.tensor(np.loadtxt(test_datax_path, delimiter=',', dtype=np.float32))
+    test_y = torch.tensor(np.loadtxt(test_datay_path, delimiter=',', dtype=np.float32))
+
+    # normalize data
+    test_x_norm = (test_x - x_mean) / x_std
+    test_y_norm = (test_y - y_mean) / y_std
+
+    mean, lower, upper, rmse_error, nrmse_error, nlpd = test_model(model, likelihood, test_x_norm, test_y_norm, device)
 
     # print model and likelihood parameters
     if rank == 0:
         print(f"\033[92mRank {rank} - Testing RMSE: {rmse_error:.4f}\033[0m")
+        print(f"\033[92mRank {rank} - Testing NRMSE: {nrmse_error:.4f}\033[0m")
+        print(f"\033[92mRank {rank} - Testing NLPD: {nlpd:.4f}\033[0m")
+
         if model.covar_module.base_kernel.lengthscale.numel() > 1:
             print(f"\033[92mRank: {rank}, Lengthscale:", model.covar_module.base_kernel.lengthscale.cpu().detach().numpy(), "\033[0m")  # Print all lengthscale values
         else:
@@ -314,6 +345,8 @@ if __name__ == "__main__":
         'outputscale': model.covar_module.outputscale.item(),
         'noise': model.likelihood.noise.item(),
         'test_rmse': rmse_error,
+        'test_nrmse': nrmse_error,
+        'test_nlpd': nlpd,
         'train_time': train_time,
         'dataset': dataset
     }
