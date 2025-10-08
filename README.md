@@ -17,6 +17,8 @@ In this work, we propose the **Proximal Inexact Pseudo Gaussian Process (pxpGP)*
 
 ## Results:
 
+### Hyperparameter Accuracy Estimation:
+
 **Centralized pxpGP with 16k dataset:**
 ![pxpGP with 16k dataset in centralized settings](results/figs/cen_result_16k.svg)
 
@@ -29,6 +31,10 @@ In this work, we propose the **Proximal Inexact Pseudo Gaussian Process (pxpGP)*
 **Decentralized dec-pxpGP with 32k dataset:**
 ![decpxpGP with 32k dataset in decentralized settings](results/figs/dec_result_32k.svg)
 
+### Prediction Performance on real-world NASA SRTM dataset:
+
+**Prediction accuracy of the proposed pxpGP and dec-pxpGP frameworks across fleet size 𝑀 = (16, 49, 64, 100) using a training dataset of size N = 30,000 equally distributed among agents and a test dataset size 𝑁𝑡𝑒𝑠𝑡 = 300 per agent, compared with the baseline models (gapxGP and dec-gapxGP) on the SRTM dataset.**
+![pxpGP and dec-pxpGP prediction performance](results/figs/pred_performance.png)
 
 <!-- -------------------------------------------------------------------------------------- -->
 
@@ -120,8 +126,10 @@ It's advisible to run inside tmux session:
 
 ### Datasets:
 
-Dataset 1-5: Synthetic dataset generated using generative GP models
+Dataset 1-5: Synthetic dataset generated using generative GP models \
 Dataaset 6-8: Real world elevation dataset from NASA SRTM 
+
+![dataset visualization](results/figs/dataset.png)
 
 
 <!-- -------------------------------------------------------------------------------------- -->
